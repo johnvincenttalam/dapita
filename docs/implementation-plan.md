@@ -600,7 +600,7 @@ Server responsibilities the frontend must **not** reimplement: authorization, st
 
 ## 9. Recommended implementation order
 
-Status: steps 1–6 are **done** (§13.1–13.3, §13.7). Step 0's `git init` is outstanding. Next: step 7 (merchant core).
+Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Next server work: customer profile and account, then the admin console.
 
 Each step ends with `npm run check`, updated tests and (from step 3) a Playwright run at mobile and desktop sizes.
 
@@ -870,7 +870,7 @@ Shared components still to build (§5): `RatingStars` (P1, with reviews), `Favor
 | Item                                                        | Impact                                                                                                                                        | Needed by                                  |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | Q1–Q8 unanswered (defaults in use)                          | Q2/Q7 shape the booking and dashboard screens; Q3 adds a map dependency                                                                       | Q2, Q7 before steps 6–7; Q3 before step 10 |
-| No git repository                                           | Changes can't be reviewed or reverted as a diff; recommend `git init` + baseline commit before step 5                                         | Now                                        |
+| ~~No git repository~~                                       | Resolved 27 Oct 2026: `git init` + baseline commits, pushed to GitHub                                                                         | —                                          |
 | No backend/API contract (Q4)                                | All services stay mock; HTTP halves follow §7.3 and are unverified                                                                            | Before pilot                               |
 | Licensed imagery (Q6)                                       | Screens 1, 2, 3, 5, 8–10 are photo-led. Brand, shop cover and staff photos are in (§13.9); service photos still show placeholders             | Before visual sign-off                     |
 | §11.2 #5–7 (response deadline, policy structure, area list) | Booking rules and the location list; currently assumptions in `config/booking.ts`                                                             | Before pilot                               |

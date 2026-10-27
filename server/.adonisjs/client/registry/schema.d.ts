@@ -345,6 +345,175 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['show']>>>
     }
   }
+  'merchant_businesses.update': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['update']>>>
+    }
+  }
+  'merchant_businesses.update_hours': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/hours'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateHours']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateHours']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateHours']>>>
+    }
+  }
+  'merchant_businesses.add_closure': {
+    methods: ["POST"]
+    pattern: '/api/merchant/businesses/:businessId/closures'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['addClosure']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['addClosure']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['addClosure']>>>
+    }
+  }
+  'merchant_businesses.delete_closure': {
+    methods: ["DELETE"]
+    pattern: '/api/merchant/businesses/:businessId/closures/:closureId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; closureId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['deleteClosure']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['deleteClosure']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['deleteClosure']>>>
+    }
+  }
+  'merchant_businesses.update_policies': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/policies'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updatePolicies']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updatePolicies']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updatePolicies']>>>
+    }
+  }
+  'merchant_businesses.submit': {
+    methods: ["POST"]
+    pattern: '/api/merchant/businesses/:businessId/submit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['submit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['submit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['submit']>>>
+    }
+  }
+  'merchant_businesses.notification_settings': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/businesses/:businessId/notification-settings'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['notificationSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['notificationSettings']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['notificationSettings']>>>
+    }
+  }
+  'merchant_businesses.update_notification_settings': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/notification-settings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/merchant').notificationSettingsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/merchant').notificationSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_services.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/businesses/:businessId/services'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['index']>>>
+    }
+  }
+  'merchant_services.store': {
+    methods: ["POST"]
+    pattern: '/api/merchant/businesses/:businessId/services'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['store']>>>
+    }
+  }
+  'merchant_services.update': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; serviceId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['update']>>>
+    }
+  }
+  'merchant_services.move': {
+    methods: ["POST"]
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId/move'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/merchant').moveServiceValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; serviceId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/merchant').moveServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['move']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['move']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['move']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_services.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; serviceId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['destroy']>>>
+    }
+  }
   'merchant_bookings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/merchant/businesses/:businessId/bookings'

@@ -66,11 +66,15 @@ All use the password `password123`.
 | Auth | `GET /auth/session`, `POST /auth/sign-in`, `/sign-out`, `/sign-up`, `/verify`, `/forgot-password` |
 | Discovery | `GET /categories`, `/areas`, `/shops`, `/shops/featured`, `/shops/:slug`, `/shops/:slug/services`, `/shops/:slug/staff` |
 | Customer bookings | `POST /bookings`, `GET /me/bookings`, `GET /bookings/:id`, `POST /bookings/:id/cancel`, `/accept-alternative`, `/decline-alternative` |
-| Merchant | `GET /merchant/businesses/:id`, `/merchant/businesses/:id/bookings`, `/merchant/businesses/:id/conversations`, `GET /merchant/bookings/:id`, `POST /merchant/bookings/:id/accept`, `/decline`, `/propose`, `/complete`, `/no-show` |
+| Merchant listing | `GET/PUT /merchant/businesses/:id`, `PUT /merchant/businesses/:id/hours`, `/policies`, `POST /merchant/businesses/:id/closures`, `DELETE /merchant/businesses/:id/closures/:closureId`, `POST /merchant/businesses/:id/submit`, `GET/PUT /merchant/businesses/:id/notification-settings` |
+| Merchant services | `GET/POST /merchant/businesses/:id/services`, `PUT/DELETE /merchant/businesses/:id/services/:serviceId`, `POST /merchant/businesses/:id/services/:serviceId/move` |
+| Merchant bookings | `GET /merchant/businesses/:id/bookings`, `/merchant/businesses/:id/conversations`, `GET /merchant/bookings/:id`, `POST /merchant/bookings/:id/accept`, `/decline`, `/propose`, `/complete`, `/no-show` |
 | Messaging | `GET/POST /conversations`, `GET /conversations/:id`, `POST /conversations/:id/messages`, `/read`, `/report` |
 | Realtime | `/__transmit/events`, `/__transmit/subscribe`, `/__transmit/unsubscribe` |
 
-Everything else under `/api` (admin console, merchant profile/services/settings editing, customer profile, dashboard) answers **501 `not_implemented`** for now, and those screens show an error in server mode. They still work in mock mode.
+Everything else under `/api` (admin console, customer profile and account) answers **501 `not_implemented`** for now, and those screens show an error in server mode. They still work in mock mode.
+
+Listing, hours, closures, policies and service input is checked with the SPA's own form schemas (`src/schemas`, through `validateWith` in `app/helpers/validate.ts`), so a rule or message changes in one place. Those endpoints read the JSON body as sent (`formBody`), because the body parser turns empty strings into null and the schemas expect blank optional text as `''`.
 
 Emails aren't sent yet. The sign-up verification link is written to the server log.
 

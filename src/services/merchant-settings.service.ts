@@ -1,3 +1,4 @@
+import { defaultNotificationSettings } from '@/config/merchant-notifications'
 import { ApiError, apiClient } from '@/lib/api-client'
 import { env } from '@/lib/env'
 import { readMockDb, updateMockDb } from '@/services/mock/db'
@@ -25,13 +26,7 @@ const httpMerchantSettingsService: MerchantSettingsService = {
 // ─── MOCK ────────────────────────────────────────────────────────────────────
 // Choices are kept per person and business. No email is sent in the prototype.
 
-/** Requests and messages need a timely answer, so those emails start on; the summary is opt-in. */
-export const defaultNotificationSettings: MerchantNotificationSettings = {
-  newRequest: true,
-  requestExpiring: true,
-  newMessage: true,
-  dailySummary: false,
-}
+export { defaultNotificationSettings }
 
 function requireMember(businessId: ID) {
   const user = getMockSessionUser()

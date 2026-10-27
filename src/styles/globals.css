@@ -5,6 +5,10 @@
 @import '@fontsource-variable/geist-mono';
 @import '@fontsource-variable/playfair-display';
 
+/* The API in server/ has no UI classes, and it rewrites generated files whenever it
+   restarts; scanning it would rebuild this stylesheet and reload the page each time. */
+@source not '../../server';
+
 /* `.dark` on <html> switches the theme. A nested `.light` or `.dark` element
    scopes a theme to part of the page (used by the gallery's theme preview). */
 @custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
