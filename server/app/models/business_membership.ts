@@ -1,5 +1,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
-import type { ID } from '#shared/domain'
+import { json } from '#models/columns'
+import type { ID, MerchantNotificationSettings } from '#shared/domain'
 
 /** Which businesses a user can manage in the merchant dashboard. */
 export default class BusinessMembership extends BaseModel {
@@ -14,4 +15,8 @@ export default class BusinessMembership extends BaseModel {
 
   @column()
   declare role: 'owner' | 'staff'
+
+  /** Null until the person changes them; the defaults apply until then. */
+  @column(json)
+  declare notificationSettings: MerchantNotificationSettings | null
 }

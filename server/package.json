@@ -71,7 +71,8 @@
     "@vinejs/vine": "^4.4.0",
     "luxon": "^3.7.2",
     "pg": "^8.23.1",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.6.7"
   },
   "hotHook": {
     "boundaries": [

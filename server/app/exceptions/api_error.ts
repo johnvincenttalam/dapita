@@ -5,7 +5,13 @@ import { Exception } from '@adonisjs/core/exceptions'
  * `{ message, code }` body the SPA's API client reads (src/types/api.ts).
  */
 export default class ApiError extends Exception {
-  constructor(message: string, status: number, code?: string) {
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    /** Messages per field, e.g. `{ 'price.amount': ['Enter a price'] }`. */
+    readonly details?: Record<string, string[]>
+  ) {
     super(message, { status, code })
   }
 }

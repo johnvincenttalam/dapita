@@ -40,7 +40,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
 
   private toErrorBody(error: unknown): [number, ErrorBody] {
     if (error instanceof ApiError) {
-      return [error.status, { message: error.message, code: error.code }]
+      return [error.status, { message: error.message, code: error.code, details: error.details }]
     }
     if (error instanceof vineErrors.E_VALIDATION_ERROR) {
       const issues = error.messages as { field: string; message: string }[]

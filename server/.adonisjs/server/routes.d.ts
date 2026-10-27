@@ -30,6 +30,19 @@ export type ScannedRoutes = {
     'conversations.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.add_closure': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.delete_closure': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'closureId': ParamValue} }
+    'merchant_businesses.update_policies': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.submit': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update_notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_services.move': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_bookings.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'conversations.business_index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -56,6 +69,8 @@ export type ScannedRoutes = {
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'conversations.business_index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -75,6 +90,8 @@ export type ScannedRoutes = {
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'conversations.business_index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -94,6 +111,10 @@ export type ScannedRoutes = {
     'conversations.send_message': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'merchant_businesses.add_closure': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.submit': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.move': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_bookings.accept': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_bookings.decline': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_bookings.propose': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -102,13 +123,20 @@ export type ScannedRoutes = {
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
-  OPTIONS: {
-  }
   PUT: {
-  }
-  PATCH: {
+    'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update_policies': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_businesses.update_notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
   }
   DELETE: {
+    'merchant_businesses.delete_closure': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'closureId': ParamValue} }
+    'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+  }
+  OPTIONS: {
+  }
+  PATCH: {
   }
 }
 declare module '@adonisjs/core/types/http' {

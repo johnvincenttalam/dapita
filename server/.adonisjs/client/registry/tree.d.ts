@@ -40,6 +40,21 @@ export interface ApiDefinition {
   }
   merchantBusinesses: {
     show: typeof routes['merchant_businesses.show']
+    update: typeof routes['merchant_businesses.update']
+    updateHours: typeof routes['merchant_businesses.update_hours']
+    addClosure: typeof routes['merchant_businesses.add_closure']
+    deleteClosure: typeof routes['merchant_businesses.delete_closure']
+    updatePolicies: typeof routes['merchant_businesses.update_policies']
+    submit: typeof routes['merchant_businesses.submit']
+    notificationSettings: typeof routes['merchant_businesses.notification_settings']
+    updateNotificationSettings: typeof routes['merchant_businesses.update_notification_settings']
+  }
+  merchantServices: {
+    index: typeof routes['merchant_services.index']
+    store: typeof routes['merchant_services.store']
+    update: typeof routes['merchant_services.update']
+    move: typeof routes['merchant_services.move']
+    destroy: typeof routes['merchant_services.destroy']
   }
   merchantBookings: {
     index: typeof routes['merchant_bookings.index']

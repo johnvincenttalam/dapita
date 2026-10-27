@@ -19,6 +19,7 @@ const ShopsController = () => import('#controllers/shops_controller')
 const BookingsController = () => import('#controllers/bookings_controller')
 const MerchantBookingsController = () => import('#controllers/merchant_bookings_controller')
 const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
+const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
@@ -66,6 +67,48 @@ router
         router
           .group(() => {
             router.get('businesses/:businessId', [MerchantBusinessesController, 'show'])
+            router.put('businesses/:businessId', [MerchantBusinessesController, 'update'])
+            router.put('businesses/:businessId/hours', [
+              MerchantBusinessesController,
+              'updateHours',
+            ])
+            router.post('businesses/:businessId/closures', [
+              MerchantBusinessesController,
+              'addClosure',
+            ])
+            router.delete('businesses/:businessId/closures/:closureId', [
+              MerchantBusinessesController,
+              'deleteClosure',
+            ])
+            router.put('businesses/:businessId/policies', [
+              MerchantBusinessesController,
+              'updatePolicies',
+            ])
+            router.post('businesses/:businessId/submit', [MerchantBusinessesController, 'submit'])
+            router.get('businesses/:businessId/notification-settings', [
+              MerchantBusinessesController,
+              'notificationSettings',
+            ])
+            router.put('businesses/:businessId/notification-settings', [
+              MerchantBusinessesController,
+              'updateNotificationSettings',
+            ])
+
+            router.get('businesses/:businessId/services', [MerchantServicesController, 'index'])
+            router.post('businesses/:businessId/services', [MerchantServicesController, 'store'])
+            router.put('businesses/:businessId/services/:serviceId', [
+              MerchantServicesController,
+              'update',
+            ])
+            router.post('businesses/:businessId/services/:serviceId/move', [
+              MerchantServicesController,
+              'move',
+            ])
+            router.delete('businesses/:businessId/services/:serviceId', [
+              MerchantServicesController,
+              'destroy',
+            ])
+
             router.get('businesses/:businessId/bookings', [MerchantBookingsController, 'index'])
             router.get('businesses/:businessId/conversations', [
               ConversationsController,
