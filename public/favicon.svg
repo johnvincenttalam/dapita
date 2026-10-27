@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 0 260 260">
+  <!-- Dapita pin mark. Keep in sync with LogoMark in src/components/shared/Logo.tsx. -->
+  <path d="M128 248C110 215 48 160 48 95a87 87 0 1 1 174 0c0 55-52 100-94 153Z" fill="#e8766f"/>
+  <circle cx="133" cy="92" r="52" fill="#0a4433"/>
+  <path d="M10 88C5 150 60 180 97 212 105 160 80 110 10 88Z" fill="#fcc9b5" opacity="0.92"/>
+  <path d="M177 93C130 110 95 190 125 255 130 190 180 150 177 93Z" fill="#5e8167" opacity="0.92"/>
+</svg>
