@@ -77,7 +77,7 @@ test.group('Auth', (group) => {
   })
 
   test('answers 501 for endpoints the server does not implement yet', async ({ client }) => {
-    const response = await client.get('/api/admin/merchants')
+    const response = await client.get('/api/not-a-real-endpoint')
     response.assertStatus(501)
     response.assertBodyContains({ code: 'not_implemented' })
   })

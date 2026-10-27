@@ -670,6 +670,214 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['noShow']>>>
     }
   }
+  'admin.merchants': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/merchants'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchants']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchants']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchants']>>>
+    }
+  }
+  'admin.merchant': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/merchants/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchant']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchant']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['merchant']>>>
+    }
+  }
+  'admin.moderate': {
+    methods: ["POST"]
+    pattern: '/api/admin/merchants/:id/moderation'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moderate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moderate']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moderate']>>>
+    }
+  }
+  'admin.featured': {
+    methods: ["PUT"]
+    pattern: '/api/admin/merchants/:id/featured'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').featuredValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').featuredValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['featured']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['featured']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['featured']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.cases': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/cases'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['cases']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['cases']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['cases']>>>
+    }
+  }
+  'admin.case': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/cases/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['case']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['case']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['case']>>>
+    }
+  }
+  'admin.take_case': {
+    methods: ["POST"]
+    pattern: '/api/admin/cases/:id/take'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['takeCase']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['takeCase']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['takeCase']>>>
+    }
+  }
+  'admin.add_note': {
+    methods: ["POST"]
+    pattern: '/api/admin/cases/:id/notes'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addNote']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addNote']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addNote']>>>
+    }
+  }
+  'admin.resolve': {
+    methods: ["POST"]
+    pattern: '/api/admin/cases/:id/resolve'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['resolve']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['resolve']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['resolve']>>>
+    }
+  }
+  'admin.categories': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/categories'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['categories']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['categories']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['categories']>>>
+    }
+  }
+  'admin.add_category': {
+    methods: ["POST"]
+    pattern: '/api/admin/categories'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addCategory']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addCategory']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['addCategory']>>>
+    }
+  }
+  'admin.update_category': {
+    methods: ["PUT"]
+    pattern: '/api/admin/categories/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['updateCategory']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['updateCategory']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['updateCategory']>>>
+    }
+  }
+  'admin.move_category': {
+    methods: ["POST"]
+    pattern: '/api/admin/categories/:id/move'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin').directionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin').directionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moveCategory']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moveCategory']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['moveCategory']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.users': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/admin/users'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/admin').userSearchValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['users']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['users']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['users']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.suspend': {
+    methods: ["POST"]
+    pattern: '/api/admin/users/:id/suspend'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['suspend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['suspend']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['suspend']>>>
+    }
+  }
+  'admin.reinstate': {
+    methods: ["POST"]
+    pattern: '/api/admin/users/:id/reinstate'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['reinstate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['reinstate']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/admin_controller').default['reinstate']>>>
+    }
+  }
   'event_stream': {
     methods: ["GET","HEAD"]
     pattern: '/api/__transmit/events'

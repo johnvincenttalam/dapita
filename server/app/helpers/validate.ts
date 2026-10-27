@@ -32,3 +32,14 @@ export function validateWith<T>(schema: Schema<T>, input: unknown): T {
   for (const issue of issues) (details[issue.path.join('.')] ??= []).push(issue.message)
   throw new ApiError(issues[0]?.message ?? 'Check the details.', 422, 'validation', details)
 }
+
+/**
+ * A staff note, resolution or reason: 5 to 1,000 characters once trimmed. `what`
+ * completes the message, e.g. "a note" → "Write a note of at least 5 characters."
+ */
+export function requireText(value: unknown, what: string) {
+  const trimmed = typeof value === 'string' ? value.trim() : ''
+  if (trimmed.length < 5) throw new ApiError(`Write ${what} of at least 5 characters.`, 422)
+  if (trimmed.length > 1000) throw new ApiError(`Keep ${what} to 1,000 characters or fewer.`, 422)
+  return trimmed
+}
