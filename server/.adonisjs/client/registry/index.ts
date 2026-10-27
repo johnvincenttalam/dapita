@@ -120,6 +120,30 @@ const routes = {
     tokens: [[0,"api"],[0,"bookings"],[1,"id"],[0,"decline-alternative"]],
     types: placeholder as Registry['bookings.decline_alternative']['types'],
   },
+  'profile.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/me/profile',
+    tokens: [[0,"api"],[0,"me"],[0,"profile"]],
+    types: placeholder as Registry['profile.show']['types'],
+  },
+  'profile.update': {
+    methods: ["PUT"],
+    pattern: '/api/me/profile',
+    tokens: [[0,"api"],[0,"me"],[0,"profile"]],
+    types: placeholder as Registry['profile.update']['types'],
+  },
+  'profile.consents': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/me/consents',
+    tokens: [[0,"api"],[0,"me"],[0,"consents"]],
+    types: placeholder as Registry['profile.consents']['types'],
+  },
+  'profile.request_deletion': {
+    methods: ["POST"],
+    pattern: '/api/me/deletion-request',
+    tokens: [[0,"api"],[0,"me"],[0,"deletion-request"]],
+    types: placeholder as Registry['profile.request_deletion']['types'],
+  },
   'conversations.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/conversations',

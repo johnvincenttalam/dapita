@@ -21,6 +21,7 @@ const MerchantBookingsController = () => import('#controllers/merchant_bookings_
 const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
+const ProfileController = () => import('#controllers/profile_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
 
@@ -56,6 +57,11 @@ router
         router.post('bookings/:id/cancel', [BookingsController, 'cancel'])
         router.post('bookings/:id/accept-alternative', [BookingsController, 'acceptAlternative'])
         router.post('bookings/:id/decline-alternative', [BookingsController, 'declineAlternative'])
+
+        router.get('me/profile', [ProfileController, 'show'])
+        router.put('me/profile', [ProfileController, 'update'])
+        router.get('me/consents', [ProfileController, 'consents'])
+        router.post('me/deletion-request', [ProfileController, 'requestDeletion'])
 
         router.get('conversations', [ConversationsController, 'index'])
         router.post('conversations', [ConversationsController, 'store'])

@@ -29,6 +29,12 @@ export interface ApiDefinition {
     acceptAlternative: typeof routes['bookings.accept_alternative']
     declineAlternative: typeof routes['bookings.decline_alternative']
   }
+  profile: {
+    show: typeof routes['profile.show']
+    update: typeof routes['profile.update']
+    consents: typeof routes['profile.consents']
+    requestDeletion: typeof routes['profile.request_deletion']
+  }
   conversations: {
     index: typeof routes['conversations.index']
     store: typeof routes['conversations.store']
