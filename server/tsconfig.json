@@ -1,0 +1,13 @@
+{
+  "extends": "@adonisjs/tsconfig/tsconfig.app.json",
+  "compilerOptions": {
+    "rootDir": "../",
+    "jsx": "react",
+    "outDir": "./build",
+    // The SPA's pure modules (booking rules, domain types) are shared through the
+    // `@/` alias; bin/shared_alias.ts resolves it at runtime.
+    "paths": {
+      "@/*": ["../src/*.ts", "../src/*"]
+    }
+  }
+}

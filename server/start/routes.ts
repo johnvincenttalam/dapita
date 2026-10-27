@@ -1,0 +1,109 @@
+/*
+|--------------------------------------------------------------------------
+| Routes file
+|--------------------------------------------------------------------------
+|
+| The endpoints the SPA's HTTP services call (src/services/*.service.ts,
+| plan §7.3), under /api. The Vite dev server proxies /api here.
+|
+*/
+
+import { middleware } from '#start/kernel'
+import router from '@adonisjs/core/services/router'
+import transmit from '@adonisjs/transmit/services/main'
+import ApiError from '#exceptions/api_error'
+
+const AuthController = () => import('#controllers/auth_controller')
+const CatalogController = () => import('#controllers/catalog_controller')
+const ShopsController = () => import('#controllers/shops_controller')
+const BookingsController = () => import('#controllers/bookings_controller')
+const MerchantBookingsController = () => import('#controllers/merchant_bookings_controller')
+const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
+const ConversationsController = () => import('#controllers/conversations_controller')
+
+router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
+
+router
+  .group(() => {
+    // Auth (session cookie)
+    router
+      .group(() => {
+        router.get('session', [AuthController, 'session'])
+        router.post('sign-in', [AuthController, 'signIn'])
+        router.post('sign-out', [AuthController, 'signOut'])
+        router.post('sign-up', [AuthController, 'signUp'])
+        router.post('verify', [AuthController, 'verifyEmail'])
+        router.post('forgot-password', [AuthController, 'forgotPassword'])
+      })
+      .prefix('auth')
+
+    // Public discovery
+    router.get('categories', [CatalogController, 'categories'])
+    router.get('areas', [CatalogController, 'areas'])
+    router.get('shops', [ShopsController, 'index'])
+    router.get('shops/featured', [ShopsController, 'featured'])
+    router.get('shops/:slug', [ShopsController, 'show'])
+    router.get('shops/:slug/services', [ShopsController, 'services'])
+    router.get('shops/:slug/staff', [ShopsController, 'staff'])
+
+    // Signed in
+    router
+      .group(() => {
+        router.post('bookings', [BookingsController, 'store'])
+        router.get('me/bookings', [BookingsController, 'index'])
+        router.get('bookings/:id', [BookingsController, 'show'])
+        router.post('bookings/:id/cancel', [BookingsController, 'cancel'])
+        router.post('bookings/:id/accept-alternative', [BookingsController, 'acceptAlternative'])
+        router.post('bookings/:id/decline-alternative', [BookingsController, 'declineAlternative'])
+
+        router.get('conversations', [ConversationsController, 'index'])
+        router.post('conversations', [ConversationsController, 'store'])
+        router.get('conversations/:id', [ConversationsController, 'show'])
+        router.post('conversations/:id/messages', [ConversationsController, 'sendMessage'])
+        router.post('conversations/:id/read', [ConversationsController, 'markRead'])
+        router.post('conversations/:id/report', [ConversationsController, 'report'])
+
+        router
+          .group(() => {
+            router.get('businesses/:businessId', [MerchantBusinessesController, 'show'])
+            router.get('businesses/:businessId/bookings', [MerchantBookingsController, 'index'])
+            router.get('businesses/:businessId/conversations', [
+              ConversationsController,
+              'businessIndex',
+            ])
+            router.get('bookings/:id', [MerchantBookingsController, 'show'])
+            router.post('bookings/:id/accept', [MerchantBookingsController, 'accept'])
+            router.post('bookings/:id/decline', [MerchantBookingsController, 'decline'])
+            router.post('bookings/:id/propose', [MerchantBookingsController, 'propose'])
+            router.post('bookings/:id/complete', [MerchantBookingsController, 'complete'])
+            router.post('bookings/:id/no-show', [MerchantBookingsController, 'noShow'])
+          })
+          .prefix('merchant')
+      })
+      .use(middleware.auth())
+  })
+  .prefix('/api')
+
+/**
+ * Realtime (Server-Sent Events) under /api/__transmit, so the same proxy covers it.
+ * Subscribing needs a session; start/transmit.ts decides who may join which channel.
+ */
+transmit.registerRoutes((route) => {
+  route.prefix('/api')
+  if (route.getPattern().endsWith('__transmit/subscribe')) {
+    route.middleware(middleware.auth())
+  }
+})
+
+/**
+ * Everything else under /api that the SPA calls but the server doesn't implement yet
+ * (admin console, merchant editing, profile…) answers clearly instead of with a bare 404.
+ * Registered last: a wildcard registered earlier would shadow the routes after it.
+ */
+router.any('/api/*', () => {
+  throw new ApiError(
+    'This part of Dapita isn’t available on the server yet.',
+    501,
+    'not_implemented'
+  )
+})

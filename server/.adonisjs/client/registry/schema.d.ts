@@ -1,0 +1,491 @@
+/* eslint-disable prettier/prettier */
+/// <reference path="../manifest.d.ts" />
+
+import type { ExtractBody, ExtractErrorResponse, ExtractQuery, ExtractQueryForGet, ExtractRawResponse, ExtractResponse } from '@tuyau/core/types'
+import type { InferInput, SimpleError } from '@vinejs/vine/types'
+
+export type ParamValue = string | number | bigint | boolean
+
+export interface Registry {
+  'auth.session': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/auth/session'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['session']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['session']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['session']>>>
+    }
+  }
+  'auth.sign_in': {
+    methods: ["POST"]
+    pattern: '/api/auth/sign-in'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').signInValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').signInValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signIn']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signIn']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signIn']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.sign_out': {
+    methods: ["POST"]
+    pattern: '/api/auth/sign-out'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signOut']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signOut']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signOut']>>>
+    }
+  }
+  'auth.sign_up': {
+    methods: ["POST"]
+    pattern: '/api/auth/sign-up'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').signUpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').signUpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signUp']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signUp']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['signUp']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.verify_email': {
+    methods: ["POST"]
+    pattern: '/api/auth/verify'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').verifyEmailValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').verifyEmailValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['verifyEmail']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['verifyEmail']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['verifyEmail']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.forgot_password': {
+    methods: ["POST"]
+    pattern: '/api/auth/forgot-password'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').forgotPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').forgotPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['forgotPassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['forgotPassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['forgotPassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'catalog.categories': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/categories'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['categories']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['categories']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['categories']>>>
+    }
+  }
+  'catalog.areas': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/areas'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['areas']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['areas']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/catalog_controller').default['areas']>>>
+    }
+  }
+  'shops.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/shops'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['index']>>>
+    }
+  }
+  'shops.featured': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/shops/featured'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['featured']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['featured']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['featured']>>>
+    }
+  }
+  'shops.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/shops/:slug'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { slug: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['show']>>>
+    }
+  }
+  'shops.services': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/shops/:slug/services'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { slug: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['services']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['services']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['services']>>>
+    }
+  }
+  'shops.staff': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/shops/:slug/staff'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { slug: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['staff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['staff']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['staff']>>>
+    }
+  }
+  'bookings.store': {
+    methods: ["POST"]
+    pattern: '/api/bookings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').createBookingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').createBookingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'bookings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/me/bookings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['index']>>>
+    }
+  }
+  'bookings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/bookings/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['show']>>>
+    }
+  }
+  'bookings.cancel': {
+    methods: ["POST"]
+    pattern: '/api/bookings/:id/cancel'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['cancel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'bookings.accept_alternative': {
+    methods: ["POST"]
+    pattern: '/api/bookings/:id/accept-alternative'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['acceptAlternative']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['acceptAlternative']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['acceptAlternative']>>>
+    }
+  }
+  'bookings.decline_alternative': {
+    methods: ["POST"]
+    pattern: '/api/bookings/:id/decline-alternative'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['declineAlternative']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['declineAlternative']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/bookings_controller').default['declineAlternative']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'conversations.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/conversations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['index']>>>
+    }
+  }
+  'conversations.store': {
+    methods: ["POST"]
+    pattern: '/api/conversations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/conversation').startConversationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/conversation').startConversationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'conversations.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/conversations/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['show']>>>
+    }
+  }
+  'conversations.send_message': {
+    methods: ["POST"]
+    pattern: '/api/conversations/:id/messages'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/conversation').messageValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/conversation').messageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['sendMessage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['sendMessage']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['sendMessage']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'conversations.mark_read': {
+    methods: ["POST"]
+    pattern: '/api/conversations/:id/read'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['markRead']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['markRead']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['markRead']>>>
+    }
+  }
+  'conversations.report': {
+    methods: ["POST"]
+    pattern: '/api/conversations/:id/report'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/conversation').reportValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/conversation').reportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['report']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['report']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['report']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_businesses.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/businesses/:businessId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['show']>>>
+    }
+  }
+  'merchant_bookings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/businesses/:businessId/bookings'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/booking').businessBookingsQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'conversations.business_index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/businesses/:businessId/conversations'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['businessIndex']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['businessIndex']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['businessIndex']>>>
+    }
+  }
+  'merchant_bookings.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/merchant/bookings/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['show']>>>
+    }
+  }
+  'merchant_bookings.accept': {
+    methods: ["POST"]
+    pattern: '/api/merchant/bookings/:id/accept'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['accept']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['accept']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['accept']>>>
+    }
+  }
+  'merchant_bookings.decline': {
+    methods: ["POST"]
+    pattern: '/api/merchant/bookings/:id/decline'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').reasonValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['decline']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['decline']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['decline']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_bookings.propose': {
+    methods: ["POST"]
+    pattern: '/api/merchant/bookings/:id/propose'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/booking').proposeValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/booking').proposeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['propose']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['propose']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['propose']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_bookings.complete': {
+    methods: ["POST"]
+    pattern: '/api/merchant/bookings/:id/complete'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['complete']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['complete']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['complete']>>>
+    }
+  }
+  'merchant_bookings.no_show': {
+    methods: ["POST"]
+    pattern: '/api/merchant/bookings/:id/no-show'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['noShow']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['noShow']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_bookings_controller').default['noShow']>>>
+    }
+  }
+  'event_stream': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/__transmit/events'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'subscribe': {
+    methods: ["POST"]
+    pattern: '/api/__transmit/subscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'unsubscribe': {
+    methods: ["POST"]
+    pattern: '/api/__transmit/unsubscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+}
