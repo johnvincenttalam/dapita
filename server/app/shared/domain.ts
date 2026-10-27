@@ -22,6 +22,7 @@ export { addMinutes, toDateKey } from '@/lib/datetime'
 export { listingChecklist } from '@/lib/listing-checklist'
 export { getOpenStatus, isPreferredStartTime } from '@/lib/opening-hours'
 export { hasAnyRole } from '@/lib/roles'
+export { myProfileSchema } from '@/schemas/account'
 export {
   businessProfileSchema,
   closureSchema,

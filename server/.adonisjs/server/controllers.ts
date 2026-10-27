@@ -11,5 +11,6 @@ export const controllers = {
   MerchantBookings: () => import('#controllers/merchant_bookings_controller'),
   MerchantBusinesses: () => import('#controllers/merchant_businesses_controller'),
   MerchantServices: () => import('#controllers/merchant_services_controller'),
+  Profile: () => import('#controllers/profile_controller'),
   Shops: () => import('#controllers/shops_controller'),
 }
