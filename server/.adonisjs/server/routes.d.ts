@@ -23,6 +23,10 @@ export type ScannedRoutes = {
     'bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'bookings.accept_alternative': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'bookings.decline_alternative': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.update': { paramsTuple?: []; params?: {} }
+    'profile.consents': { paramsTuple?: []; params?: {} }
+    'profile.request_deletion': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -66,6 +70,8 @@ export type ScannedRoutes = {
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.consents': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -87,6 +93,8 @@ export type ScannedRoutes = {
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.consents': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -107,6 +115,7 @@ export type ScannedRoutes = {
     'bookings.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'bookings.accept_alternative': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'bookings.decline_alternative': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'profile.request_deletion': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'conversations.send_message': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -124,6 +133,7 @@ export type ScannedRoutes = {
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
   PUT: {
+    'profile.update': { paramsTuple?: []; params?: {} }
     'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_policies': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }

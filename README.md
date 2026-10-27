@@ -274,7 +274,7 @@ Skip link and `main` landmark on every layout, one `h1` per page, labelled navig
 
 ## Known limitations and extension points
 
-- **Backend covers the booking journey and the merchant dashboard.** `server/` serves auth, discovery, bookings, messaging, and merchant listing, services and notification settings; admin and customer profile endpoints answer 501 until they're ported (see `server/README.md`). In mock mode, sign-in uses mock accounts (session kept in `localStorage`). Route guards are components (`RequireRole`), which work with any query client; switch to redirecting `loader`s if you need guards before lazy chunks download.
+- **Backend covers the booking journey and the merchant dashboard.** `server/` serves auth, discovery, bookings, messaging, the customer account (profile, consents, deletion requests), and merchant listing, services and notification settings; admin endpoints answer 501 until they're ported (see `server/README.md`). In mock mode, sign-in uses mock accounts (session kept in `localStorage`). Route guards are components (`RequireRole`), which work with any query client; switch to redirecting `loader`s if you need guards before lazy chunks download.
 - **Mock data.** Marketplace services (`catalog`, `shops`, `bookings`) use a `localStorage` database that enforces the booking state machine, role scoping and idempotent submits, like the documented backend should. The template demo services under `/dev` are still in memory.
 - **DataTable is client-side.** For large datasets, switch to `manualPagination/manualSorting/manualFiltering` and pass server state (see TanStack Table's `client-vs-server` guide).
 - **No i18n.** Copy is inline English; `Intl` is used for dates, so adding a library like `react-i18next` is straightforward.
