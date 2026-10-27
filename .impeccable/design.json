@@ -1,0 +1,644 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T02:39:25.626Z",
+  "title": "Design System: Dapita",
+  "extensions": {
+    "colorMeta": {
+      "monstera-green": {
+        "role": "primary",
+        "displayName": "Monstera Green",
+        "canonical": "oklch(0.431 0.085 159)",
+        "hexApprox": "#1b5e3f",
+        "tonalRamp": [
+          "oklch(0.15 0.085 159)",
+          "oklch(0.26 0.085 159)",
+          "oklch(0.37 0.085 159)",
+          "oklch(0.48 0.085 159)",
+          "oklch(0.6 0.085 159)",
+          "oklch(0.71 0.085 159)",
+          "oklch(0.83 0.085 159)",
+          "oklch(0.95 0.040 159)"
+        ]
+      },
+      "monstera-ink": {
+        "role": "primary",
+        "displayName": "Monstera Ink",
+        "canonical": "oklch(0.38 0.08 159)",
+        "tonalRamp": [
+          "oklch(0.15 0.080 159)",
+          "oklch(0.26 0.080 159)",
+          "oklch(0.37 0.080 159)",
+          "oklch(0.48 0.080 159)",
+          "oklch(0.6 0.080 159)",
+          "oklch(0.71 0.080 159)",
+          "oklch(0.83 0.080 159)",
+          "oklch(0.95 0.040 159)"
+        ]
+      },
+      "on-monstera": {
+        "role": "primary",
+        "displayName": "On Monstera",
+        "canonical": "oklch(0.99 0.005 159)",
+        "tonalRamp": [
+          "oklch(0.15 0.005 159)",
+          "oklch(0.26 0.005 159)",
+          "oklch(0.37 0.005 159)",
+          "oklch(0.48 0.005 159)",
+          "oklch(0.6 0.005 159)",
+          "oklch(0.71 0.005 159)",
+          "oklch(0.83 0.005 159)",
+          "oklch(0.95 0.005 159)"
+        ]
+      },
+      "focus-green": {
+        "role": "primary",
+        "displayName": "Focus Green",
+        "canonical": "oklch(0.55 0.1 159)",
+        "hexApprox": "#33835c",
+        "tonalRamp": [
+          "oklch(0.15 0.100 159)",
+          "oklch(0.26 0.100 159)",
+          "oklch(0.37 0.100 159)",
+          "oklch(0.48 0.100 159)",
+          "oklch(0.6 0.100 159)",
+          "oklch(0.71 0.100 159)",
+          "oklch(0.83 0.100 159)",
+          "oklch(0.95 0.040 159)"
+        ]
+      },
+      "blush-clay": {
+        "role": "secondary",
+        "displayName": "Blush Clay",
+        "canonical": "oklch(0.898 0.043 45)",
+        "hexApprox": "#f7d5c6",
+        "tonalRamp": [
+          "oklch(0.15 0.043 45)",
+          "oklch(0.26 0.043 45)",
+          "oklch(0.37 0.043 45)",
+          "oklch(0.48 0.043 45)",
+          "oklch(0.6 0.043 45)",
+          "oklch(0.71 0.043 45)",
+          "oklch(0.83 0.043 45)",
+          "oklch(0.95 0.040 45)"
+        ]
+      },
+      "blush-wash": {
+        "role": "secondary",
+        "displayName": "Blush Wash",
+        "canonical": "oklch(0.94 0.025 45)",
+        "hexApprox": "#fae6de",
+        "tonalRamp": [
+          "oklch(0.15 0.025 45)",
+          "oklch(0.26 0.025 45)",
+          "oklch(0.37 0.025 45)",
+          "oklch(0.48 0.025 45)",
+          "oklch(0.6 0.025 45)",
+          "oklch(0.71 0.025 45)",
+          "oklch(0.83 0.025 45)",
+          "oklch(0.95 0.025 45)"
+        ]
+      },
+      "clay-rose": {
+        "role": "secondary",
+        "displayName": "Clay Rose",
+        "canonical": "oklch(0.5 0.15 8)",
+        "hexApprox": "#a53453",
+        "tonalRamp": [
+          "oklch(0.15 0.150 8)",
+          "oklch(0.26 0.150 8)",
+          "oklch(0.37 0.150 8)",
+          "oklch(0.48 0.150 8)",
+          "oklch(0.6 0.150 8)",
+          "oklch(0.71 0.150 8)",
+          "oklch(0.83 0.150 8)",
+          "oklch(0.95 0.040 8)"
+        ]
+      },
+      "pin-pink": {
+        "role": "tertiary",
+        "displayName": "Pin Pink",
+        "canonical": "oklch(0.707 0.159 8)",
+        "hexApprox": "#f1718e",
+        "tonalRamp": [
+          "oklch(0.15 0.159 8)",
+          "oklch(0.26 0.159 8)",
+          "oklch(0.37 0.159 8)",
+          "oklch(0.48 0.159 8)",
+          "oklch(0.6 0.159 8)",
+          "oklch(0.71 0.159 8)",
+          "oklch(0.83 0.159 8)",
+          "oklch(0.95 0.040 8)"
+        ]
+      },
+      "rainforest-deep": {
+        "role": "tertiary",
+        "displayName": "Rainforest Deep",
+        "canonical": "oklch(0.3 0.06 162)",
+        "hexApprox": "#073724",
+        "tonalRamp": [
+          "oklch(0.15 0.060 162)",
+          "oklch(0.26 0.060 162)",
+          "oklch(0.37 0.060 162)",
+          "oklch(0.48 0.060 162)",
+          "oklch(0.6 0.060 162)",
+          "oklch(0.71 0.060 162)",
+          "oklch(0.83 0.060 162)",
+          "oklch(0.95 0.040 162)"
+        ]
+      },
+      "linen": {
+        "role": "neutral",
+        "displayName": "Linen",
+        "canonical": "oklch(0.978 0.005 68)",
+        "hexApprox": "#faf7f4",
+        "tonalRamp": [
+          "oklch(0.15 0.005 68)",
+          "oklch(0.26 0.005 68)",
+          "oklch(0.37 0.005 68)",
+          "oklch(0.48 0.005 68)",
+          "oklch(0.6 0.005 68)",
+          "oklch(0.71 0.005 68)",
+          "oklch(0.83 0.005 68)",
+          "oklch(0.95 0.005 68)"
+        ]
+      },
+      "card-cream": {
+        "role": "neutral",
+        "displayName": "Card Cream",
+        "canonical": "oklch(0.995 0.003 68)",
+        "hexApprox": "#fffdfb",
+        "tonalRamp": [
+          "oklch(0.15 0.003 68)",
+          "oklch(0.26 0.003 68)",
+          "oklch(0.37 0.003 68)",
+          "oklch(0.48 0.003 68)",
+          "oklch(0.6 0.003 68)",
+          "oklch(0.71 0.003 68)",
+          "oklch(0.83 0.003 68)",
+          "oklch(0.95 0.003 68)"
+        ]
+      },
+      "oat-muted": {
+        "role": "neutral",
+        "displayName": "Oat Muted",
+        "canonical": "oklch(0.955 0.008 60)",
+        "hexApprox": "#f4efeb",
+        "tonalRamp": [
+          "oklch(0.15 0.008 60)",
+          "oklch(0.26 0.008 60)",
+          "oklch(0.37 0.008 60)",
+          "oklch(0.48 0.008 60)",
+          "oklch(0.6 0.008 60)",
+          "oklch(0.71 0.008 60)",
+          "oklch(0.83 0.008 60)",
+          "oklch(0.95 0.008 60)"
+        ]
+      },
+      "charcoal": {
+        "role": "neutral",
+        "displayName": "Charcoal",
+        "canonical": "oklch(0.297 0 0)",
+        "hexApprox": "#2d2d2d",
+        "tonalRamp": [
+          "oklch(0.15 0.000 0)",
+          "oklch(0.26 0.000 0)",
+          "oklch(0.37 0.000 0)",
+          "oklch(0.48 0.000 0)",
+          "oklch(0.6 0.000 0)",
+          "oklch(0.71 0.000 0)",
+          "oklch(0.83 0.000 0)",
+          "oklch(0.95 0.000 0)"
+        ]
+      },
+      "driftwood": {
+        "role": "neutral",
+        "displayName": "Driftwood",
+        "canonical": "oklch(0.5 0.01 70)",
+        "hexApprox": "#67625d",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70)",
+          "oklch(0.26 0.010 70)",
+          "oklch(0.37 0.010 70)",
+          "oklch(0.48 0.010 70)",
+          "oklch(0.6 0.010 70)",
+          "oklch(0.71 0.010 70)",
+          "oklch(0.83 0.010 70)",
+          "oklch(0.95 0.010 70)"
+        ]
+      },
+      "sand-border": {
+        "role": "neutral",
+        "displayName": "Sand Border",
+        "canonical": "oklch(0.91 0.012 60)",
+        "hexApprox": "#e8e0da",
+        "tonalRamp": [
+          "oklch(0.15 0.012 60)",
+          "oklch(0.26 0.012 60)",
+          "oklch(0.37 0.012 60)",
+          "oklch(0.48 0.012 60)",
+          "oklch(0.6 0.012 60)",
+          "oklch(0.71 0.012 60)",
+          "oklch(0.83 0.012 60)",
+          "oklch(0.95 0.012 60)"
+        ]
+      },
+      "sand-input": {
+        "role": "neutral",
+        "displayName": "Sand Input",
+        "canonical": "oklch(0.87 0.014 60)",
+        "hexApprox": "#dbd2cb",
+        "tonalRamp": [
+          "oklch(0.15 0.014 60)",
+          "oklch(0.26 0.014 60)",
+          "oklch(0.37 0.014 60)",
+          "oklch(0.48 0.014 60)",
+          "oklch(0.6 0.014 60)",
+          "oklch(0.71 0.014 60)",
+          "oklch(0.83 0.014 60)",
+          "oklch(0.95 0.014 60)"
+        ]
+      },
+      "sidebar-charcoal": {
+        "role": "neutral",
+        "displayName": "Sidebar Charcoal",
+        "canonical": "oklch(0.25 0.02 165)",
+        "hexApprox": "#19251f",
+        "tonalRamp": [
+          "oklch(0.15 0.020 165)",
+          "oklch(0.26 0.020 165)",
+          "oklch(0.37 0.020 165)",
+          "oklch(0.48 0.020 165)",
+          "oklch(0.6 0.020 165)",
+          "oklch(0.71 0.020 165)",
+          "oklch(0.83 0.020 165)",
+          "oklch(0.95 0.020 165)"
+        ]
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Success",
+        "canonical": "oklch(0.53 0.14 155)",
+        "tonalRamp": [
+          "oklch(0.15 0.140 155)",
+          "oklch(0.26 0.140 155)",
+          "oklch(0.37 0.140 155)",
+          "oklch(0.48 0.140 155)",
+          "oklch(0.6 0.140 155)",
+          "oklch(0.71 0.140 155)",
+          "oklch(0.83 0.140 155)",
+          "oklch(0.95 0.040 155)"
+        ]
+      },
+      "success-emphasis": {
+        "role": "status",
+        "displayName": "Success Emphasis",
+        "canonical": "oklch(0.42 0.11 155)",
+        "tonalRamp": [
+          "oklch(0.15 0.110 155)",
+          "oklch(0.26 0.110 155)",
+          "oklch(0.37 0.110 155)",
+          "oklch(0.48 0.110 155)",
+          "oklch(0.6 0.110 155)",
+          "oklch(0.71 0.110 155)",
+          "oklch(0.83 0.110 155)",
+          "oklch(0.95 0.040 155)"
+        ]
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Warning",
+        "canonical": "oklch(0.76 0.16 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.160 75)",
+          "oklch(0.26 0.160 75)",
+          "oklch(0.37 0.160 75)",
+          "oklch(0.48 0.160 75)",
+          "oklch(0.6 0.160 75)",
+          "oklch(0.71 0.160 75)",
+          "oklch(0.83 0.160 75)",
+          "oklch(0.95 0.040 75)"
+        ]
+      },
+      "warning-emphasis": {
+        "role": "status",
+        "displayName": "Warning Emphasis",
+        "canonical": "oklch(0.47 0.11 60)",
+        "tonalRamp": [
+          "oklch(0.15 0.110 60)",
+          "oklch(0.26 0.110 60)",
+          "oklch(0.37 0.110 60)",
+          "oklch(0.48 0.110 60)",
+          "oklch(0.6 0.110 60)",
+          "oklch(0.71 0.110 60)",
+          "oklch(0.83 0.110 60)",
+          "oklch(0.95 0.040 60)"
+        ]
+      },
+      "info": {
+        "role": "status",
+        "displayName": "Info",
+        "canonical": "oklch(0.53 0.15 245)",
+        "tonalRamp": [
+          "oklch(0.15 0.150 245)",
+          "oklch(0.26 0.150 245)",
+          "oklch(0.37 0.150 245)",
+          "oklch(0.48 0.150 245)",
+          "oklch(0.6 0.150 245)",
+          "oklch(0.71 0.150 245)",
+          "oklch(0.83 0.150 245)",
+          "oklch(0.95 0.040 245)"
+        ]
+      },
+      "info-emphasis": {
+        "role": "status",
+        "displayName": "Info Emphasis",
+        "canonical": "oklch(0.42 0.13 248)",
+        "tonalRamp": [
+          "oklch(0.15 0.130 248)",
+          "oklch(0.26 0.130 248)",
+          "oklch(0.37 0.130 248)",
+          "oklch(0.48 0.130 248)",
+          "oklch(0.6 0.130 248)",
+          "oklch(0.71 0.130 248)",
+          "oklch(0.83 0.130 248)",
+          "oklch(0.95 0.040 248)"
+        ]
+      },
+      "destructive": {
+        "role": "status",
+        "displayName": "Destructive",
+        "canonical": "oklch(0.55 0.22 27)",
+        "tonalRamp": [
+          "oklch(0.15 0.220 27)",
+          "oklch(0.26 0.220 27)",
+          "oklch(0.37 0.220 27)",
+          "oklch(0.48 0.220 27)",
+          "oklch(0.6 0.220 27)",
+          "oklch(0.71 0.220 27)",
+          "oklch(0.83 0.220 27)",
+          "oklch(0.95 0.040 27)"
+        ]
+      },
+      "rating-amber": {
+        "role": "status",
+        "displayName": "Rating Amber",
+        "canonical": "oklch(0.77 0.168 67)",
+        "tonalRamp": [
+          "oklch(0.15 0.168 67)",
+          "oklch(0.26 0.168 67)",
+          "oklch(0.37 0.168 67)",
+          "oklch(0.48 0.168 67)",
+          "oklch(0.6 0.168 67)",
+          "oklch(0.71 0.168 67)",
+          "oklch(0.83 0.168 67)",
+          "oklch(0.95 0.040 67)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (Playfair)",
+        "purpose": "Hero headlines beside the brand only."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Page h1 on desktop (type-title)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Every section h2 (type-heading)."
+      },
+      "subheading": {
+        "displayName": "Subheading",
+        "purpose": "Form sub-sections, legends, card titles in panels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions, policies and paragraphs, max 68ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, nav links, button text."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Dates, times and counts with tabular numbers."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Tab bar labels, Soon badges, counters; the smallest text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hairline-lift",
+        "value": "0 1px 2px 0 oklch(0.3 0.02 60 / 0.06)",
+        "purpose": "Category circles and small controls."
+      },
+      {
+        "name": "card-rest",
+        "value": "0 1px 3px 0 oklch(0.3 0.02 60 / 0.08), 0 1px 2px -1px oklch(0.3 0.02 60 / 0.06)",
+        "purpose": "Every card, panel and list item (card-surface), with a 5% foreground hairline ring."
+      },
+      {
+        "name": "raised",
+        "value": "0 6px 16px -4px oklch(0.3 0.02 60 / 0.1), 0 2px 4px -2px oklch(0.3 0.02 60 / 0.06)",
+        "purpose": "Home hero, popovers, menus."
+      },
+      {
+        "name": "overlay",
+        "value": "0 16px 32px -8px oklch(0.3 0.02 60 / 0.14), 0 4px 8px -4px oklch(0.3 0.02 60 / 0.08)",
+        "purpose": "Dialogs and sheets."
+      }
+    ],
+    "motion": [
+      {
+        "name": "transition-default",
+        "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Colour, background and shadow state changes."
+      },
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Buttons press down 1px on :active."
+      },
+      {
+        "name": "progress",
+        "value": "progress 1.1s ease-in-out infinite",
+        "purpose": "Navigation progress bar between routes."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "The OS reduce-motion setting collapses every animation and transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "2xl",
+        "value": "1536px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Large pill CTA for the one main action: Book appointment, Send booking request.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/></svg>Book appointment</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border: 1px solid transparent; border-radius: 9999px; background: var(--primary, oklch(0.431 0.085 159)); color: var(--primary-foreground, oklch(0.99 0.005 159)); font: 500 16px/1 \"Geist Variable\", system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.431 0.085 159)) 80%, transparent); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Peach pill for supporting actions beside the primary: View details, Add to calendar.",
+      "html": "<button class=\"ds-btn-secondary\">View details</button>",
+      "css": ".ds-btn-secondary { height: 28px; padding: 0 10px; border: 1px solid transparent; border-radius: 9999px; background: var(--secondary, oklch(0.898 0.043 45)); color: var(--secondary-foreground, oklch(0.5 0.15 8)); font: 500 12.8px/1 \"Geist Variable\", system-ui, sans-serif; cursor: pointer; transition: background-color 150ms, transform 150ms; } .ds-btn-secondary:hover { background: color-mix(in oklch, var(--secondary, oklch(0.898 0.043 45)), var(--foreground, oklch(0.297 0 0)) 5%); } .ds-btn-secondary:active { transform: translateY(1px); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Neutral pill: Reset password, Get directions, Keep my original time.",
+      "html": "<button class=\"ds-btn-outline\">Get directions</button>",
+      "css": ".ds-btn-outline { height: 32px; padding: 0 10px; border: 1px solid var(--border, oklch(0.91 0.012 60)); border-radius: 9999px; background: var(--background, oklch(0.978 0.005 68)); color: var(--foreground, oklch(0.297 0 0)); font: 500 14px/1 \"Geist Variable\", system-ui, sans-serif; cursor: pointer; transition: background-color 150ms, transform 150ms; } .ds-btn-outline:hover { background: var(--muted, oklch(0.955 0.008 60)); } .ds-btn-outline:active { transform: translateY(1px); } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "40px field on the cream card colour with a sand stroke and green focus ring.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Mobile number</span><input class=\"ds-input\" type=\"tel\" placeholder=\"0917 123 4567\"><span class=\"ds-field-hint\">Optional.</span></label>",
+      "css": ".ds-field { display: grid; gap: 8px; max-width: 360px; font-family: \"Geist Variable\", system-ui, sans-serif; } .ds-field-label { font-size: 14px; font-weight: 500; color: var(--foreground, oklch(0.297 0 0)); } .ds-field-hint { font-size: 14px; color: var(--muted-foreground, oklch(0.5 0.01 70)); } .ds-input { height: 40px; padding: 0 12px; border: 1px solid var(--input, oklch(0.87 0.014 60)); border-radius: 12px; background: var(--card, oklch(0.995 0.003 68)); color: var(--foreground, oklch(0.297 0 0)); font: 400 14px \"Geist Variable\", system-ui, sans-serif; outline: none; transition: border-color 150ms, box-shadow 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.5 0.01 70)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.55 0.1 159)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Filter Chips",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Pill filters on Explore and category pages; the selected chip turns green.",
+      "html": "<div class=\"ds-chips\"><a class=\"ds-chip ds-chip-on\" href=\"#\" aria-current=\"true\">All</a><a class=\"ds-chip\" href=\"#\">Barber</a><a class=\"ds-chip\" href=\"#\">Salon</a><a class=\"ds-chip\" href=\"#\">Spa &amp; Massage</a></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border-radius: 9999px; background: var(--card, oklch(0.995 0.003 68)); color: var(--foreground, oklch(0.297 0 0)); box-shadow: inset 0 0 0 1px var(--border, oklch(0.91 0.012 60)); font: 500 14px/1 \"Geist Variable\", system-ui, sans-serif; text-decoration: none; outline: none; transition: background-color 150ms; } .ds-chip:hover { background: var(--muted, oklch(0.955 0.008 60)); } .ds-chip-on, .ds-chip-on:hover { background: var(--primary, oklch(0.431 0.085 159)); color: var(--primary-foreground, oklch(0.99 0.005 159)); box-shadow: inset 0 0 0 1px var(--primary, oklch(0.431 0.085 159)); } .ds-chip:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link-active",
+      "description": "Desktop header pill links on translucent linen; the active link is a Blush Clay pill.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main\"><a href=\"#\" class=\"ds-nav-link\">Home</a><a href=\"#\" class=\"ds-nav-link ds-nav-active\" aria-current=\"page\">Explore</a><a href=\"#\" class=\"ds-nav-link\">Bookings</a><a href=\"#\" class=\"ds-nav-link\">Inbox</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 4px; padding: 12px 16px; background: color-mix(in oklch, var(--background, oklch(0.978 0.005 68)) 85%, transparent); border-bottom: 1px solid color-mix(in oklch, var(--border, oklch(0.91 0.012 60)) 70%, transparent); } .ds-nav-link { padding: 8px 14px; border-radius: 9999px; color: var(--muted-foreground, oklch(0.5 0.01 70)); font: 500 14px/1 \"Geist Variable\", system-ui, sans-serif; text-decoration: none; outline: none; transition: background-color 150ms, color 150ms; } .ds-nav-link:hover { background: var(--muted, oklch(0.955 0.008 60)); color: var(--foreground, oklch(0.297 0 0)); } .ds-nav-active, .ds-nav-active:hover { background: var(--secondary, oklch(0.898 0.043 45)); color: var(--secondary-foreground, oklch(0.5 0.15 8)); } .ds-nav-link:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    },
+    {
+      "name": "Shop Card",
+      "kind": "card",
+      "refersTo": "card-list",
+      "description": "The card-surface listing tile: 4:3 cover, name with verified tick, category, area and From price.",
+      "html": "<article class=\"ds-shop\"><div class=\"ds-shop-img\" role=\"img\" aria-label=\"Shop cover placeholder\"></div><div class=\"ds-shop-body\"><h3 class=\"ds-shop-name\">Glow &amp; Go Beauty Salon <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-label=\"Verified business\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg></h3><p class=\"ds-shop-meta\">Salon</p><p class=\"ds-shop-meta\">Lanang</p><div class=\"ds-shop-foot\"><span class=\"ds-shop-meta\">No reviews yet</span><span class=\"ds-shop-meta\">From <b>₱250</b></span></div></div></article>",
+      "css": ".ds-shop { width: 260px; overflow: hidden; border-radius: 21.6px; background: var(--card, oklch(0.995 0.003 68)); box-shadow: 0 1px 3px 0 oklch(0.3 0.02 60 / 0.08), 0 1px 2px -1px oklch(0.3 0.02 60 / 0.06), 0 0 0 1px color-mix(in oklch, var(--foreground, oklch(0.297 0 0)) 5%, transparent); font-family: \"Geist Variable\", system-ui, sans-serif; transition: box-shadow 150ms; } .ds-shop:hover { box-shadow: 0 6px 16px -4px oklch(0.3 0.02 60 / 0.1), 0 2px 4px -2px oklch(0.3 0.02 60 / 0.06), 0 0 0 1px color-mix(in oklch, var(--foreground, oklch(0.297 0 0)) 5%, transparent); } .ds-shop-img { aspect-ratio: 4 / 3; background: color-mix(in oklch, var(--primary, oklch(0.431 0.085 159)) 10%, transparent); } .ds-shop-body { display: grid; gap: 4px; padding: 12px; } .ds-shop-name { display: flex; align-items: center; gap: 4px; margin: 0; font-size: 14px; font-weight: 600; color: var(--foreground, oklch(0.297 0 0)); } .ds-shop-name svg { color: var(--primary, oklch(0.431 0.085 159)); } .ds-shop-meta { margin: 0; font-size: 12px; color: var(--muted-foreground, oklch(0.5 0.01 70)); } .ds-shop-meta b { color: var(--foreground, oklch(0.297 0 0)); } .ds-shop-foot { display: flex; justify-content: space-between; padding-top: 4px; }"
+    },
+    {
+      "name": "Booking Status Badges",
+      "kind": "chip",
+      "refersTo": "status",
+      "description": "Tinted pill badges naming each booking state; colour is never the only signal.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge ds-badge-warn\">Pending</span><span class=\"ds-badge ds-badge-ok\">Confirmed</span><span class=\"ds-badge ds-badge-info\">New time proposed</span><span class=\"ds-badge ds-badge-bad\">Cancelled</span></div>",
+      "css": ".ds-badges { display: flex; flex-wrap: wrap; gap: 8px; } .ds-badge { display: inline-flex; align-items: center; height: 20px; padding: 2px 8px; border-radius: 9999px; font: 500 12px/1 \"Geist Variable\", system-ui, sans-serif; } .ds-badge-warn { background: color-mix(in oklch, var(--warning, oklch(0.76 0.16 75)) 15%, transparent); color: var(--warning-emphasis, oklch(0.47 0.11 60)); } .ds-badge-ok { background: color-mix(in oklch, var(--success, oklch(0.53 0.14 155)) 12%, transparent); color: var(--success-emphasis, oklch(0.42 0.11 155)); } .ds-badge-info { background: color-mix(in oklch, var(--info, oklch(0.53 0.15 245)) 12%, transparent); color: var(--info-emphasis, oklch(0.42 0.13 248)); } .ds-badge-bad { background: color-mix(in oklch, var(--destructive, oklch(0.55 0.22 27)) 10%, transparent); color: var(--destructive, oklch(0.55 0.22 27)); }"
+    },
+    {
+      "name": "Category Circle",
+      "kind": "custom",
+      "refersTo": "category-circle",
+      "description": "Signature home-page category tile: white circle, green line icon, fills green on hover.",
+      "html": "<a class=\"ds-cat\" href=\"#\"><span class=\"ds-cat-circle\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M8.12 8.12 12 12\"/><path d=\"M20 4 8.12 15.88\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M14.8 14.8 20 20\"/></svg></span><span class=\"ds-cat-label\">Barber</span></a>",
+      "css": ".ds-cat { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; padding: 4px; border-radius: 16.8px; text-decoration: none; font: 500 12px/1.2 \"Geist Variable\", system-ui, sans-serif; color: var(--foreground, oklch(0.297 0 0)); outline: none; } .ds-cat-circle { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 9999px; background: #fff; color: var(--primary, oklch(0.431 0.085 159)); box-shadow: 0 1px 2px 0 oklch(0.3 0.02 60 / 0.06), 0 0 0 1px var(--border, oklch(0.91 0.012 60)); transition: background-color 150ms, color 150ms; } .ds-cat:hover .ds-cat-circle { background: var(--primary, oklch(0.431 0.085 159)); color: var(--primary-foreground, oklch(0.99 0.005 159)); } .ds-cat:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.55 0.1 159)) 50%, transparent); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Neighbourhood Salon",
+    "overview": "Dapita should feel like walking into a favourite local shop on a sunny Davao morning. The walls are warm cream, there are plants in the windows, staff greet you by name, and the price list is pinned up where you can read it. Every screen is a calm, sunlit space where nothing is hidden or oversold. The base is linen-cream surfaces. Deep Monstera Green carries every action, and Blush Clay peach greets you in the selected states. Pin Pink, from the logo's map pin, is the small mark that says \"this is the place\".\n\nDensity is moderate and phone-first. Customer screens are built for a thumb on a mobile connection: large tap targets, one clear next step and generous breathing room around grouped content. On desktop the same pieces spread into two columns, with the task on the left and a sticky summary or booking card on the right, instead of growing new chrome. The merchant and admin tools switch to a dark green-charcoal sidebar, the working back room behind the shopfront, but keep the same cards, fields and buttons.\n\nComponents are **tactile and confident**: pill-shaped actions with solid fills, generously rounded cream cards that lift slightly off the page, and crisp hairline edges. Two looks are explicitly ruled out:\n\nThe warmth comes from real photos of people and places, not from decoration.",
+    "keyCharacteristics": [
+      "Warm linen surfaces with soft charcoal text. Pure black is never used. Pure white is kept for popovers and the category circles.",
+      "One action colour: Monstera Green, for every primary button, selected chip and active control.",
+      "Pill shapes for everything you press; rounded rectangles for everything you read.",
+      "Soft, warm-tinted shadows, plus a hairline edge on every card.",
+      "Photo-led: shop covers, staff portraits and brand photography. A flat green-tint placeholder with the category icon stands in when a photo is missing, never a stock image.",
+      "A serif display voice (Playfair Display) only for the wordmark-adjacent hero headlines; everything else is Geist."
+    ],
+    "rules": [
+      {
+        "name": "The One Green Rule",
+        "body": "Every action a person can take is Monstera Green or a quieter variant of it. Peach and pink never become a competing primary button colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The No White on Pink Rule",
+        "body": "Pin Pink carries dark text or no text. White on Pink is 2.8:1, which fails AA.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Means State Rule",
+        "body": "Success, warning, info and destructive colours describe a booking's real state. They are never used to decorate, rank or create urgency.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Is a Signature Rule",
+        "body": "Playfair appears only in hero headlines next to the brand. It is never used for UI labels, prices, buttons or section titles.",
+        "section": "typography"
+      },
+      {
+        "name": "The Named Scale Rule",
+        "body": "Text sizes come from the `type-*` utilities. Hand-written arbitrary sizes like `text-[10px]` are drift; promote the value to a token or use an existing step.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Card Surface Rule",
+        "body": "Any card is `card-surface` (cream, card-rest shadow, 5% hairline), plus its radius and padding. Hand-assembling a different shadow and border combination is drift.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Nested Cards Rule",
+        "body": "A card never sits inside another card. Inside a panel, separate items with dividers (`divide-border/70`) or spacing.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Press-Is-a-Pill Rule",
+        "body": "If it's a primary or secondary action in customer-facing UI, it's a pill. Square-cornered buttons appear only in the dense merchant and admin tools and in icon buttons.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** use `card-surface` with `rounded-2xl` (list items, shop cards) or `rounded-3xl` (panels) for every card.",
+      "**Do** make every primary action a Monstera Green pill, and keep one primary action per view or card.",
+      "**Do** use the `type-*` scale: `type-title` for page titles, `type-heading` for section titles, `type-micro` as the smallest text.",
+      "**Do** show the category icon on the flat green-tint placeholder whenever a photo is missing, and keep the image's aspect ratio so nothing shifts.",
+      "**Do** use the two-column `minmax(0,1fr) 22rem` layout, with a sticky side card, for task pages on desktop.",
+      "**Do** pair every status colour with a text label, so a booking's state never depends on colour alone.",
+      "**Do** keep text pairs at WCAG 2.2 AA in both themes, and keep touch targets at least 24px (40–44px for primary actions)."
+    ],
+    "donts": [
+      "**Don't** drift into generic SaaS: no cold blue-grey surfaces, no decorative gradients, no grids of identical icon cards as page structure.",
+      "**Don't** use loud-discount devices: no coupon badges, urgency banners, countdowns, \"only 2 left\" or slashed red prices.",
+      "**Don't** put white text on Pin Pink, or make pink or peach a competing primary button colour.",
+      "**Don't** use Playfair Display outside the hero and brand moments.",
+      "**Don't** nest cards, or hand-roll a new shadow, border and radius combination.",
+      "**Don't** add new pure-white or pure-black surfaces in the light theme; use Card Cream, Linen and Charcoal. Popovers and the category circles (white at the product owner's request) are the only white surfaces."
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Discover and book trusted beauty, grooming and wellness services near you in Davao City."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#1b5e3f" />
+    <title>Dapita</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a light/dark flash.
+      // The key must match THEME_STORAGE_KEY in src/lib/theme.ts.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('starter-theme')
+          var dark =
+            stored === 'dark' ||
+            ((!stored || stored === 'system') && matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.toggle('dark', dark)
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (_) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

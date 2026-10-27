@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 120,
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "./src/styles/globals.css",
+  "tailwindFunctions": ["cn", "cva"],
+  "overrides": [
+    {
+      "files": "src/components/ui/**",
+      "excludeFiles": "src/components/ui/**/*.test.tsx",
+      "options": { "singleQuote": false, "printWidth": 80, "trailingComma": "es5" }
+    }
+  ]
+}
