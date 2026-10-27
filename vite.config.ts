@@ -16,6 +16,8 @@ export default defineConfig({
   // Proxying keeps it same-origin, so the session cookie and the realtime stream just work,
   // including from a phone on the same Wi-Fi (`npm run dev:lan`).
   server: {
+    // The API reloads itself; its file changes must not reload the SPA.
+    watch: { ignored: ['**/server/**'] },
     proxy: {
       '/api': { target: process.env.API_PROXY_TARGET ?? 'http://localhost:3333', changeOrigin: true },
     },
