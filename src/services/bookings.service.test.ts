@@ -86,6 +86,16 @@ describe('customer bookings (mock service)', () => {
     await expect(bookingsService.createBooking(request({ staffId: 'stf_lia' }))).rejects.toMatchObject({ status: 422 })
   })
 
+  it('lets a shop owner book other shops but not their own', async () => {
+    signInAs('merchant')
+    await expect(bookingsService.createBooking(request())).rejects.toMatchObject({
+      status: 422,
+      message: 'You can’t book your own business.',
+    })
+    const elsewhere = await bookingsService.createBooking(request({ serviceId: 'svc_gg_cut' }))
+    expect(elsewhere).toMatchObject({ status: 'pending', customerId: mockUsers.merchant.id })
+  })
+
   it('expires a request nobody answered in time', async () => {
     signInAs('customer')
     const booking = await bookingsService.createBooking(request())

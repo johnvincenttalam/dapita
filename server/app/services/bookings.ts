@@ -244,6 +244,9 @@ export async function createBooking(
     if (!service || !business || business.status !== 'approved') {
       throw new ApiError('This service isn’t available any more.', 404)
     }
+    if (await isMember(user, business.id, trx)) {
+      throw new ApiError('You can’t book your own business.', 422)
+    }
     if (input.staffId) {
       const staff = await StaffMember.find(input.staffId, { client: trx })
       if (
