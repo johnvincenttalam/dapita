@@ -162,7 +162,30 @@ describe('customer area', () => {
     expect(router.state.location.pathname).toBe('/bookings')
     const accountNav = screen.getByRole('navigation', { name: 'Account' })
     expect(within(accountNav).getByRole('link', { name: 'My bookings' })).toHaveAttribute('aria-current', 'page')
-    expect(within(accountNav).getByRole('link', { name: /favorites/i })).toHaveTextContent('Soon')
+    expect(within(accountNav).getByRole('link', { name: 'Favorites' })).not.toHaveTextContent('Soon')
+  })
+
+  it('saves a shop from its page and lists it under Favorites', async () => {
+    signInAs('customer')
+    const { user, router } = renderRoute('/favorites')
+    expect(await screen.findByText('No saved shops yet')).toBeInTheDocument()
+
+    await router.navigate('/shops/glow-and-go-beauty-salon')
+    const heart = await screen.findByRole('button', { name: 'Save Glow & Go Beauty Salon' })
+    await waitFor(() => expect(heart).toBeEnabled())
+    await user.click(heart)
+    expect(heart).toHaveAttribute('aria-pressed', 'true')
+
+    await router.navigate('/favorites')
+    const saved = await screen.findByRole('list', { name: 'Saved shops' })
+    expect(within(saved).getByRole('link', { name: 'Glow & Go Beauty Salon' })).toHaveAttribute(
+      'href',
+      '/shops/glow-and-go-beauty-salon',
+    )
+    expect(within(saved).getByRole('button', { name: 'Save Glow & Go Beauty Salon' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
   it('keeps signed-in customers out of the merchant dashboard', async () => {

@@ -4,6 +4,7 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Skeleton } from '@/components/ui/skeleton'
 import { categoryIcons } from '@/config/category-icons'
 import { ShopNameLink } from '@/features/discovery/components/ShopNameLink'
+import { FavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { OpenStatusText } from '@/features/shops/components/OpenStatusText'
 import { ShopRating } from '@/features/shops/components/ShopRating'
 import { formatDistance, formatPeso } from '@/lib/format'
@@ -37,7 +38,7 @@ export function ShopListItem({ shop, category, distance, className }: ShopListIt
         className="size-24 shrink-0 rounded-xl sm:size-28"
       />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h2 className="font-semibold text-pretty">
+        <h2 className="pr-9 font-semibold text-pretty">
           <ShopNameLink shop={shop} />
         </h2>
         <ShopRating rating={shop.rating} />
@@ -56,6 +57,8 @@ export function ShopListItem({ shop, category, distance, className }: ShopListIt
           </p>
         ) : null}
       </div>
+      {/* Above the name link's stretched hit area. */}
+      <FavoriteButton businessId={shop.id} shopName={shop.name} className="absolute top-2 right-2 z-10" />
     </article>
   )
 }

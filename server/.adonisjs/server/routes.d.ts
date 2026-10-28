@@ -27,6 +27,9 @@ export type ScannedRoutes = {
     'profile.update': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
     'profile.request_deletion': { paramsTuple?: []; params?: {} }
+    'favorites.index': { paramsTuple?: []; params?: {} }
+    'favorites.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'favorites.destroy': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.store': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -89,6 +92,7 @@ export type ScannedRoutes = {
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
+    'favorites.index': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -118,6 +122,7 @@ export type ScannedRoutes = {
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
+    'favorites.index': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
     'conversations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -172,6 +177,7 @@ export type ScannedRoutes = {
   }
   PUT: {
     'profile.update': { paramsTuple?: []; params?: {} }
+    'favorites.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_policies': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -181,6 +187,7 @@ export type ScannedRoutes = {
     'admin.update_category': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
+    'favorites.destroy': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.delete_closure': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'closureId': ParamValue} }
     'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
   }

@@ -33,3 +33,10 @@ export interface MyProfile {
   createdAt: ISODateTime
   deletionRequest?: DeletionRequest
 }
+
+/** A shop a customer saved to come back to (CUS-07). One per customer and shop. */
+export interface Favorite {
+  userId: ID
+  businessId: ID
+  savedAt: ISODateTime
+}

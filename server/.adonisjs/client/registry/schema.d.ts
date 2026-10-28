@@ -306,6 +306,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['requestDeletion']>>>
     }
   }
+  'favorites.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/me/favorites'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['index']>>>
+    }
+  }
+  'favorites.store': {
+    methods: ["PUT"]
+    pattern: '/api/me/favorites/:businessId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['store']>>>
+    }
+  }
+  'favorites.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/me/favorites/:businessId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/favorites_controller').default['destroy']>>>
+    }
+  }
   'conversations.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/conversations'

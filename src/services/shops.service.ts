@@ -65,7 +65,7 @@ function publicServices(db: MockDb, businessId: string) {
     .sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
-function toSummary(db: MockDb, business: Business): ShopSummary {
+export function toSummary(db: MockDb, business: Business): ShopSummary {
   const area = db.areas.find((candidate) => candidate.id === business.areaId)
   const services = publicServices(db, business.id)
   return {

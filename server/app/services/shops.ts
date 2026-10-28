@@ -195,6 +195,15 @@ export async function searchShops(params: ShopSearchParams, now = new Date()) {
   }
 }
 
+/** Listing cards for these businesses, in the order given. Ones that aren't public are left out. */
+export async function getShopSummaries(businessIds: string[]) {
+  const catalog = await loadPublicCatalog()
+  return businessIds.flatMap((id) => {
+    const business = catalog.businesses.find((candidate) => candidate.id === id)
+    return business ? [toSummary(catalog, business)] : []
+  })
+}
+
 export async function getFeaturedShops() {
   const catalog = await loadPublicCatalog()
   return catalog.businesses

@@ -4,6 +4,7 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Skeleton } from '@/components/ui/skeleton'
 import { categoryIcons } from '@/config/category-icons'
 import { ShopNameLink } from '@/features/discovery/components/ShopNameLink'
+import { FavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { OpenStatusText } from '@/features/shops/components/OpenStatusText'
 import { ShopRating } from '@/features/shops/components/ShopRating'
 import { formatPeso } from '@/lib/format'
@@ -44,6 +45,8 @@ export function ShopCard({ shop, category, variant = 'tile', headingLevel: Headi
         icon={category ? categoryIcons[category.icon] : undefined}
         className={cn('w-full', feature ? 'aspect-video' : 'aspect-4/3')}
       />
+      {/* Above the name link's stretched hit area. */}
+      <FavoriteButton businessId={shop.id} shopName={shop.name} className="absolute top-2 right-2 z-10" />
       <div className={cn('@container flex flex-1 flex-col gap-1', feature ? 'p-4' : 'p-3')}>
         <Heading className={cn('font-semibold text-pretty', feature ? 'text-base' : 'text-sm leading-snug')}>
           <ShopNameLink shop={shop} />
