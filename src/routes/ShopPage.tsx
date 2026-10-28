@@ -24,6 +24,7 @@ import { BookingMethodNote, ShopPolicies } from '@/features/shops/components/Sho
 import { ShopServicesList } from '@/features/shops/components/ShopServicesList'
 import { ShopStaffList } from '@/features/shops/components/ShopStaffList'
 import { bookingHref, shopHref } from '@/features/shops/links'
+import { supportHref } from '@/features/support/links'
 import { useBackNavigation } from '@/hooks/use-back-navigation'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { ApiError } from '@/lib/api-client'
@@ -162,6 +163,16 @@ function ShopProfile({ shop, services, staff, categories, servicesError }: ShopP
               <Section title="Policies">
                 <ShopPolicies policies={shop.policies} />
               </Section>
+
+              <p className="text-sm text-muted-foreground">
+                Something wrong with this listing?{' '}
+                <Link
+                  to={supportHref('listing', { shop: shop.slug })}
+                  className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  Report this listing
+                </Link>
+              </p>
             </TabsContent>
 
             <TabsContent value="services">

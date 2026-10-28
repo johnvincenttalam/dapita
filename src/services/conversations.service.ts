@@ -233,7 +233,11 @@ const mockConversationsService: ConversationsService = {
       } else {
         db.supportCases.push({
           id: createMockId('case'),
+          kind: 'message',
           conversationId: id,
+          businessId: conversation.businessId,
+          reporterId: user.id,
+          reporterSide: side,
           status: 'open',
           createdAt: now,
           updatedAt: now,

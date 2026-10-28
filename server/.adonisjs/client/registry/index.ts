@@ -180,6 +180,12 @@ const routes = {
     tokens: [[0,"api"],[0,"conversations"],[1,"id"],[0,"report"]],
     types: placeholder as Registry['conversations.report']['types'],
   },
+  'support.store': {
+    methods: ["POST"],
+    pattern: '/api/support/requests',
+    tokens: [[0,"api"],[0,"support"],[0,"requests"]],
+    types: placeholder as Registry['support.store']['types'],
+  },
   'merchant_businesses.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/merchant/businesses/:businessId',

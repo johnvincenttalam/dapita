@@ -33,6 +33,7 @@ export type ScannedRoutes = {
     'conversations.send_message': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support.store': { paramsTuple?: []; params?: {} }
     'merchant_businesses.show': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
@@ -148,6 +149,7 @@ export type ScannedRoutes = {
     'conversations.send_message': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conversations.report': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support.store': { paramsTuple?: []; params?: {} }
     'merchant_businesses.add_closure': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.submit': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }

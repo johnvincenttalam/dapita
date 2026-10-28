@@ -9,6 +9,7 @@ import { useMyConsentsQuery, useMyProfileQuery } from '@/features/account/api/qu
 import { AccountDeletionRequest } from '@/features/account/components/AccountDeletionRequest'
 import { ConsentList } from '@/features/account/components/ConsentList'
 import { legalDocuments } from '@/config/legal'
+import { supportHref } from '@/features/support/links'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 
 const linkClass = 'font-medium text-primary underline-offset-4 hover:underline'
@@ -52,7 +53,7 @@ export default function PrivacyPage() {
             profile
           </Link>
           . To get a copy of your data or correct anything else,{' '}
-          <Link to="/support" className={linkClass}>
+          <Link to={supportHref('account')} className={linkClass}>
             contact support
           </Link>
           .

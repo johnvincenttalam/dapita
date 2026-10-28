@@ -107,7 +107,11 @@ export function createSeedConversations(now: Date, businesses: Business[]) {
       })
       cases.push({
         id: `case_${seed.id}`,
+        kind: 'message',
         conversationId: seed.id,
+        businessId: seed.businessId,
+        reporterId: seed.customer.id,
+        reporterSide: 'customer',
         status: 'open',
         createdAt: at,
         updatedAt: at,
