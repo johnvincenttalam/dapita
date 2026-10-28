@@ -35,6 +35,10 @@ export default class User extends compose(BaseModel, withAuthFinder(hash)) {
   @column(iso)
   declare suspendedAt: ISODateTime | null
 
+  /** Why it was suspended, shown to staff; cleared on reinstatement. */
+  @column()
+  declare suspendedReason: string | null
+
   @column(iso)
   declare createdAt: ISODateTime
 

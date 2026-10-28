@@ -38,6 +38,11 @@ export function requireRole(user: User, roles: UserRole[], message: string) {
   if (!hasAnyRole({ roles: user.roles } as SessionUser, roles)) throw new ApiError(message, 403)
 }
 
+/** The admin console: moderation is for administrators; support staff can work cases and look up accounts. */
+export function requireStaff(user: User, roles: UserRole[]) {
+  requireRole(user, roles, 'This is for Dapita staff only.')
+}
+
 /**
  * Pass `client` when calling inside a transaction, so the query sees the
  * transaction's own changes.

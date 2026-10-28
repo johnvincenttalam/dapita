@@ -22,6 +22,7 @@ const MerchantBusinessesController = () => import('#controllers/merchant_busines
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
+const AdminController = () => import('#controllers/admin_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
 
@@ -128,6 +129,31 @@ router
             router.post('bookings/:id/no-show', [MerchantBookingsController, 'noShow'])
           })
           .prefix('merchant')
+
+        // Admin console; each action checks the staff role it needs.
+        router
+          .group(() => {
+            router.get('merchants', [AdminController, 'merchants'])
+            router.get('merchants/:id', [AdminController, 'merchant'])
+            router.post('merchants/:id/moderation', [AdminController, 'moderate'])
+            router.put('merchants/:id/featured', [AdminController, 'featured'])
+
+            router.get('cases', [AdminController, 'cases'])
+            router.get('cases/:id', [AdminController, 'case'])
+            router.post('cases/:id/take', [AdminController, 'takeCase'])
+            router.post('cases/:id/notes', [AdminController, 'addNote'])
+            router.post('cases/:id/resolve', [AdminController, 'resolve'])
+
+            router.get('categories', [AdminController, 'categories'])
+            router.post('categories', [AdminController, 'addCategory'])
+            router.put('categories/:id', [AdminController, 'updateCategory'])
+            router.post('categories/:id/move', [AdminController, 'moveCategory'])
+
+            router.get('users', [AdminController, 'users'])
+            router.post('users/:id/suspend', [AdminController, 'suspend'])
+            router.post('users/:id/reinstate', [AdminController, 'reinstate'])
+          })
+          .prefix('admin')
       })
       .use(middleware.auth())
   })
@@ -145,8 +171,8 @@ transmit.registerRoutes((route) => {
 })
 
 /**
- * Everything else under /api that the SPA calls but the server doesn't implement yet
- * (admin console, merchant editing, profile…) answers clearly instead of with a bare 404.
+ * Anything else under /api answers clearly instead of with a bare 404, so a screen
+ * that calls an endpoint the server doesn't have yet shows a useful error.
  * Registered last: a wildcard registered earlier would shadow the routes after it.
  */
 router.any('/api/*', () => {
