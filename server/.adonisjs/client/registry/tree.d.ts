@@ -44,6 +44,9 @@ export interface ApiDefinition {
     report: typeof routes['conversations.report']
     businessIndex: typeof routes['conversations.business_index']
   }
+  support: {
+    store: typeof routes['support.store']
+  }
   merchantBusinesses: {
     show: typeof routes['merchant_businesses.show']
     update: typeof routes['merchant_businesses.update']

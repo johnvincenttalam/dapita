@@ -1,4 +1,5 @@
 import { formatAppointment } from '@/lib/format'
+import { caseTitle } from '@/lib/moderation'
 import type { CaseListItem, MerchantListItem } from '@/types/admin'
 import type { BookingDetails } from '@/types/booking'
 import type { ConversationSummary } from '@/types/message'
@@ -86,8 +87,8 @@ export function buildNotifications(sources: NotificationSources, dismissed: Read
         .filter((item) => item.status === 'open')
         .map((item) => ({
           id: `case:${item.id}`,
-          title: 'Conversation reported',
-          body: `${item.customerName} and ${item.businessName}: “${oneLine(item.reason)}”`,
+          title: item.kind === 'message' ? 'Conversation reported' : 'Support request',
+          body: `${caseTitle(item)}: “${oneLine(item.reason)}”`,
           href: `/admin/reports/${encodeURIComponent(item.id)}`,
           occurredAt: item.createdAt,
         })),

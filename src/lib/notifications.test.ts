@@ -91,7 +91,16 @@ describe('buildNotifications', () => {
         ] as MerchantListItem[],
         cases: [
           {
+            id: 'case_2',
+            kind: 'account',
+            status: 'open',
+            reporterName: 'Carlo',
+            reason: 'Please send me a copy of my data.',
+            createdAt: '2026-10-22T00:00:00.000Z',
+          },
+          {
             id: 'case_1',
+            kind: 'message',
             status: 'open',
             customerName: 'Bea',
             businessName: 'Polished',
@@ -102,9 +111,10 @@ describe('buildNotifications', () => {
       },
       new Set(),
     )
-    expect(items.map((item) => [item.title, item.href])).toEqual([
-      ['Conversation reported', '/admin/reports/case_1'],
-      ['Listing waiting for review', '/admin/merchants/biz_k'],
+    expect(items.map((item) => [item.title, item.body, item.href])).toEqual([
+      ['Support request', 'Carlo’s account: “Please send me a copy of my data.”', '/admin/reports/case_2'],
+      ['Conversation reported', 'Bea and Polished: “Asked for a GCash deposit.”', '/admin/reports/case_1'],
+      ['Listing waiting for review', expect.any(String), '/admin/merchants/biz_k'],
     ])
   })
 

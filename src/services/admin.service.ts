@@ -203,34 +203,58 @@ function findCase(db: MockDb, id: ID) {
   return found
 }
 
+/** The latest report or request on the case: what was said, and by whom. */
+const latestReport = (item: SupportCase) =>
+  item.events.findLast((event) => event.kind === 'opened' || event.kind === 'reported_again')
+
 function toCaseItem(db: MockDb, item: SupportCase): CaseListItem {
-  const conversation = db.conversations.find((candidate) => candidate.id === item.conversationId)
-  const reports = db.conversationReports
-    .filter((report) => report.conversationId === item.conversationId)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const conversation = item.conversationId
+    ? db.conversations.find((candidate) => candidate.id === item.conversationId)
+    : undefined
+  const report = db.conversationReports
+    .filter((candidate) => item.conversationId && candidate.conversationId === item.conversationId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+  const businessId = conversation?.businessId ?? item.businessId
+  const latest = latestReport(item)
   return {
     id: item.id,
-    conversationId: item.conversationId,
+    kind: item.kind,
     status: item.status,
     ownerName: item.ownerName,
-    reason: reports[0]?.reason ?? '',
-    reporterSide: reports[0]?.reporterSide ?? 'customer',
-    customerName: conversation?.customerName ?? '',
-    businessName: db.businesses.find((business) => business.id === conversation?.businessId)?.name ?? '',
+    reason: report?.reason ?? latest?.text ?? '',
+    reporterName: latest?.actorName ?? '',
+    reporterSide: report?.reporterSide ?? item.reporterSide,
+    ...(item.conversationId ? { conversationId: item.conversationId } : {}),
+    ...(conversation ? { customerName: conversation.customerName } : {}),
+    ...(businessId
+      ? { businessId, businessName: db.businesses.find((business) => business.id === businessId)?.name }
+      : {}),
+    ...(item.bookingId ? { bookingId: item.bookingId } : {}),
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }
 }
 
 function toCaseDetails(db: MockDb, item: SupportCase): CaseDetails {
-  const conversation = db.conversations.find((candidate) => candidate.id === item.conversationId)
+  const booking = item.bookingId ? db.bookings.find((candidate) => candidate.id === item.bookingId) : undefined
+  const reporter = listMockUsers().find((user) => user.id === item.reporterId)
   return {
     ...toCaseItem(db, item),
-    businessId: conversation?.businessId ?? '',
+    ...(reporter ? { reporterEmail: reporter.email } : {}),
     events: structuredClone(item.events),
     messages: db.messages
-      .filter((message) => message.conversationId === item.conversationId)
+      .filter((message) => item.conversationId && message.conversationId === item.conversationId)
       .sort((a, b) => a.sentAt.localeCompare(b.sentAt)),
+    ...(booking
+      ? {
+          booking: {
+            reference: booking.reference,
+            serviceName: booking.service.name,
+            start: booking.start,
+            status: booking.status,
+          },
+        }
+      : {}),
   }
 }
 

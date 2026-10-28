@@ -17,7 +17,7 @@ import type { MerchantNotificationSettings } from '@/types/settings'
 // content changes (e.g. new photos), so existing demos reseed and pick it up.
 
 export const MOCK_DB_KEY = 'glamspot-mock-db'
-const MOCK_DB_VERSION = 17
+const MOCK_DB_VERSION = 18
 
 export interface MockDb {
   version: number

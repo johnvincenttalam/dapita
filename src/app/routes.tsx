@@ -18,6 +18,7 @@ const layout =
 const notFound = page(() => import('@/routes/NotFoundPage'))
 const plannedPage = page(() => import('@/routes/PlannedPage'))
 const plannedPublicPage = page(() => import('@/routes/PlannedPublicPage'))
+const legalPage = page(() => import('@/routes/LegalPage'))
 
 /**
  * TEMPORARY: a documented route whose screen is built in a later phase. The URL, layout,
@@ -117,54 +118,16 @@ const marketplaceRoutes: RouteObject[] = [
     path: 'legal',
     handle: { crumb: 'Legal' } satisfies RouteHandle,
     children: [
-      {
-        path: 'terms',
-        ...planned(
-          'Terms of use',
-          { title: 'Terms of use', description: 'Marketplace terms for customers and merchants.', priority: 'P0' },
-          'public',
-        ),
-      },
-      {
-        path: 'privacy',
-        ...planned(
-          'Privacy notice',
-          {
-            title: 'Privacy notice',
-            description: 'What data is collected, why, how long it is kept and how to exercise your rights.',
-            priority: 'P0',
-            refs: ['§13.2'],
-          },
-          'public',
-        ),
-      },
-      {
-        path: 'merchant-policy',
-        ...planned(
-          'Merchant policy',
-          {
-            title: 'Merchant listing policy',
-            description: 'Listing standards, verification and prohibited content.',
-            priority: 'P0',
-            refs: ['§13.4'],
-          },
-          'public',
-        ),
-      },
+      { index: true, loader: () => redirect('/legal/terms') },
+      { path: 'terms', handle: { crumb: 'Terms of use' } satisfies RouteHandle, lazy: legalPage },
+      { path: 'privacy', handle: { crumb: 'Privacy notice' } satisfies RouteHandle, lazy: legalPage },
+      { path: 'merchant-policy', handle: { crumb: 'Merchant policy' } satisfies RouteHandle, lazy: legalPage },
     ],
   },
   {
     path: 'support',
-    ...planned(
-      'Support',
-      {
-        title: 'Support',
-        description: 'Contact support and report listings, messages, prices or booking disputes.',
-        priority: 'P0',
-        refs: ['ADM-03', '§13.4'],
-      },
-      'public',
-    ),
+    handle: { crumb: 'Support' } satisfies RouteHandle,
+    lazy: page(() => import('@/routes/SupportPage')),
   },
   {
     element: <RequireRole roles={roleGroups.customer} audience="customers" variant="inline" />,

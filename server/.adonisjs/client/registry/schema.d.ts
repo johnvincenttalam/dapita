@@ -384,6 +384,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/conversations_controller').default['report']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'support.store': {
+    methods: ["POST"]
+    pattern: '/api/support/requests'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/support_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/support_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/support_controller').default['store']>>>
+    }
+  }
   'merchant_businesses.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/merchant/businesses/:businessId'
