@@ -199,7 +199,7 @@ A warm, botanical palette: deep forest green on linen, with peach and pin pink a
 
 ### Secondary
 
-- **Blush Clay** (`blush-clay`): the welcoming peach. It fills the active header nav pill, secondary buttons ("View details", "Add to calendar"), avatar initials and the home hero's CTA. Its text is always **Clay Rose** (`clay-rose`), a deep rose that passes AA on the peach.
+- **Blush Clay** (`blush-clay`): the welcoming peach. It fills the active header nav pill, secondary buttons, avatar initials and the home hero's CTA. Its text is always **Clay Rose** (`clay-rose`), a deep rose that passes AA on the peach.
 - **Blush Wash** (`blush-wash`): a lighter peach for accent hovers and soft highlighted rows.
 
 ### Tertiary
@@ -306,8 +306,8 @@ Tactile and confident: solid fills, pill shapes and a 1px press-down on click.
 - **Primary:** Monstera Green fill with near-white text, as a pill.
   - Large CTAs ("Book appointment", "Send booking request", "Get Started") are 44px tall with 20px side padding and often full width.
   - Inline actions ("Book" on a service row) are 28px compact pills.
-- **Secondary:** Blush Clay fill with Clay Rose text, for supporting actions next to the primary ("View details", "Add to calendar"). On hover it darkens 5% toward the foreground.
-- **Outline:** a linen fill with a sand hairline, for neutral actions ("Reset password", "Get directions", "Keep my original time").
+- **Secondary:** Blush Clay fill with Clay Rose text, for supporting actions next to the primary. On hover it darkens 5% toward the foreground. Never put it beside a status badge: a tinted pill next to a tinted pill reads as two badges.
+- **Outline:** a linen fill with a sand hairline, for neutral actions ("Reset password", "Get directions", "Keep my original time") and for card actions that sit beside a status badge ("View details" with a trailing chevron, "Add to calendar"). These are 32px, so they read as buttons next to the 20px badges.
 - **Ghost and link:** plain text, using muted hover fills or underlines ("Skip", "See all", "Sign out"). Destructive ghost actions ("Cancel request") use red text with no fill.
 - **States:**
   - hover softens the fill to 80% (primary);

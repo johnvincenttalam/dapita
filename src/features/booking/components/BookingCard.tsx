@@ -1,4 +1,4 @@
-import { CalendarIcon, MapPinIcon, StoreIcon } from 'lucide-react'
+import { CalendarIcon, ChevronRightIcon, MapPinIcon, StoreIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
@@ -46,19 +46,16 @@ export function BookingCard({ booking }: { booking: BookingDetails }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <BookingStatusBadge status={booking.status} />
         <div className="ml-auto flex flex-wrap justify-end gap-2">
-          {canAddToCalendar ? <AddToCalendarButton booking={booking} size="sm" /> : null}
-          <Button
-            asChild
-            size="sm"
-            shape="pill"
-            variant={booking.status === 'alternative_proposed' ? 'default' : 'secondary'}
-          >
+          {canAddToCalendar ? <AddToCalendarButton booking={booking} /> : null}
+          {/* Outlined, not tinted: a tinted pill next to the status badge reads as another badge. */}
+          <Button asChild shape="pill" variant={booking.status === 'alternative_proposed' ? 'default' : 'outline'}>
             <Link to={bookingHref(booking.id)}>
               {booking.status === 'alternative_proposed' ? 'Review new time' : 'View details'}
               <span className="sr-only">
                 {' '}
                 for {booking.service.name} at {booking.business.name}
               </span>
+              <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />
             </Link>
           </Button>
         </div>
