@@ -130,9 +130,9 @@ describe('MerchantProfilePage', () => {
     expect(screen.getByText(/Version 2\./)).toBeInTheDocument()
     await user.clear(cancellation)
     await user.type(cancellation, 'Free cancellation up to 6 hours before your appointment.')
-    await user.click(screen.getByRole('button', { name: 'Save policies' }))
+    await user.click(screen.getByRole('button', { name: 'Save booking rules' }))
 
-    expect(await screen.findByText('Policies saved. New requests use version 3.')).toBeInTheDocument()
+    expect(await screen.findByText('Booking rules saved. New requests use version 3.')).toBeInTheDocument()
     expect((await shopsService.getShop(SLUG)).policies).toMatchObject({ version: 3 })
   })
 })

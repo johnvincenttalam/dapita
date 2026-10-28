@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import type { HttpContext } from '@adonisjs/core/http'
 import transmit from '@adonisjs/transmit/services/main'
 import testUtils from '@adonisjs/core/services/test_utils'
+import Business from '#models/business'
 import { customerEmail, ownerEmail, userByEmail } from '#tests/helpers'
 import type { SessionUser } from '#shared/domain'
 
@@ -50,6 +51,7 @@ test.group('Auth', (group) => {
       accountType: 'business',
       name: 'Lea Cruz',
       email: 'Lea@Example.com',
+      phone: '0917 123 4567',
       password: 'nails2026',
       businessName: 'Lea’s Nail Bar',
       consents: [
@@ -64,6 +66,10 @@ test.group('Auth', (group) => {
     assert.deepEqual(user.roles, ['customer', 'merchant_owner'])
     assert.equal(user.memberships[0].businessName, 'Lea’s Nail Bar')
     assert.isFalse(user.emailVerified)
+    // The owner's number is offered as the shop's contact number in onboarding.
+    const business = await Business.findOrFail(user.memberships[0].businessId)
+    assert.equal(business.status, 'draft')
+    assert.isNotNull(business.phone)
 
     const again = await client.post('/api/auth/sign-up').json({
       accountType: 'customer',

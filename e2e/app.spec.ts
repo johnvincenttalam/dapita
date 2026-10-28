@@ -270,6 +270,7 @@ test.describe('signed-in areas', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Add service' })).toBeVisible()
     await page.getByRole('textbox', { name: /Service name/ }).fill('Buzz Cut')
     await page.getByRole('textbox', { name: /^Price/ }).fill('150')
+    await page.getByRole('radio', { name: 'Other' }).check({ force: true })
     await page.getByRole('spinbutton', { name: /Duration/ }).fill('20')
     await expectNoHorizontalOverflow(page)
     await page.getByRole('button', { name: 'Add service' }).click()

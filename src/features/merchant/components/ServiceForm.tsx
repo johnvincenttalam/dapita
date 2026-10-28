@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronDownIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -14,6 +16,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useSaveServiceMutation } from '@/features/merchant/api/service-queries'
+import { commonDurations, type ServiceSuggestion } from '@/features/merchant/setup-suggestions'
 import { getErrorMessage } from '@/lib/api-client'
 import { formatDuration, formatPrice } from '@/lib/format'
 import {
@@ -28,10 +31,23 @@ import type { ServiceCategory } from '@/types/catalog'
 
 const priceOptions = [
   { value: 'fixed', label: 'Fixed price' },
-  { value: 'from', label: 'Starting from' },
+  { value: 'from', label: 'Starts at' },
   { value: 'range', label: 'Price range' },
   { value: 'quote', label: 'Price on consultation' },
 ] as const
+
+const priceHints = {
+  fixed: 'Everyone pays the same, e.g. ₱150.',
+  from: 'The lowest price. It can go up, e.g. for longer hair.',
+  range: 'Somewhere between a low and a high price, depending on the job.',
+  quote: 'Customers see “Price on consultation” and you agree the price at the shop.',
+} as const
+
+const OTHER = 'other'
+const durationOptions = [
+  ...commonDurations.map((minutes) => ({ value: String(minutes), label: formatDuration(minutes) })),
+  { value: OTHER, label: 'Other' },
+]
 
 const amountLabel = { fixed: 'Price', from: 'Starting price', range: 'Lowest price' } as const
 
@@ -40,21 +56,44 @@ interface ServiceFormProps {
   categories: ServiceCategory[]
   /** Omit to add a new service. */
   service?: Service
+  /** A new service started from a suggestion: its name, category and usual length. */
+  suggestion?: ServiceSuggestion & { categoryId: string }
+  /** Onboarding: only what's needed to list it, with the optional details folded away. */
+  simple?: boolean
   /** Stay on the page after saving (onboarding) instead of going back to the services list. */
   onSaved?: (service: Service) => void
   onCancel?: () => void
 }
 
 /** Add or edit one service (MER-02). Prices are typed as on the shop's price list and checked as you go. */
-export function ServiceForm({ businessId, categories, service, onSaved, onCancel }: ServiceFormProps) {
+export function ServiceForm({
+  businessId,
+  categories,
+  service,
+  suggestion,
+  simple = false,
+  onSaved,
+  onCancel,
+}: ServiceFormProps) {
   const navigate = useNavigate()
   // The form shows the server's answer inline, so no toast as well.
   const save = useSaveServiceMutation(businessId, { showErrorToast: false })
   const form = useForm<ServiceFormInput, unknown, ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
     mode: 'onTouched',
-    defaultValues: serviceFormValues(service, categories[0]?.id),
+    defaultValues: suggestion
+      ? { ...serviceFormValues(undefined, suggestion.categoryId), ...suggestion }
+      : serviceFormValues(service, categories[0]?.id),
   })
+  // A length off the usual list is typed in; "Other" stays chosen while it's edited.
+  const [otherDuration, setOtherDuration] = useState(
+    () => !commonDurations.some((minutes) => minutes === form.getValues('durationMinutes')),
+  )
+  // Started from a suggestion, the price is the one thing left to type.
+  useEffect(() => {
+    if (suggestion && suggestion.categoryId) form.setFocus('amount')
+  }, [form, suggestion])
+  const [moreOpen, setMoreOpen] = useState(() => !simple || Boolean(service?.description || service?.requirements))
   const [priceType, amount, maxAmount, durationMinutes] = useWatch({
     control: form.control,
     name: ['priceType', 'amount', 'maxAmount', 'durationMinutes'],
@@ -111,20 +150,40 @@ export function ServiceForm({ businessId, categories, service, onSaved, onCancel
                 />
               )}
             />
-            <FormField
-              control={form.control}
-              name="description"
-              label="Description"
-              description="Optional. What’s included, in a sentence or two."
-              render={({ field, controlProps }) => <Textarea rows={3} maxLength={500} {...field} {...controlProps} />}
-            />
-            <FormField
-              control={form.control}
-              name="requirements"
-              label="What customers should know"
-              description="Optional. Anything to bring or do before the appointment."
-              render={({ field, controlProps }) => <Textarea rows={2} maxLength={300} {...field} {...controlProps} />}
-            />
+            {moreOpen ? (
+              <>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  label="Description"
+                  description="Optional. What’s included, in a sentence or two."
+                  render={({ field, controlProps }) => (
+                    <Textarea rows={3} maxLength={500} {...field} {...controlProps} />
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="requirements"
+                  label="What customers should know"
+                  description="Optional. Anything to bring or do before the appointment."
+                  render={({ field, controlProps }) => (
+                    <Textarea rows={2} maxLength={300} {...field} {...controlProps} />
+                  )}
+                />
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                shape="pill"
+                className="-ml-2 self-start"
+                aria-expanded={false}
+                onClick={() => setMoreOpen(true)}
+              >
+                <ChevronDownIcon aria-hidden="true" />
+                Add a description (optional)
+              </Button>
+            )}
           </FieldGroup>
         </Panel>
 
@@ -145,11 +204,8 @@ export function ServiceForm({ businessId, categories, service, onSaved, onCancel
                 />
               )}
             />
-            {priceType === 'quote' ? (
-              <p className="text-sm text-muted-foreground">
-                Customers see “Price on consultation” and you agree the price at the shop.
-              </p>
-            ) : (
+            <p className="-mt-2 text-sm text-muted-foreground">{priceHints[priceType]}</p>
+            {priceType === 'quote' ? null : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -183,32 +239,48 @@ export function ServiceForm({ businessId, categories, service, onSaved, onCancel
                 ) : null}
               </div>
             )}
-            <FormField
-              control={form.control}
-              name="durationMinutes"
-              label="Duration"
-              description="How long the appointment takes, in 5-minute steps."
-              required
-              render={({ field, controlProps }) => (
-                <InputGroup className="sm:max-w-56">
-                  <InputGroupInput
-                    type="number"
-                    min={5}
-                    max={480}
-                    step={5}
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    value={Number.isNaN(field.value) ? '' : field.value}
-                    onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                    {...controlProps}
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupText>mins</InputGroupText>
-                  </InputGroupAddon>
-                </InputGroup>
-              )}
-            />
+            <div className="space-y-3">
+              <ChoiceGroup
+                legend="How long it takes"
+                options={durationOptions}
+                value={otherDuration ? OTHER : String(durationMinutes)}
+                onChange={(value) => {
+                  setOtherDuration(value === OTHER)
+                  if (value !== OTHER) form.setValue('durationMinutes', Number(value), { shouldDirty: true })
+                }}
+                className="flex flex-wrap gap-2"
+                optionClassName="h-9 rounded-full px-4"
+                renderOption={(option) => option.label}
+              />
+              {otherDuration ? (
+                <FormField
+                  control={form.control}
+                  name="durationMinutes"
+                  label="Duration in minutes"
+                  description="Use 5-minute steps, e.g. 20 or 75."
+                  required
+                  render={({ field, controlProps }) => (
+                    <InputGroup className="sm:max-w-56">
+                      <InputGroupInput
+                        type="number"
+                        min={5}
+                        max={480}
+                        step={5}
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={Number.isNaN(field.value) ? '' : field.value}
+                        onChange={(event) => field.onChange(event.target.valueAsNumber)}
+                        {...controlProps}
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupText>mins</InputGroupText>
+                      </InputGroupAddon>
+                    </InputGroup>
+                  )}
+                />
+              ) : null}
+            </div>
             <p className="text-sm" aria-live="polite">
               <span className="text-muted-foreground">Customers see: </span>
               <span className="font-medium tabular-nums">{preview.length ? preview.join(' · ') : '—'}</span>
@@ -216,42 +288,44 @@ export function ServiceForm({ businessId, categories, service, onSaved, onCancel
           </FieldGroup>
         </Panel>
 
-        <Panel title="On your shop page">
-          <FieldGroup>
-            <FormField
-              control={form.control}
-              name="active"
-              label="Show to customers"
-              description="Hidden services stay on your menu here, but customers can’t see or book them."
-              orientation="horizontal"
-              controlPosition="end"
-              render={({ field, controlProps }) => (
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  onBlur={field.onBlur}
-                  {...controlProps}
-                />
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="featured"
-              label="Mark as popular"
-              description="Popular services are listed first on your shop page."
-              orientation="horizontal"
-              controlPosition="end"
-              render={({ field, controlProps }) => (
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  onBlur={field.onBlur}
-                  {...controlProps}
-                />
-              )}
-            />
-          </FieldGroup>
-        </Panel>
+        {simple ? null : (
+          <Panel title="On your shop page">
+            <FieldGroup>
+              <FormField
+                control={form.control}
+                name="active"
+                label="Show to customers"
+                description="Hidden services stay on your menu here, but customers can’t see or book them."
+                orientation="horizontal"
+                controlPosition="end"
+                render={({ field, controlProps }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    onBlur={field.onBlur}
+                    {...controlProps}
+                  />
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="featured"
+                label="Mark as popular"
+                description="Popular services are listed first on your shop page."
+                orientation="horizontal"
+                controlPosition="end"
+                render={({ field, controlProps }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    onBlur={field.onBlur}
+                    {...controlProps}
+                  />
+                )}
+              />
+            </FieldGroup>
+          </Panel>
+        )}
       </fieldset>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

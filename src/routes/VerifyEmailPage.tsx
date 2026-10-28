@@ -10,7 +10,7 @@ import { MockVerificationLink } from '@/features/auth/components/MockVerificatio
 import { signInHref, verifyHref } from '@/features/auth/links'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { getErrorMessage } from '@/lib/api-client'
-import { defaultPathFor, getSafeRedirect } from '@/lib/roles'
+import { getSafeRedirect, landingPathFor } from '@/lib/roles'
 import type { SessionUser } from '@/types/auth'
 
 function ContinueButton({ to }: { to: string }) {
@@ -37,7 +37,7 @@ function ConfirmToken({ token, next }: { token: string; next: string | null }) {
     return (
       <div className="space-y-8">
         <AuthPageHeader icon={MailXIcon} title="This link didn’t work" description={getErrorMessage(verify.error)} />
-        <ContinueButton to={user ? (next ?? defaultPathFor(user)) : signInHref(next)} />
+        <ContinueButton to={user ? landingPathFor(user, next) : signInHref(next)} />
       </div>
     )
   }
@@ -50,14 +50,14 @@ function ConfirmToken({ token, next }: { token: string; next: string | null }) {
         title="Email verified"
         description={`Thanks. ${verify.data.email} is confirmed.`}
       />
-      <ContinueButton to={user ? (next ?? defaultPathFor(user)) : signInHref(next)} />
+      <ContinueButton to={user ? landingPathFor(user, next) : signInHref(next)} />
     </div>
   )
 }
 
 /** After sign-up: asks the user to open the email, and lets them continue meanwhile. */
 function CheckYourEmail({ user, next }: { user: SessionUser; next: string | null }) {
-  const continueTo = next ?? defaultPathFor(user)
+  const continueTo = landingPathFor(user, next)
 
   if (user.emailVerified) {
     return (
