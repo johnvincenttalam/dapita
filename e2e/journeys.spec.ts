@@ -27,8 +27,11 @@ test.describe('booking journeys', () => {
     await detail.getByRole('button', { name: 'Propose time' }).click()
 
     const dialog = page.getByRole('dialog', { name: 'Propose another time' })
-    const days = dialog.getByRole('group', { name: 'Select date' }).getByRole('radio')
-    await days.nth(1).check({ force: true })
+    // Tap the visible day, as a person would: the radio inside it is visually hidden, and
+    // sits outside the viewport when the strip opens scrolled to the booking's day.
+    const day = dialog.getByRole('group', { name: 'Select date' }).locator('label').nth(1)
+    await day.click()
+    await expect(day.getByRole('radio')).toBeChecked()
     await dialog
       .getByRole('group', { name: 'Select time' })
       .getByRole('radio', { disabled: false })
