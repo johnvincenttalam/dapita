@@ -12,6 +12,11 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  // The form libraries are only imported by lazy-loaded pages, so Vite would otherwise find them
+  // mid-session and re-bundle its dependency cache, which fails with 504s when Windows locks the files.
+  optimizeDeps: {
+    include: ['react-hook-form', '@hookform/resolvers/zod'],
+  },
   // With VITE_USE_MOCKS=false the SPA calls /api, served by the AdonisJS app in server/.
   // Proxying keeps it same-origin, so the session cookie and the realtime stream just work,
   // including from a phone on the same Wi-Fi (`npm run dev:lan`).
