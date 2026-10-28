@@ -15,7 +15,7 @@ import { getStartedHref } from '@/features/auth/links'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { getErrorMessage } from '@/lib/api-client'
 import { env } from '@/lib/env'
-import { defaultPathFor, getSafeRedirect } from '@/lib/roles'
+import { getSafeRedirect, landingPathFor } from '@/lib/roles'
 import { signInSchema, type SignInInput } from '@/schemas/auth'
 import { MOCK_PASSWORD, mockAccountLabels, mockUsers, type MockAccount } from '@/services/mock/users'
 import type { SessionUser } from '@/types/auth'
@@ -34,7 +34,7 @@ export default function SignInPage() {
     defaultValues: { email: '', password: '', remember: false },
   })
 
-  const goOn = (user: SessionUser) => navigate(getSafeRedirect(searchParams.get('next')) ?? defaultPathFor(user))
+  const goOn = (user: SessionUser) => navigate(landingPathFor(user, searchParams.get('next')))
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {

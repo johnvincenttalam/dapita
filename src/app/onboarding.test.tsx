@@ -50,6 +50,19 @@ describe('customer sign-up (plan step 5 exit: guest → sign-up → back to the 
     expect(router.state.location.pathname + router.state.location.search).toBe(BOOK_PATH)
   })
 
+  it('sends a new customer who started from a business page to the marketplace', async () => {
+    const { user, router } = renderRoute('/auth/sign-up?next=%2Fbusiness')
+    await user.type(await screen.findByRole('textbox', { name: /your name/i }), 'John Doe')
+    await user.type(screen.getByRole('textbox', { name: /email/i }), 'john@example.com')
+    await user.type(screen.getByLabelText(/^password/i), 'mirror42')
+    await user.click(screen.getByRole('checkbox', { name: /i agree to the terms of use/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+
+    await user.click(await screen.findByRole('link', { name: 'Continue' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    expect(screen.queryByText(/You don’t have access/)).not.toBeInTheDocument()
+  })
+
   it('shows a taken email on the email field', async () => {
     const { user } = renderRoute('/auth/sign-up')
     await user.type(await screen.findByRole('textbox', { name: /your name/i }), 'Someone')
