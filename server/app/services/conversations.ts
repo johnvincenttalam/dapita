@@ -42,7 +42,7 @@ async function findForViewer(user: User, id: ID) {
   return { conversation, side }
 }
 
-function toMessageData(message: Message): MessageData {
+export function toMessageData(message: Message): MessageData {
   return {
     id: message.id,
     conversationId: message.conversationId,

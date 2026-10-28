@@ -53,7 +53,7 @@ All use the password `password123`.
 | ------------------------------------ | ----------------------------------------- |
 | `customer@example.com`               | Andrea Reyes, customer                    |
 | `owner@example.com`                  | Owner of The Good Cut Barbershop          |
-| `admin@example.com`                  | Administrator (admin screens not served yet) |
+| `admin@example.com`                  | Administrator: listing review, categories, support cases, accounts |
 | `owner.<shop-slug>@example.com`      | Owner of any other demo shop, e.g. `owner.kulot-studio@example.com` |
 | `john@example.com`, `mark@example.com`, `alyssa@example.com`, `carlos@example.com`, `bea@example.com` | Other customers in the demo bookings |
 
@@ -70,10 +70,13 @@ All use the password `password123`.
 | Merchant listing | `GET/PUT /merchant/businesses/:id`, `PUT /merchant/businesses/:id/hours`, `/policies`, `POST /merchant/businesses/:id/closures`, `DELETE /merchant/businesses/:id/closures/:closureId`, `POST /merchant/businesses/:id/submit`, `GET/PUT /merchant/businesses/:id/notification-settings` |
 | Merchant services | `GET/POST /merchant/businesses/:id/services`, `PUT/DELETE /merchant/businesses/:id/services/:serviceId`, `POST /merchant/businesses/:id/services/:serviceId/move` |
 | Merchant bookings | `GET /merchant/businesses/:id/bookings`, `/merchant/businesses/:id/conversations`, `GET /merchant/bookings/:id`, `POST /merchant/bookings/:id/accept`, `/decline`, `/propose`, `/complete`, `/no-show` |
+| Admin | `GET /admin/merchants`, `GET /admin/merchants/:id`, `POST /admin/merchants/:id/moderation`, `PUT /admin/merchants/:id/featured`, `GET /admin/cases`, `GET /admin/cases/:id`, `POST /admin/cases/:id/take`, `/notes`, `/resolve`, `GET/POST /admin/categories`, `PUT /admin/categories/:id`, `POST /admin/categories/:id/move`, `GET /admin/users?q=`, `POST /admin/users/:id/suspend`, `/reinstate` |
 | Messaging | `GET/POST /conversations`, `GET /conversations/:id`, `POST /conversations/:id/messages`, `/read`, `/report` |
 | Realtime | `/__transmit/events`, `/__transmit/subscribe`, `/__transmit/unsubscribe` |
 
-Everything else under `/api` (the admin console) answers **501 `not_implemented`** for now, and those screens show an error in server mode. They still work in mock mode.
+Every endpoint the SPA calls is served. Anything else under `/api` answers **501 `not_implemented`**, so a screen added later shows a clear error in server mode until its endpoint exists.
+
+Admin endpoints check the staff role they need: administrators for listings, categories and suspensions; administrators and support staff for cases and account lookup. Listing decisions and account suspensions are kept as audit trails (`moderation_actions`, `account_actions`). A suspended account can't sign in, and its open sessions are refused on their next request (`app/middleware/auth_middleware.ts`).
 
 Listing, hours, closures, policies and service input is checked with the SPA's own form schemas (`src/schemas`, through `validateWith` in `app/helpers/validate.ts`), so a rule or message changes in one place. Those endpoints read the JSON body as sent (`formBody`), because the body parser turns empty strings into null and the schemas expect blank optional text as `''`.
 

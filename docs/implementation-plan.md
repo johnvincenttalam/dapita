@@ -600,7 +600,7 @@ Server responsibilities the frontend must **not** reimplement: authorization, st
 
 ## 9. Recommended implementation order
 
-Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests followed the same day. Next server work: the admin console.
+Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests, and the admin console (step 9 screens) followed the same day, so every built screen now runs on the server. Next: steps 10–12 (map, legal and support pages, MVP hardening).
 
 Each step ends with `npm run check`, updated tests and (from step 3) a Playwright run at mobile and desktop sizes.
 
