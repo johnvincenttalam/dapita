@@ -21,6 +21,14 @@ describe('booking request flow (design screens 6–7)', () => {
     )
   })
 
+  it('tells a shop owner they can’t book their own business', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.merchant.id)
+    renderRoute('/shops/the-good-cut-barbershop/book?service=svc_mens_haircut')
+    expect(await screen.findByText('You can’t book your own business')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to your dashboard' })).toHaveAttribute('href', '/business')
+    expect(screen.queryByRole('button', { name: /send booking request/i })).not.toBeInTheDocument()
+  })
+
   it('validates, sends a request and shows it as pending, never confirmed', async () => {
     signInAsCustomer()
     const { user, router } = renderRoute('/shops/the-good-cut-barbershop/book?service=svc_mens_haircut')

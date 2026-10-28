@@ -177,6 +177,27 @@ test.group('Bookings: privacy', (group) => {
       .loginAs(admin)
     response.assertStatus(403)
   })
+
+  test('a shop owner can book other shops but not their own', async ({ client, assert }) => {
+    const owner = await userByEmail(ownerEmail)
+    const ownShop = await client
+      .post('/api/bookings')
+      .json({
+        serviceId: 'svc_mens_haircut',
+        staffId: null,
+        start: await openSlot('svc_mens_haircut'),
+      })
+      .loginAs(owner)
+    ownShop.assertStatus(422)
+    ownShop.assertBodyContains({ message: 'You can’t book your own business.' })
+
+    const otherShop = await client
+      .post('/api/bookings')
+      .json({ serviceId: 'svc_gg_cut', staffId: null, start: await openSlot('svc_gg_cut') })
+      .loginAs(owner)
+    otherShop.assertStatus(200)
+    assert.equal(otherShop.body().status, 'pending')
+  })
 })
 
 // The groups above run inside one wrapping transaction. The live server doesn't, so

@@ -227,6 +227,7 @@ const mockBookingsService: BookingsService = {
       if (!service || !business || business.status !== 'approved') {
         throw new ApiError('This service isn’t available any more.', 404)
       }
+      if (isMember(user, business.id)) throw new ApiError('You can’t book your own business.', 422)
       if (input.staffId) {
         const staff = db.staff.find((member) => member.id === input.staffId)
         if (!staff?.active || staff.businessId !== business.id || !staff.serviceIds.includes(service.id)) {

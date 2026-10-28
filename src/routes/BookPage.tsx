@@ -10,6 +10,7 @@ import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { market } from '@/config/market'
+import { useSession } from '@/features/auth/api/queries'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { useCategoriesQuery } from '@/features/discovery/api/queries'
 import { useShopQuery, useShopServicesQuery, useShopStaffQuery } from '@/features/shops/api/queries'
@@ -66,10 +67,12 @@ export default function BookPage() {
   const services = useShopServicesQuery(shopSlug)
   const staff = useShopStaffQuery(shopSlug)
   const categories = useCategoriesQuery()
+  const { user } = useSession()
   useDocumentTitle(shop.data ? `Book at ${shop.data.name}` : 'Book appointment')
 
   const service = services.data?.find((candidate) => candidate.id === searchParams.get('service'))
   const error = shop.error ?? services.error ?? staff.error
+  const ownShop = Boolean(shop.data && user?.memberships.some((membership) => membership.businessId === shop.data.id))
 
   let content
   if (shop.isPending || services.isPending || staff.isPending) {
@@ -100,6 +103,19 @@ export default function BookPage() {
           onRetry={() => void Promise.all([shop.refetch(), services.refetch(), staff.refetch()])}
         />
       )
+  } else if (ownShop) {
+    content = (
+      <EmptyState
+        icon={StoreIcon}
+        title="You can’t book your own business"
+        description="Customers book your shop here. Their requests show up in your business dashboard."
+        action={
+          <Button asChild>
+            <Link to="/business">Go to your dashboard</Link>
+          </Button>
+        }
+      />
+    )
   } else if (shop.data && service) {
     content = (
       <BookingRequestForm
