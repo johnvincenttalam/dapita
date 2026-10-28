@@ -30,6 +30,8 @@ export function ShopListItem({ shop, category, distance, className }: ShopListIt
     >
       <ImageWithFallback
         src={shop.coverPhoto?.url}
+        srcSet={shop.coverPhoto?.srcSet}
+        sizes="112px"
         alt=""
         icon={category ? categoryIcons[category.icon] : undefined}
         className="size-24 shrink-0 rounded-xl sm:size-28"

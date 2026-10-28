@@ -61,22 +61,27 @@ export function UserMenu({ display = 'avatar', title, subtitle }: UserMenuProps)
           variant="ghost"
           size={display === 'avatar' ? 'icon' : 'default'}
           className={cn(display === 'avatar' ? 'rounded-full' : 'h-auto gap-2.5 px-1.5 py-1 text-left')}
-          aria-label={`Account menu for ${user.name}`}
         >
-          <Avatar className="size-8">
+          {/* The name comes from the text, so it contains the words on screen (WCAG 2.5.3). */}
+          {/* Spaces sit between elements, not at their edges, where name computation can trim them. */}
+          <span className="sr-only">Account menu for</span>{' '}
+          <Avatar aria-hidden="true" className="size-8">
             <AvatarFallback className="bg-secondary text-xs font-semibold text-secondary-foreground">
               {initials(label)}
             </AvatarFallback>
           </Avatar>
           {display === 'detailed' ? (
             <>
-              <span className="hidden min-w-0 flex-col sm:flex">
-                <span className="max-w-44 truncate text-sm font-semibold">{label}</span>
+              {/* Phones show only the avatar; the name stays in the button's name. */}
+              <span className="flex min-w-0 flex-col max-sm:sr-only">
+                <span className="max-w-44 truncate text-sm font-semibold">{label}</span>{' '}
                 {subtitle ? <span className="text-xs font-normal text-muted-foreground">{subtitle}</span> : null}
               </span>
               <ChevronDownIcon aria-hidden="true" className="hidden text-muted-foreground sm:block" />
             </>
-          ) : null}
+          ) : (
+            <span className="sr-only">{user.name}</span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">

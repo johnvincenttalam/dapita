@@ -19,7 +19,7 @@ export default function InboxPage() {
       <PageHeader
         title="Inbox"
         description="Ask shops about prices, times and anything else."
-        className={cn(conversationId && 'max-lg:hidden')}
+        className={cn(conversationId && 'max-lg:sr-only')}
       />
       <MessagingWorkspace
         conversations={conversations}

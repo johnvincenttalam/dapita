@@ -601,7 +601,7 @@ Server responsibilities the frontend must **not** reimplement: authorization, st
 
 ## 9. Recommended implementation order
 
-Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests, and the admin console (step 9 screens) followed the same day, so every built screen now runs on the server. Step 11 followed on 28 Oct 2026: draft terms, privacy notice and merchant policy pages, and a support page whose requests (about a booking, a listing, an account or anything else) open cases in the admin console, with links from shop pages, booking details and Privacy & data. Step 10 followed the same day: Explore has a list/map switch (`?view=map`) on Leaflet with OpenStreetMap tiles (Q3), with pin ↔ card ↔ profile linking and an optional "Use my location" that adds distances. Next: step 12 (MVP hardening).
+Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests, and the admin console (step 9 screens) followed the same day, so every built screen now runs on the server. Step 11 followed on 28 Oct 2026: draft terms, privacy notice and merchant policy pages, and a support page whose requests (about a booking, a listing, an account or anything else) open cases in the admin console, with links from shop pages, booking details and Privacy & data. Step 10 followed the same day: Explore has a list/map switch (`?view=map`) on Leaflet with OpenStreetMap tiles (Q3), with pin ↔ card ↔ profile linking and an optional "Use my location" that adds distances. Step 12 (MVP hardening) followed the same day (§13.10): every P0 step is done.
 
 Each step ends with `npm run check`, updated tests and (from step 3) a Playwright run at mobile and desktop sizes.
 
@@ -859,10 +859,10 @@ Requested scope: homepage, category browsing, search and filters, service and re
 
 ### 13.4 Remaining work
 
-| Next        | Scope (from §9)                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------------------ |
-| Steps 7–12  | Merchant core, messaging, notifications, admin console, map, legal pages, MVP hardening (see §9) |
-| Steps 13–15 | P1 features, AI Style Studio, rentals                                                            |
+| Next        | Scope (from §9)                                                  |
+| ----------- | ---------------------------------------------------------------- |
+| Steps 7–12  | Done (28 Oct 2026): merchant core through MVP hardening (§13.10) |
+| Steps 13–15 | P1 features, AI Style Studio, rentals                            |
 
 Shared components still to build (§5): `RatingStars` (P1, with reviews), `FavoriteButton` (P1), `StatCard`, `DateRangePicker`, `Stepper`, `ImageUploader`, `SuccessHero`, and all domain components.
 
@@ -976,8 +976,8 @@ Answers Q5 and C12. The product owner chose **Dapita**: a local identity for a m
 
 **Logo artwork (same day):** the product owner supplied the logo (wordmark with a pink map pin and leaves). It replaces the butterfly mark and the Playfair wordmark.
 
-- **Source:** `docs/brand/dapita-logo-source.png`, unchanged. `src/assets/brand/dapita-logo.png` is the same artwork, trimmed and scaled to 720 px wide.
-- **On-dark copy:** `dapita-logo-on-dark.png` swaps the dark green for cream (#FAF7F4). It is used on green and dark surfaces: the welcome screen, the auth brand panel, the merchant sidebar and dark mode.
+- **Source:** `docs/brand/dapita-logo-source.png`, unchanged. `docs/brand/dapita-logo.png` is the same artwork, trimmed and scaled to 720 px wide; the app ships it as WebP at 480 and 720 px (`src/assets/brand/dapita-logo-{480,720}.webp`, step 12).
+- **On-dark copy:** `docs/brand/dapita-logo-on-dark.png` (shipped as `dapita-logo-on-dark-{480,720}.webp`) swaps the dark green for cream (#FAF7F4). It is used on green and dark surfaces: the welcome screen, the auth brand panel, the merchant sidebar and dark mode.
 - **`Logo`:** shows the artwork, with the name as screen-reader text from `VITE_APP_NAME`. The artwork itself is fixed, so a rename now also needs new artwork.
 - **`LogoMark`:** the pin redrawn as SVG for small sizes (the phone header, the collapsed sidebar) and the favicon. The redraw is approximate; replace it with a vector file from the designer when one exists, and also ask for the wordmark as SVG.
 
@@ -993,3 +993,36 @@ Answers Q5 and C12. The product owner chose **Dapita**: a local identity for a m
 - **Set C is in (staff):** five portraits, cropped to head and shoulders as 256 px square WebP (about 10 KB each) in `public/images/staff/`, set as each seeded staff member's `avatarUrl`. They show in the shop's staff list and the booking "Choose a professional" picker; the initials stay as the fallback. `MOCK_DB_VERSION` went to 4.
 - **Set D, in progress (services):** The Good Cut Barbershop's six services are in, as 720 px square WebP (about 40 KB each) in `public/images/services/`. The seed's `servicesWithPhotos` list sets `photoUrl` for them; the service rows, service page and booking form already read it. `MOCK_DB_VERSION` went to 5.
 - **Still to come:** the other shops' service photos and shop galleries (rest of Set D, Set E) keep the green placeholder until supplied.
+
+### 13.10 Step 12 — MVP hardening (complete, 28 Oct 2026)
+
+Checked against the release gate in §10.3–10.4, on the production build in mock mode, in Chrome at desktop and Pixel 7 sizes.
+
+| Check                               | Result                                                                                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E2E journeys (§10.3 #1–7)           | 48 passed (desktop + mobile). New in `e2e/journeys.spec.ts`: shop proposes a time, cancel shows the policy first, map with location denied, legal pages from the footer, listing report reaching an admin |
+| Axe scan (§10.3 #8)                 | 42 primary pages × 2 viewports as guest, customer, business owner and admin: **0 serious or critical violations** (`e2e/a11y.spec.ts`)                                                                    |
+| Unit and route tests                | 416 passed                                                                                                                                                                                                |
+| Server functional tests             | 56 passed (unchanged in this step)                                                                                                                                                                        |
+| TypeScript, ESLint, Prettier, build | Pass                                                                                                                                                                                                      |
+| Visual pass                         | Changed screens checked in light and dark at 390 and 1440 px                                                                                                                                              |
+
+**Accessibility fixes** (the first scan failed 54 of 82 page checks):
+
+- Label in name (WCAG 2.5.3): the account menu, "coming soon" category tiles, calendar appointments and "Review the shop" had labels that didn't contain their visible text. Their names now come from the visible text, with screen-reader-only additions.
+- Contrast: inactive tabs (3.8:1) now use the muted text colour; the home page's business band text (4.4:1) uses a stronger tint.
+- Tabs on the admin Merchants and Reports pages pointed `aria-controls` at panels that didn't exist (critical); the lists now sit in a tab panel.
+- Definition lists on the service page and in the price breakdown held elements other than term groups.
+- The inbox and merchant messages kept their only `<h1>` hidden on phones while a conversation was open; it is now visually hidden but still read.
+
+**Performance** (bytes transferred, phone, compressed as a production host would serve them):
+
+| Page    | Images before → after | Change                                                                                                        |
+| ------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Home    | 582 KB → 253 KB       | Logo as WebP at 480/720 px with `srcset` (165 KB of PNGs → 23 KB); shop cards use 640 px covers               |
+| Explore | 1,107 KB → 180 KB     | List thumbnails use 320 px covers                                                                             |
+| Shop    | —                     | The cover (largest element) loads eagerly with `fetchpriority="high"`; so do the home and welcome hero photos |
+
+JavaScript is 280–310 KB compressed per page, split by route; Leaflet (about 46 KB) loads only with a map. Lossless logo masters are in `docs/brand/`. Cover variants are `shop-<slug>-cover-{320,640}.webp` beside the originals, listed in each cover photo's `srcSet`; a server database seeded before this step serves the full-size covers until `npm run db:reset`.
+
+**Not done here:** side-by-side review against the 12-screen design image (§10.4) and `toHaveScreenshot` baselines need the designer's sign-off first; a real-device pass at 320 and 768 px; Lighthouse on the deployed site.

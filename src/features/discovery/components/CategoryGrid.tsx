@@ -17,7 +17,6 @@ function CategoryTile({ to, label, icon: Icon, comingSoon }: CategoryTileProps) 
   return (
     <Link
       to={to}
-      aria-label={comingSoon ? `${label} (coming soon)` : undefined}
       className="group flex flex-col items-center gap-2 rounded-xl p-1 text-center outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <span className="relative flex size-14 items-center justify-center rounded-full bg-white text-primary shadow-xs ring-1 ring-border transition-colors group-hover:bg-primary group-hover:text-primary-foreground md:size-16 dark:bg-card">
@@ -31,7 +30,15 @@ function CategoryTile({ to, label, icon: Icon, comingSoon }: CategoryTileProps) 
           </span>
         ) : null}
       </span>
-      <span className="text-xs leading-tight font-medium text-balance text-foreground">{label}</span>
+      <span className="text-xs leading-tight font-medium text-balance text-foreground">
+        {label}
+        {comingSoon ? (
+          <>
+            {' '}
+            <span className="sr-only">(coming soon)</span>
+          </>
+        ) : null}
+      </span>
     </Link>
   )
 }

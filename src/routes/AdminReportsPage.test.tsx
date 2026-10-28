@@ -65,7 +65,7 @@ describe('AdminCasePage', () => {
     renderAt(`/admin/reports/${CASE}`)
     const transcript = await screen.findByRole('log', { name: 'Conversation' })
     expect(within(transcript).getByText(/send a ₱300 deposit to my GCash/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Review Polished Nail Studio' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Review the shop' })).toHaveAttribute(
       'href',
       '/admin/merchants/biz_polished',
     )

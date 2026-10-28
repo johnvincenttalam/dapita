@@ -27,6 +27,7 @@ export default function WelcomePage() {
       >
         <BrandPhoto
           photo={brandPhotos.welcome}
+          priority
           sizes="(min-width: 768px) 50vw, 100vw"
           className="size-full object-[50%_25%] md:absolute md:inset-0"
         />
@@ -38,7 +39,7 @@ export default function WelcomePage() {
         {/* Centred on phones (design screen 1); from `md` up it lines up with the headline below. */}
         <header className="space-y-3 text-center md:text-left">
           <h1>
-            <LogoArtwork onDark className="mx-auto h-24 md:mx-0 md:h-18" />
+            <LogoArtwork onDark sizes="(min-width: 768px) 174px, 232px" className="mx-auto h-24 md:mx-0 md:h-18" />
             <span className="sr-only">{env.appName}</span>
           </h1>
           <p className="text-sm font-medium text-balance opacity-90">{brand.tagline}</p>

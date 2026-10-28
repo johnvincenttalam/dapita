@@ -91,7 +91,8 @@ export default function HomePage() {
             <h2 id="business-heading" className="type-heading">
               Run a salon, spa or barbershop?
             </h2>
-            <p className="text-sm text-pretty text-muted-foreground">
+            {/* Muted grey falls just short of 4.5:1 on the peach band, so a stronger tint of the text colour. */}
+            <p className="text-sm text-pretty text-foreground/75">
               List your business for free and manage booking requests in one place.
             </p>
           </div>

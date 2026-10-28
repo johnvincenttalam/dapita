@@ -18,7 +18,7 @@ export default function MerchantMessagesPage() {
       <PageHeader
         title="Messages"
         description="Questions from customers. Quick replies help people decide to book."
-        className={cn(conversationId && 'max-lg:hidden')}
+        className={cn(conversationId && 'max-lg:sr-only')}
       />
       <MessagingWorkspace
         conversations={conversations}
