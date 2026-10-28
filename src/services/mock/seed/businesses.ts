@@ -29,8 +29,11 @@ const coverAlts: Record<string, string> = {
 function coverPhoto(id: ID, slug: string): Business['photos'] {
   const alt = coverAlts[slug]
   if (!alt) return []
-  const url = `${import.meta.env.BASE_URL}images/shops/shop-${slug}-cover.webp`
-  return [{ id: `ph_${id}_cover`, url, alt, kind: 'cover' }]
+  const base = `${import.meta.env.BASE_URL}images/shops/shop-${slug}-cover`
+  const url = `${base}.webp`
+  // 1280 px for the shop page, 640 px for cards, 320 px for list thumbnails.
+  const srcSet = `${base}-320.webp 320w, ${base}-640.webp 640w, ${url} 1280w`
+  return [{ id: `ph_${id}_cover`, url, srcSet, alt, kind: 'cover' }]
 }
 
 function weekly(open: TimeOfDay, close: TimeOfDay, closedOn: Weekday[] = []): WeeklyHours {

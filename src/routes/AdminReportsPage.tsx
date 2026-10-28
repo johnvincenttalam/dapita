@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCasesQuery } from '@/features/admin/api/queries'
 import { CaseStatusBadge } from '@/features/admin/components/CaseStatusBadge'
 import { useDocumentTitle } from '@/hooks/use-document-title'
@@ -35,6 +35,7 @@ export default function AdminReportsPage() {
       />
 
       <Tabs
+        className="gap-6"
         value={status}
         onValueChange={(next) =>
           void navigate(next === 'open' ? '/admin/reports' : `/admin/reports?status=${next}`, { replace: true })
@@ -52,47 +53,52 @@ export default function AdminReportsPage() {
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
 
-      {cases.isError ? (
-        <ErrorState error={cases.error} onRetry={() => void cases.refetch()} isRetrying={cases.isRefetching} />
-      ) : cases.isPending ? (
-        <Skeleton aria-hidden="true" className="h-60 rounded-3xl" />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={FlagIcon}
-          title={status === 'open' ? 'No open reports' : `Nothing ${caseStatusLabels[status].toLowerCase()}`}
-          description={
-            status === 'open' ? 'When someone reports a conversation or contacts support, it appears here.' : undefined
-          }
-          bordered
-        />
-      ) : (
-        <ul
-          aria-label={caseStatusLabels[status]}
-          className="max-w-4xl divide-y divide-border/70 overflow-hidden rounded-3xl card-surface"
-        >
-          {rows.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={`/admin/reports/${encodeURIComponent(item.id)}`}
-                className="block space-y-1 px-5 py-4 transition-colors outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-              >
-                <span className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 font-semibold">{caseTitle(item)}</span>
-                  <CaseStatusBadge status={item.status} className="shrink-0" />
-                </span>
-                <span className="block text-sm text-pretty">“{item.reason}”</span>
-                <span className="block text-xs text-muted-foreground">
-                  {caseKindLabels[item.kind]} · {item.kind === 'message' ? 'Reported' : 'Sent'} by {item.reporterName} (
-                  {item.reporterSide === 'customer' ? 'customer' : 'shop'}) {formatRelative(item.createdAt, now)}
-                  {item.ownerName ? ` · ${item.ownerName} is handling it` : ''}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+        <TabsContent value={status}>
+          {cases.isError ? (
+            <ErrorState error={cases.error} onRetry={() => void cases.refetch()} isRetrying={cases.isRefetching} />
+          ) : cases.isPending ? (
+            <Skeleton aria-hidden="true" className="h-60 rounded-3xl" />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={FlagIcon}
+              title={status === 'open' ? 'No open reports' : `Nothing ${caseStatusLabels[status].toLowerCase()}`}
+              description={
+                status === 'open'
+                  ? 'When someone reports a conversation or contacts support, it appears here.'
+                  : undefined
+              }
+              bordered
+            />
+          ) : (
+            <ul
+              aria-label={caseStatusLabels[status]}
+              className="max-w-4xl divide-y divide-border/70 overflow-hidden rounded-3xl card-surface"
+            >
+              {rows.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    to={`/admin/reports/${encodeURIComponent(item.id)}`}
+                    className="block space-y-1 px-5 py-4 transition-colors outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0 font-semibold">{caseTitle(item)}</span>
+                      <CaseStatusBadge status={item.status} className="shrink-0" />
+                    </span>
+                    <span className="block text-sm text-pretty">“{item.reason}”</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {caseKindLabels[item.kind]} · {item.kind === 'message' ? 'Reported' : 'Sent'} by{' '}
+                      {item.reporterName} ({item.reporterSide === 'customer' ? 'customer' : 'shop'}){' '}
+                      {formatRelative(item.createdAt, now)}
+                      {item.ownerName ? ` · ${item.ownerName} is handling it` : ''}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

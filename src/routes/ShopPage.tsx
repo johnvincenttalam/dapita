@@ -84,6 +84,10 @@ function ShopProfile({ shop, services, staff, categories, servicesError }: ShopP
         <div className="relative -mx-4 sm:-mx-6 md:mx-0">
           <ImageWithFallback
             src={cover?.url}
+            srcSet={cover?.srcSet}
+            sizes="(min-width: 1024px) 860px, 100vw"
+            // The page's largest element: fetch it first rather than lazily.
+            priority
             alt={cover?.alt ?? ''}
             icon={categoryIconFor(primaryCategory)}
             className="aspect-16/10 w-full md:aspect-21/9 md:rounded-3xl"

@@ -150,12 +150,7 @@ export default function AdminCasePage() {
         actions={
           item.businessId ? (
             <Button asChild variant="outline" shape="pill">
-              <Link
-                to={`/admin/merchants/${encodeURIComponent(item.businessId)}`}
-                aria-label={`Review ${item.businessName ?? 'the shop'}`}
-              >
-                Review the shop
-              </Link>
+              <Link to={`/admin/merchants/${encodeURIComponent(item.businessId)}`}>Review the shop</Link>
             </Button>
           ) : undefined
         }

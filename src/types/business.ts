@@ -30,6 +30,8 @@ export type BookingMethod = 'request' | 'instant'
 export interface BusinessPhoto {
   id: ID
   url: string
+  /** Smaller copies for cards and lists, as an `srcset` (e.g. "…-640.webp 640w, …webp 1280w"). */
+  srcSet?: string
   alt: string
   kind: 'cover' | 'gallery'
 }

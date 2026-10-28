@@ -52,7 +52,7 @@ test.group('Support requests', (group) => {
     resolved.assertStatus(200)
   })
 
-  test('reports only live listings, and needs to know which', async ({ client, assert }) => {
+  test('reports only live listings, and needs to know which', async ({ client }) => {
     const customer = await userByEmail(customerEmail)
     const live = await client
       .post('/api/support/requests')
@@ -75,7 +75,9 @@ test.group('Support requests', (group) => {
       .json({ topic: 'listing', message: 'Which shop? I didn’t say.' })
       .loginAs(customer)
     unnamed.assertStatus(422)
-    assert.property(unnamed.body().details, 'businessId')
+    unnamed.assertBodyContains({
+      details: { businessId: ['Open the shop’s page and choose “Report this listing”'] },
+    })
   })
 
   test('only the booking’s customer or its shop can ask about it', async ({ client, assert }) => {

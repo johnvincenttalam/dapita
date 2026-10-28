@@ -1,7 +1,9 @@
 import { Link } from 'react-router'
 
-import logoOnDarkUrl from '@/assets/brand/dapita-logo-on-dark.png'
-import logoUrl from '@/assets/brand/dapita-logo.png'
+import logoOnDark480 from '@/assets/brand/dapita-logo-on-dark-480.webp'
+import logoOnDark720 from '@/assets/brand/dapita-logo-on-dark-720.webp'
+import logo480 from '@/assets/brand/dapita-logo-480.webp'
+import logo720 from '@/assets/brand/dapita-logo-720.webp'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 
@@ -22,19 +24,50 @@ interface LogoProps {
 /** Intrinsic size of the artwork files, so the browser reserves space before they load. */
 const ARTWORK_SIZE = { width: 720, height: 298 }
 
+/* WebP at two widths, made from the lossless PNGs in docs/brand: 480 px covers the header logos on any
+   screen; 720 px is for the large welcome-screen logo. */
+const artwork = {
+  light: { src: logo720, srcSet: `${logo480} 480w, ${logo720} 720w` },
+  onDark: { src: logoOnDark720, srcSet: `${logoOnDark480} 480w, ${logoOnDark720} 720w` },
+}
+
 /**
  * The supplied logo artwork (docs/brand/dapita-logo-source.png, trimmed). `onDark` is the copy
  * with a cream wordmark for green or dark surfaces; otherwise it follows the theme.
  * Decorative: callers give the accessible name.
  */
-export function LogoArtwork({ onDark, className }: { onDark?: boolean; className?: string }) {
+export function LogoArtwork({
+  onDark,
+  sizes = '140px',
+  className,
+}: {
+  onDark?: boolean
+  /** How wide the logo is shown, so the browser picks the smaller file when it can. */
+  sizes?: string
+  className?: string
+}) {
   if (onDark) {
-    return <img src={logoOnDarkUrl} alt="" {...ARTWORK_SIZE} className={cn('w-auto', className)} />
+    return <img {...artwork.onDark} sizes={sizes} alt="" {...ARTWORK_SIZE} className={cn('w-auto', className)} />
   }
+  // Lazy loading skips whichever copy the theme hides (`display: none`), so only one downloads.
   return (
     <>
-      <img src={logoUrl} alt="" {...ARTWORK_SIZE} className={cn('w-auto dark:hidden', className)} />
-      <img src={logoOnDarkUrl} alt="" {...ARTWORK_SIZE} className={cn('hidden w-auto dark:block', className)} />
+      <img
+        {...artwork.light}
+        sizes={sizes}
+        alt=""
+        loading="lazy"
+        {...ARTWORK_SIZE}
+        className={cn('w-auto dark:hidden', className)}
+      />
+      <img
+        {...artwork.onDark}
+        sizes={sizes}
+        alt=""
+        loading="lazy"
+        {...ARTWORK_SIZE}
+        className={cn('hidden w-auto dark:block', className)}
+      />
     </>
   )
 }

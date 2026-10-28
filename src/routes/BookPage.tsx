@@ -30,6 +30,8 @@ function ShopContext({ shop }: { shop: ShopDetails }) {
       <div className="flex items-center gap-3 rounded-2xl card-surface p-3 lg:sticky lg:top-24 lg:flex-col lg:items-stretch lg:gap-4 lg:rounded-3xl lg:p-5">
         <ImageWithFallback
           src={cover?.url}
+          srcSet={cover?.srcSet}
+          sizes="(min-width: 1024px) 300px, 64px"
           alt=""
           icon={StoreIcon}
           className="size-16 shrink-0 rounded-xl lg:aspect-16/10 lg:size-auto lg:w-full lg:rounded-2xl"
