@@ -203,7 +203,7 @@ describe('merchant dashboard', () => {
     renderRoute('/business/bookings')
     expect(await screen.findByRole('heading', { level: 1, name: 'Bookings' })).toBeInTheDocument()
 
-    expect(screen.getByRole('button', { name: /account menu for paolo mendoza/i })).toHaveTextContent(
+    expect(screen.getByRole('button', { name: /account menu for the good cut barbershop/i })).toHaveTextContent(
       'The Good Cut Barbershop',
     )
     expect(screen.getByRole('navigation', { name: /breadcrumb/i })).toHaveTextContent('DashboardBookings')

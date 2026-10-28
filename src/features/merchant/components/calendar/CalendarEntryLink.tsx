@@ -21,13 +21,11 @@ interface CalendarEntryLinkProps {
 export function CalendarEntryLink({ entry, now, variant, style, className }: CalendarEntryLinkProps) {
   const { booking, kind } = entry
   const span = formatTimeSpan(entry.start, entry.end)
-  const label = `${span}, ${booking.contact.name}, ${booking.service.name}, ${entryStyles[kind].label}`
   const note = kindNote[kind]
 
   return (
     <Link
       to={merchantBookingHref(booking.id, getMerchantTab(booking, now))}
-      aria-label={label}
       style={style}
       className={cn(
         'block min-w-0 overflow-hidden rounded-lg text-left transition-shadow outline-none hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50',
@@ -36,13 +34,17 @@ export function CalendarEntryLink({ entry, now, variant, style, className }: Cal
         className,
       )}
     >
+      {/* The link's name is its text, so it contains the words on screen (WCAG 2.5.3). */}
       <span className="block truncate text-xs tabular-nums opacity-80">{span}</span>
+      <span className="sr-only">,</span>{' '}
       <span className={cn('block truncate text-sm', kind !== 'done' && 'font-semibold')}>{booking.contact.name}</span>
+      <span className="sr-only">,</span>{' '}
       <span className="block truncate text-xs opacity-80">
         {note ? `${note} · ` : null}
         {booking.service.name}
         {variant === 'row' ? ` · ${booking.staffName ?? 'Any staff'}` : null}
       </span>
+      {note ? null : <span className="sr-only">, {entryStyles[kind].label}</span>}
     </Link>
   )
 }

@@ -69,6 +69,8 @@ npm run dev                  # http://localhost:5173
 To run end-to-end tests with an installed browser instead of downloading Chromium:
 `PW_BROWSER_CHANNEL=chrome npm run test:e2e` (PowerShell: `$env:PW_BROWSER_CHANNEL='chrome'; npm run test:e2e`).
 
+End-to-end tests always build in mock mode (`VITE_USE_MOCKS=true` in `playwright.config.ts`), even when `.env.local` points the app at `server/`, so they need no API. `e2e/app.spec.ts` and `e2e/journeys.spec.ts` cover the MVP journeys; `e2e/a11y.spec.ts` runs an axe scan of every primary page as a guest, customer, business owner and administrator, and fails on serious or critical violations.
+
 ## Folder structure
 
 ```

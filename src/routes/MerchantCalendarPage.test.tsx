@@ -48,7 +48,7 @@ describe('MerchantCalendarPage', () => {
 
     const ken = await screen.findByRole('region', { name: 'Ken' })
     const kenLinks = within(ken).getAllByRole('link')
-    expect(kenLinks.map((link) => link.getAttribute('aria-label'))).toEqual([
+    expect(kenLinks.map((link) => link.textContent)).toEqual([
       expect.stringMatching(/^10:00–10:30 AM, John Dela Cruz, Men’s Haircut, done$/),
       expect.stringMatching(/^1:30–2:00 PM, Alyssa Santos, Men’s Haircut, confirmed$/),
     ])
@@ -66,7 +66,7 @@ describe('MerchantCalendarPage', () => {
     expect(router.state.location.search).toBe('?date=2026-10-22')
     expect(await screen.findByRole('heading', { level: 2, name: 'Thursday, October 22' })).toBeInTheDocument()
     const any = await screen.findByRole('region', { name: 'Any staff' })
-    expect(within(any).getByRole('link')).toHaveAccessibleName(/Carlos Tan, Haircut & Styling, request/)
+    expect(within(any).getByRole('link')).toHaveAccessibleName(/Carlos Tan, Request · Haircut & Styling/)
     expect(within(any).getByRole('link')).toHaveAttribute('href', '/business/bookings/bk_gc_carlos')
 
     await user.click(screen.getByRole('button', { name: 'Today' }))

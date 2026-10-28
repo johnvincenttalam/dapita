@@ -21,14 +21,15 @@ import { formatDuration, formatPrice } from '@/lib/format'
 
 function Fact({ icon: Icon, label, value }: { icon: typeof ClockIcon; label: string; value: ReactNode }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
-        <Icon aria-hidden="true" className="size-5" />
-      </span>
-      <div>
-        <dt className="text-xs text-muted-foreground">{label}</dt>
-        <dd className="font-semibold">{value}</dd>
-      </div>
+    // A <dl> group may hold only <dt> and <dd>, so the icon sits inside the term.
+    <div className="relative flex min-h-10 flex-col justify-center pl-13">
+      <dt className="text-xs text-muted-foreground">
+        <span className="absolute top-1/2 left-0 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-primary">
+          <Icon aria-hidden="true" className="size-5" />
+        </span>
+        {label}
+      </dt>
+      <dd className="font-semibold">{value}</dd>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { CalendarIcon, ClockIcon, MapPinIcon, UserRoundIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { Separator } from '@/components/ui/separator'
 import { market } from '@/config/market'
 import { zonedDateTime } from '@/lib/datetime'
 import { formatDuration, formatFullDate, formatPrice, formatTime } from '@/lib/format'
@@ -78,8 +77,8 @@ export function PriceBreakdown({ serviceName, price, deposit, className }: Price
           <dt className="text-muted-foreground">Booking fee</dt>
           <dd className="text-right font-medium">Free</dd>
         </div>
-        <Separator />
-        <div className="flex justify-between gap-4 text-base">
+        {/* A border, not a <Separator>: a <dl> may hold only term groups. */}
+        <div className="flex justify-between gap-4 border-t pt-3 text-base">
           <dt className="font-semibold">{isFinal ? 'Total' : 'Estimated total'}</dt>
           <dd className="text-right font-semibold">{formatPrice(price)}</dd>
         </div>

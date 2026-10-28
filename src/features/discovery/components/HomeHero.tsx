@@ -21,6 +21,7 @@ export function HomeHero() {
         <BrandPhoto
           photo={brandPhotos.homeHero}
           sizes="(min-width: 1280px) 76rem, 100vw"
+          priority
           className="size-full object-[65%_30%]"
         />
         {/* The green wash behind the text keeps it readable over the photo; the people stay clear on the right. */}

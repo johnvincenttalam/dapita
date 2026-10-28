@@ -23,6 +23,9 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
+    // Always the in-browser mock data, even when .env.local points the app at server/:
+    // the journeys need known demo data and no API. server/ has its own functional tests.
+    env: { VITE_USE_MOCKS: 'true' },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !isCI,
     timeout: 180_000,

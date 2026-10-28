@@ -5,8 +5,13 @@ import { cn } from '@/lib/utils'
 
 interface ImageWithFallbackProps {
   src?: string
+  /** Smaller copies to choose from, with `sizes` saying how wide the image is shown. */
+  srcSet?: string
+  sizes?: string
   /** Describe the image, or pass "" when it is decorative (e.g. a cover next to the shop name). */
   alt: string
+  /** The page's main image, above the fold: loaded at once and first, not lazily. */
+  priority?: boolean
   /** Shown on the placeholder when there is no image or it fails to load. */
   icon?: LucideIcon
   className?: string
@@ -16,15 +21,26 @@ interface ImageWithFallbackProps {
  * Lazy-loaded image that degrades to a soft branded placeholder. Merchant photos
  * are optional and the prototype only has some (plan Q6), so every image slot needs one.
  */
-export function ImageWithFallback({ src, alt, icon: Icon = ImageIcon, className }: ImageWithFallbackProps) {
+export function ImageWithFallback({
+  src,
+  srcSet,
+  sizes,
+  alt,
+  priority = false,
+  icon: Icon = ImageIcon,
+  className,
+}: ImageWithFallbackProps) {
   const [failedSrc, setFailedSrc] = useState<string>()
 
   if (src && failedSrc !== src) {
     return (
       <img
         src={src}
+        srcSet={srcSet}
+        sizes={srcSet ? sizes : undefined}
         alt={alt}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         decoding="async"
         onError={() => setFailedSrc(src)}
         className={cn('bg-muted object-cover', className)}

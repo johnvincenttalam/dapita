@@ -38,6 +38,8 @@ export function ShopCard({ shop, category, variant = 'tile', headingLevel: Headi
     >
       <ImageWithFallback
         src={shop.coverPhoto?.url}
+        srcSet={shop.coverPhoto?.srcSet}
+        sizes={feature ? '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw' : '(min-width: 1024px) 25vw, 50vw'}
         alt=""
         icon={category ? categoryIcons[category.icon] : undefined}
         className={cn('w-full', feature ? 'aspect-video' : 'aspect-4/3')}

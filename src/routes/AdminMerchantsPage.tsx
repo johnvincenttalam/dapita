@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/feedback/EmptyState'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMerchantsQuery } from '@/features/admin/api/queries'
 import { BusinessStatusBadge } from '@/features/admin/components/BusinessStatusBadge'
 import { useDocumentTitle } from '@/hooks/use-document-title'
@@ -37,6 +37,7 @@ export default function AdminMerchantsPage() {
       />
 
       <Tabs
+        className="gap-6"
         value={status}
         onValueChange={(next) =>
           void navigate(next === 'pending_review' ? '/admin/merchants' : `/admin/merchants?status=${next}`, {
@@ -59,47 +60,54 @@ export default function AdminMerchantsPage() {
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
 
-      {merchants.isError ? (
-        <ErrorState
-          error={merchants.error}
-          onRetry={() => void merchants.refetch()}
-          isRetrying={merchants.isRefetching}
-        />
-      ) : merchants.isPending ? (
-        <Skeleton aria-hidden="true" className="h-72 rounded-3xl" />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={StoreIcon}
-          title={status === 'pending_review' ? 'Nothing to review' : `No listings: ${label.toLowerCase()}`}
-          description={status === 'pending_review' ? 'New listings appear here when owners submit them.' : undefined}
-          bordered
-        />
-      ) : (
-        <ul aria-label={label} className="max-w-4xl divide-y divide-border/70 overflow-hidden rounded-3xl card-surface">
-          {rows.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={`/admin/merchants/${encodeURIComponent(item.id)}`}
-                className="flex flex-col gap-1 px-5 py-4 transition-colors outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:flex-row sm:items-center sm:gap-4"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{item.name}</span>
-                  <span className="block truncate text-sm text-muted-foreground">
-                    {[item.categoryNames.join(', '), item.areaName].filter(Boolean).join(' · ') || 'No details yet'} ·{' '}
-                    {item.serviceCount} {item.serviceCount === 1 ? 'service' : 'services'}
-                  </span>
-                </span>
-                <span className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
-                  <span>Updated {formatRelative(item.updatedAt, now)}</span>
-                  <BusinessStatusBadge status={item.status} />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+        <TabsContent value={status}>
+          {merchants.isError ? (
+            <ErrorState
+              error={merchants.error}
+              onRetry={() => void merchants.refetch()}
+              isRetrying={merchants.isRefetching}
+            />
+          ) : merchants.isPending ? (
+            <Skeleton aria-hidden="true" className="h-72 rounded-3xl" />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={StoreIcon}
+              title={status === 'pending_review' ? 'Nothing to review' : `No listings: ${label.toLowerCase()}`}
+              description={
+                status === 'pending_review' ? 'New listings appear here when owners submit them.' : undefined
+              }
+              bordered
+            />
+          ) : (
+            <ul
+              aria-label={label}
+              className="max-w-4xl divide-y divide-border/70 overflow-hidden rounded-3xl card-surface"
+            >
+              {rows.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    to={`/admin/merchants/${encodeURIComponent(item.id)}`}
+                    className="flex flex-col gap-1 px-5 py-4 transition-colors outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:flex-row sm:items-center sm:gap-4"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{item.name}</span>
+                      <span className="block truncate text-sm text-muted-foreground">
+                        {[item.categoryNames.join(', '), item.areaName].filter(Boolean).join(' · ') || 'No details yet'}{' '}
+                        · {item.serviceCount} {item.serviceCount === 1 ? 'service' : 'services'}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
+                      <span>Updated {formatRelative(item.updatedAt, now)}</span>
+                      <BusinessStatusBadge status={item.status} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
