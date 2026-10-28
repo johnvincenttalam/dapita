@@ -22,6 +22,7 @@ const MerchantBusinessesController = () => import('#controllers/merchant_busines
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
+const FavoritesController = () => import('#controllers/favorites_controller')
 const AdminController = () => import('#controllers/admin_controller')
 const SupportController = () => import('#controllers/support_controller')
 
@@ -64,6 +65,10 @@ router
         router.put('me/profile', [ProfileController, 'update'])
         router.get('me/consents', [ProfileController, 'consents'])
         router.post('me/deletion-request', [ProfileController, 'requestDeletion'])
+
+        router.get('me/favorites', [FavoritesController, 'index'])
+        router.put('me/favorites/:businessId', [FavoritesController, 'store'])
+        router.delete('me/favorites/:businessId', [FavoritesController, 'destroy'])
 
         router.get('conversations', [ConversationsController, 'index'])
         router.post('conversations', [ConversationsController, 'store'])

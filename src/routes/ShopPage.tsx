@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { categoryIconFor } from '@/config/category-icons'
 import { useCategoriesQuery } from '@/features/discovery/api/queries'
+import { FavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { MessageShopButton } from '@/features/messaging/components/MessageShopButton'
 import { useShopQuery, useShopServicesQuery, useShopStaffQuery } from '@/features/shops/api/queries'
 import { OpenStatusText } from '@/features/shops/components/OpenStatusText'
@@ -103,7 +104,10 @@ function ShopProfile({ shop, services, staff, categories, servicesError }: ShopP
             >
               <ChevronLeftIcon aria-hidden="true" />
             </Button>
-            <ShareButton title={shop.name} />
+            <div className="flex gap-2">
+              <FavoriteButton businessId={shop.id} shopName={shop.name} />
+              <ShareButton title={shop.name} />
+            </div>
           </div>
         </div>
 

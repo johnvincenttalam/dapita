@@ -9,6 +9,7 @@ export const controllers = {
   Bookings: () => import('#controllers/bookings_controller'),
   Catalog: () => import('#controllers/catalog_controller'),
   Conversations: () => import('#controllers/conversations_controller'),
+  Favorites: () => import('#controllers/favorites_controller'),
   MerchantBookings: () => import('#controllers/merchant_bookings_controller'),
   MerchantBusinesses: () => import('#controllers/merchant_businesses_controller'),
   MerchantServices: () => import('#controllers/merchant_services_controller'),

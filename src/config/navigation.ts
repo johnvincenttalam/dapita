@@ -75,7 +75,7 @@ export const headerNav = customerTabs.filter((item) => item.to !== '/account')
 export const accountNav: NavItem[] = [
   { title: 'My bookings', to: '/bookings', icon: CalendarDaysIcon },
   { title: 'Inbox', to: '/inbox', icon: MessageCircleIcon },
-  { title: 'Favorites', to: '/favorites', icon: HeartIcon, priority: 'P1' },
+  { title: 'Favorites', to: '/favorites', icon: HeartIcon },
   { title: 'Profile', to: '/account', icon: UserIcon, end: true },
   { title: 'Privacy & data', to: '/account/privacy', icon: ShieldCheckIcon },
 ]

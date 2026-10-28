@@ -35,6 +35,11 @@ export interface ApiDefinition {
     consents: typeof routes['profile.consents']
     requestDeletion: typeof routes['profile.request_deletion']
   }
+  favorites: {
+    index: typeof routes['favorites.index']
+    store: typeof routes['favorites.store']
+    destroy: typeof routes['favorites.destroy']
+  }
   conversations: {
     index: typeof routes['conversations.index']
     store: typeof routes['conversations.store']

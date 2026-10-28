@@ -4,6 +4,7 @@ import { createSeedBusinesses, createSeedServices, createSeedStaff } from '@/ser
 import { seedAreas, seedCategories } from '@/services/mock/seed/catalog'
 import { toDateKey } from '@/lib/datetime'
 import type { Business, Service, StaffMember } from '@/types/business'
+import type { Favorite } from '@/types/account'
 import type { Booking, BookingEvent } from '@/types/booking'
 import type { Area, ServiceCategory } from '@/types/catalog'
 import type { ID, ISODateTime } from '@/types/common'
@@ -38,6 +39,8 @@ export interface MockDb {
   supportCases: SupportCase[]
   /** `${businessId}:${userId}` → email choices. Optional so demos saved before it keep working. */
   merchantNotificationSettings?: Record<string, MerchantNotificationSettings>
+  /** Saved shops. Optional so demos saved before it keep working. */
+  favorites?: Favorite[]
 }
 
 export function createSeedDb(now: Date = new Date()): MockDb {

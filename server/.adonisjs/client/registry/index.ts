@@ -144,6 +144,24 @@ const routes = {
     tokens: [[0,"api"],[0,"me"],[0,"deletion-request"]],
     types: placeholder as Registry['profile.request_deletion']['types'],
   },
+  'favorites.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/me/favorites',
+    tokens: [[0,"api"],[0,"me"],[0,"favorites"]],
+    types: placeholder as Registry['favorites.index']['types'],
+  },
+  'favorites.store': {
+    methods: ["PUT"],
+    pattern: '/api/me/favorites/:businessId',
+    tokens: [[0,"api"],[0,"me"],[0,"favorites"],[1,"businessId"]],
+    types: placeholder as Registry['favorites.store']['types'],
+  },
+  'favorites.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/me/favorites/:businessId',
+    tokens: [[0,"api"],[0,"me"],[0,"favorites"],[1,"businessId"]],
+    types: placeholder as Registry['favorites.destroy']['types'],
+  },
   'conversations.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/conversations',

@@ -23,7 +23,7 @@ type ButtonSize = 'sm' | 'default'
 export function AddToCalendarButton({ booking, size = 'default' }: { booking: BookingDetails; size?: ButtonSize }) {
   return (
     <Button
-      variant="secondary"
+      variant="outline"
       shape="pill"
       size={size}
       onClick={() =>

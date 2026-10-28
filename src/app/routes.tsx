@@ -192,12 +192,8 @@ const marketplaceRoutes: RouteObject[] = [
           },
           {
             path: 'favorites',
-            ...planned('Favorites', {
-              title: 'Favorites',
-              description: 'Shops you have saved.',
-              priority: 'P1',
-              refs: ['CUS-07'],
-            }),
+            handle: { crumb: 'Favorites' } satisfies RouteHandle,
+            lazy: page(() => import('@/routes/FavoritesPage')),
           },
         ],
       },
