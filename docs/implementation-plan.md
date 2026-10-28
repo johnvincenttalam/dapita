@@ -601,7 +601,7 @@ Server responsibilities the frontend must **not** reimplement: authorization, st
 
 ## 9. Recommended implementation order
 
-Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests, and the admin console (step 9 screens) followed the same day, so every built screen now runs on the server. Step 11 followed on 28 Oct 2026: draft terms, privacy notice and merchant policy pages, and a support page whose requests (about a booking, a listing, an account or anything else) open cases in the admin console, with links from shop pages, booking details and Privacy & data. Next: steps 10 and 12 (map, MVP hardening).
+Status: steps 0–6 are **done** (§13.1–13.3, §13.7); the repository is on GitHub since 27 Oct 2026. Merchant screens (step 7) are built in mock mode, and their listing, services and settings endpoints are served by `server/` since 27 Oct 2026. Customer profile, consents and deletion requests, and the admin console (step 9 screens) followed the same day, so every built screen now runs on the server. Step 11 followed on 28 Oct 2026: draft terms, privacy notice and merchant policy pages, and a support page whose requests (about a booking, a listing, an account or anything else) open cases in the admin console, with links from shop pages, booking details and Privacy & data. Step 10 followed the same day: Explore has a list/map switch (`?view=map`) on Leaflet with OpenStreetMap tiles (Q3), with pin ↔ card ↔ profile linking and an optional "Use my location" that adds distances. Next: step 12 (MVP hardening).
 
 Each step ends with `npm run check`, updated tests and (from step 3) a Playwright run at mobile and desktop sizes.
 
@@ -717,16 +717,16 @@ Search results **list** view and filters; service detail; sign-in / sign-up / fo
 
 ## 12. Blocking questions (answer before step 1–2)
 
-| #   | Question                                                                                                                         | Default if unanswered                                                               |
-| --- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Q1  | **MVP scope**: implement strictly P0 (doc), or also build the designed P1/P2 screens (AI Try-On, Rentals) now as flagged-off UI? | P0 only; P1/P2 designs later                                                        |
-| Q2  | **Booking model** (C1/C2): accept request-to-confirm as the MVP default with a "pending" variant of screen 7?                    | Yes                                                                                 |
-| Q3  | **Map provider**: Leaflet + OpenStreetMap (free, no key) vs Google Maps vs Mapbox?                                               | Leaflet + OSM behind an adapter                                                     |
-| Q4  | **Backend**: is there an API team/contract, or should the frontend proceed on mock services for the whole MVP?                   | Mock services (localStorage-backed)                                                 |
-| Q5  | **Brand**: confirm "GlamSpot" and approve adding one serif display font for the wordmark — **answered: "Dapita"** (§13.9)        | GlamSpot + one serif font                                                           |
-| Q6  | **Imagery**: may we use royalty-free stock photos (e.g. Unsplash licence) for mock shops, or neutral placeholders only?          | **Answered 22 Oct 2026:** AI-generated photos supplied by the product owner (§13.9) |
-| Q7  | **Merchant dashboard KPIs** (C9/C10): keep "Total Revenue" and "+ Add Booking"?                                                  | Hide both in P0                                                                     |
-| Q8  | **Template demo routes**: remove `/forms`, `/dashboard`, `/settings` demos; keep `/components` as dev-only gallery?              | Yes                                                                                 |
+| #   | Question                                                                                                                              | Default if unanswered                                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Q1  | **MVP scope**: implement strictly P0 (doc), or also build the designed P1/P2 screens (AI Try-On, Rentals) now as flagged-off UI?      | P0 only; P1/P2 designs later                                                        |
+| Q2  | **Booking model** (C1/C2): accept request-to-confirm as the MVP default with a "pending" variant of screen 7?                         | Yes                                                                                 |
+| Q3  | **Map provider**: Leaflet + OpenStreetMap (free, no key) vs Google Maps vs Mapbox? — **answered 28 Oct 2026: a free library for now** | Leaflet + OSM behind an adapter                                                     |
+| Q4  | **Backend**: is there an API team/contract, or should the frontend proceed on mock services for the whole MVP?                        | Mock services (localStorage-backed)                                                 |
+| Q5  | **Brand**: confirm "GlamSpot" and approve adding one serif display font for the wordmark — **answered: "Dapita"** (§13.9)             | GlamSpot + one serif font                                                           |
+| Q6  | **Imagery**: may we use royalty-free stock photos (e.g. Unsplash licence) for mock shops, or neutral placeholders only?               | **Answered 22 Oct 2026:** AI-generated photos supplied by the product owner (§13.9) |
+| Q7  | **Merchant dashboard KPIs** (C9/C10): keep "Total Revenue" and "+ Add Booking"?                                                       | Hide both in P0                                                                     |
+| Q8  | **Template demo routes**: remove `/forms`, `/dashboard`, `/settings` demos; keep `/components` as dev-only gallery?                   | Yes                                                                                 |
 
 Non-blocking but needed before step 6–7: §11.2 items 5 (response deadline), 6 (policy structure) and 7 (area list).
 
@@ -812,7 +812,7 @@ Covers plan steps 2 (rest) and 4.
 - Hearts (favourites, P1) and the Reviews tab (P1) are hidden. The Staff tab appears only for shops with staff records (C15).
 - "Popular Near You" and "Popular Services" became "Featured shops" and "Featured services": the data holds admin-featured listings and merchant-highlighted services, not popularity or location.
 - The banner button is "Explore services", not "Try AI Look" (C4).
-- Explore is list-only until the map provider is chosen (step 10); its category chips and filter button follow screen 4.
+- Explore was list-only until the map provider was chosen; the map view followed in step 10 (28 Oct 2026). Its category chips and filter button follow screen 4.
 - Added beyond the design: open status on cards and results, "From ₱…" prices, verified badge, request-to-book notice, hours, closures, policies, a directions link (Google Maps URL, no embed or key), share button, a list-your-business band on the home page.
 
 **Assumptions introduced (all in `src/config/booking.ts`):** a request expires 24 h after it is sent or 1 h before the requested start, whichever comes first (§11.2 #5); preferred times start at least 60 min from now, in 30-min steps, up to 30 days ahead; a customer who declines a proposed time returns the original request to the merchant (doc §7.2 allows Alternative proposed → Pending); merchants can cancel only confirmed bookings. Policies stay free text (§11.2 #6).
@@ -864,7 +864,7 @@ Requested scope: homepage, category browsing, search and filters, service and re
 | Steps 7–12  | Merchant core, messaging, notifications, admin console, map, legal pages, MVP hardening (see §9) |
 | Steps 13–15 | P1 features, AI Style Studio, rentals                                                            |
 
-Shared components still to build (§5): `RatingStars` (P1, with reviews), `FavoriteButton` (P1), `MapView` (step 10), `StatCard`, `DateRangePicker`, `Stepper`, `ImageUploader`, `SuccessHero`, and all domain components.
+Shared components still to build (§5): `RatingStars` (P1, with reviews), `FavoriteButton` (P1), `StatCard`, `DateRangePicker`, `Stepper`, `ImageUploader`, `SuccessHero`, and all domain components.
 
 ### 13.5 Blockers and open items
 
@@ -882,6 +882,7 @@ Shared components still to build (§5): `RatingStars` (P1, with reviews), `Favor
 | Support replies                                             | Requests promise a reply by email; staff reply from their own mail client (the case shows the sender's address). No support mailbox or reply-from-case yet                                                                                    | Before pilot                               |
 | Old brand in storage keys                                   | `localStorage` keys keep the `glamspot-` prefix so existing sessions and tweaks survive; rename before launch (§13.9)                                                                                                                         |
 | Design tweaks panel (temporary)                             | Dev-only tool for deciding tokens; must be removed after design sign-off (README, "Design tweaks panel")                                                                                                                                      | Design sign-off                            |
+| Map tiles for production                                    | The map uses OpenStreetMap's volunteer tile servers, which allow light use only and need the visible attribution. Before real traffic, point `TILE_URL` in `MapView.tsx` at a hosted tile service (free tiers exist, usually with a key)      | Before launch                              |
 | Playwright Chromium not installed locally                   | `npm run test:e2e` needs `npm run test:e2e:install` or `PW_BROWSER_CHANNEL=chrome`                                                                                                                                                            | CI setup                                   |
 
 ### 13.6 Phase 4 — UI fidelity and quality audit (complete, 21 Oct 2026)
