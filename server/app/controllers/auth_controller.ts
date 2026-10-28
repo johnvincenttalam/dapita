@@ -101,7 +101,8 @@ export default class AuthController {
             areaId: '',
             address: '',
             coordinates: null,
-            phone: null,
+            // The owner's sign-up number, offered as the shop's contact number in onboarding.
+            phone: input.phone || null,
             status: 'draft',
             bookingMethod: 'request',
             verified: false,

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusIcon, XIcon } from 'lucide-react'
 import { useId } from 'react'
-import { Controller, useForm, type FieldError, type FieldErrors } from 'react-hook-form'
+import { Controller, useForm, useWatch, type FieldError, type FieldErrors } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Switch } from '@/components/ui/switch'
 import { useUpdateHoursMutation } from '@/features/merchant/api/business-queries'
+import { SuggestionChips } from '@/features/merchant/components/SuggestionChips'
 import { getErrorMessage } from '@/lib/api-client'
 import { parseTimeOfDay, toTimeOfDay } from '@/lib/datetime'
 import { formatTimeOfDay, weekdayNames, weekdayOrder } from '@/lib/opening-hours'
@@ -30,6 +31,13 @@ const DEFAULT_RANGE: TimeRange = { open: '10:00', close: '19:00' }
 const toDays = (hours: WeeklyHours): TimeRange[][] => ([0, 1, 2, 3, 4, 5, 6] as const).map((day) => hours[day])
 const toWeek = (days: TimeRange[][]) =>
   Object.fromEntries(days.map((ranges, day) => [day, ranges])) as unknown as WeeklyHours
+
+/** One tap sets the whole week from one day's hours, the usual pattern for a small shop. */
+const weekPatterns: { label: string; days: Weekday[] }[] = [
+  { label: 'Mon–Sat', days: [1, 2, 3, 4, 5, 6] },
+  { label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] },
+  { label: 'Mon–Fri', days: [1, 2, 3, 4, 5] },
+]
 
 /** Half-hour steps; the current value stays listed even if it's off the grid. */
 function timeOptions(kind: 'open' | 'close', current: TimeOfDay) {
@@ -187,6 +195,16 @@ export function OpeningHoursForm({ business, submitLabel = 'Save hours', onSaved
     resolver: zodResolver(hoursFormSchema),
     defaultValues: { days: toDays(business.hours) },
   })
+  const days = useWatch({ control: form.control, name: 'days' })
+  // The first open day in the week, else the usual 10–7, is copied to the chosen days.
+  const source = weekdayOrder.find((day) => days[day]?.length)
+  const sourceRanges = source === undefined ? [DEFAULT_RANGE] : (days[source] ?? [DEFAULT_RANGE])
+  const applyPattern = (pattern: (typeof weekPatterns)[number]) =>
+    form.setValue(
+      'days',
+      days.map((_, day) => (pattern.days.includes(day as Weekday) ? sourceRanges.map((range) => ({ ...range })) : [])),
+      { shouldDirty: true, shouldValidate: form.formState.isSubmitted },
+    )
 
   const onSubmit = form.handleSubmit(async ({ days }) => {
     try {
@@ -206,6 +224,16 @@ export function OpeningHoursForm({ business, submitLabel = 'Save hours', onSaved
         title="Opening hours"
         description="Customers can only request times when you’re open. Add more hours to a day for a break, e.g. closed over lunch."
       >
+        <SuggestionChips
+          label={
+            source === undefined
+              ? `Open ${timeLabel(DEFAULT_RANGE.open)} – ${timeLabel(DEFAULT_RANGE.close)} on`
+              : `Use ${weekdayNames[source]}’s hours for`
+          }
+          items={weekPatterns}
+          itemLabel={(pattern) => pattern.label}
+          onPick={applyPattern}
+        />
         <fieldset disabled={form.formState.isSubmitting} className="-my-4 min-w-0 divide-y divide-border/70">
           {weekdayOrder.map((day) => (
             <Controller

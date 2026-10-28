@@ -147,6 +147,68 @@ describe('MerchantOnboardingPage', () => {
     expect(within(list).getByText('Gel Manicure')).toBeInTheDocument()
   })
 
+  it('drafts a description from the shop’s name, offer and area, and keeps the sign-up number', async () => {
+    const user = userEvent.setup()
+    await signUpOwner()
+    renderAt('/business/onboarding')
+    expect(await screen.findByRole('textbox', { name: /Mobile number/ })).toHaveValue('09171234567')
+    expect(screen.queryByRole('button', { name: 'Write a first draft for me' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('checkbox', { name: 'Nails' }))
+    await user.selectOptions(screen.getByRole('combobox', { name: /Area/ }), 'Bajada')
+    await user.click(screen.getByRole('button', { name: 'Write a first draft for me' }))
+    expect(screen.getByRole('textbox', { name: /Description/ })).toHaveValue(
+      'Lea’s Nail Bar is a nail salon in Bajada, Davao City. We do manicures, pedicures and nail art. Send us a booking request on Dapita and we’ll confirm your time.',
+    )
+  })
+
+  it('sets the week’s hours in one tap', async () => {
+    const user = userEvent.setup()
+    await signUpOwner()
+    renderAt('/business/onboarding?step=hours')
+    expect(await screen.findByRole('switch', { name: 'Open on Sunday' })).not.toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Every day' }))
+    expect(screen.getByRole('switch', { name: 'Open on Sunday' })).toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Mon–Fri' }))
+    expect(screen.getByRole('switch', { name: 'Open on Saturday' })).not.toBeChecked()
+    expect(screen.getByRole('switch', { name: 'Open on Friday' })).toBeChecked()
+  })
+
+  it('starts a service from a suggestion, so only the price is left', async () => {
+    const user = userEvent.setup()
+    const id = await signUpOwner()
+    await finishListing(id)
+    renderAt('/business/onboarding?step=services')
+    const panel = await screen.findByRole('region', { name: 'Services' })
+    // Gel Manicure is already on the menu, so it isn't suggested again.
+    expect(within(panel).queryByRole('button', { name: 'Gel Manicure' })).not.toBeInTheDocument()
+    await user.click(within(panel).getByRole('button', { name: 'Pedicure' }))
+
+    expect(screen.getByRole('textbox', { name: /Service name/ })).toHaveValue('Pedicure')
+    expect(screen.getByRole('radio', { name: 'Pedicure' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '45 mins' })).toBeChecked()
+    const price = screen.getByRole('textbox', { name: /^Price/ })
+    expect(price).toHaveFocus()
+    // The optional extras stay out of the way during setup.
+    expect(screen.queryByRole('switch', { name: 'Mark as popular' })).not.toBeInTheDocument()
+    await user.type(price, '300')
+    await user.click(screen.getByRole('button', { name: 'Add service' }))
+
+    const list = await screen.findByRole('list', { name: 'Your services' })
+    expect(await within(list).findByText('Pedicure')).toBeInTheDocument()
+    expect(within(panel).queryByRole('button', { name: 'Pedicure' })).not.toBeInTheDocument()
+  })
+
+  it('fills the cancellation policy from a common rule', async () => {
+    const user = userEvent.setup()
+    await signUpOwner()
+    renderAt('/business/onboarding?step=policies')
+    await user.click(await screen.findByRole('button', { name: 'Free up to 1 day before' }))
+    expect(screen.getByRole('textbox', { name: /Cancellation policy/ })).toHaveValue(
+      'You can cancel for free up to 24 hours before your appointment. If you need to cancel later than that, please message us as soon as you can.',
+    )
+  })
+
   it('lists what’s missing before the listing can go to review', async () => {
     await signUpOwner()
     renderAt('/business/onboarding?step=review')

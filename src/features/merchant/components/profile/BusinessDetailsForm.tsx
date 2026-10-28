@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CheckIcon } from 'lucide-react'
-import { Controller, useForm } from 'react-hook-form'
+import { CheckIcon, SparklesIcon } from 'lucide-react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
@@ -12,7 +12,9 @@ import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
+import { market } from '@/config/market'
 import { useUpdateProfileMutation } from '@/features/merchant/api/business-queries'
+import { suggestDescription } from '@/features/merchant/setup-suggestions'
 import { getErrorMessage } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { businessProfileSchema, type BusinessProfileInput } from '@/schemas/business'
@@ -46,6 +48,12 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
     mode: 'onTouched',
     defaultValues: detailsValues(profile),
   })
+  const [name, categoryIds, areaId] = useWatch({ control: form.control, name: ['name', 'categoryIds', 'areaId'] })
+  const draft = suggestDescription({
+    name,
+    categoryIds,
+    areaName: profile.areas.find((area) => area.id === areaId)?.name,
+  })
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -63,7 +71,7 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
     <form onSubmit={(event) => void onSubmit(event)} noValidate className="space-y-6">
       <FormError message={form.formState.errors.root?.message} title="We couldn’t save your details" />
       <fieldset disabled={form.formState.isSubmitting} className="min-w-0 space-y-6">
-        <Panel title="Listing" description="How your shop appears in search and on your shop page.">
+        <Panel title="Your shop" description="How your shop appears in search and on your shop page.">
           <FieldGroup>
             <FormField
               control={form.control}
@@ -74,14 +82,6 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
                 <Input maxLength={80} autoComplete="organization" {...field} {...controlProps} />
               )}
             />
-            <FormField
-              control={form.control}
-              name="description"
-              label="Description"
-              description="What makes your shop worth the visit, in a few sentences."
-              required
-              render={({ field, controlProps }) => <Textarea rows={4} maxLength={1000} {...field} {...controlProps} />}
-            />
             <Controller
               control={form.control}
               name="categoryIds"
@@ -91,8 +91,10 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
                 return (
                   <fieldset aria-invalid={fieldState.invalid || undefined} className="min-w-0 space-y-3">
                     <legend className="mb-3 type-subheading">
-                      Categories
-                      <span className="ml-1 text-sm font-normal text-muted-foreground">(up to {MAX_CATEGORIES})</span>
+                      What does your shop offer?
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                        (choose up to {MAX_CATEGORIES})
+                      </span>
                     </legend>
                     <div className="flex flex-wrap gap-2">
                       {profile.categories.map((category) => {
@@ -133,15 +135,46 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
                 )
               }}
             />
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="description"
+                label="Description"
+                description="What customers read first: what you’re known for and who you serve. A few sentences is enough."
+                required
+                render={({ field, controlProps }) => (
+                  <Textarea rows={4} maxLength={1000} {...field} {...controlProps} />
+                )}
+              />
+              {draft ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  shape="pill"
+                  className="h-9 px-4"
+                  onClick={() =>
+                    form.setValue('description', draft, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+                  }
+                >
+                  <SparklesIcon aria-hidden="true" />
+                  Write a first draft for me
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Choose what your shop offers and we can suggest a first draft.
+                </p>
+              )}
+            </div>
           </FieldGroup>
         </Panel>
 
-        <Panel title="Location and contact">
+        <Panel title="Where to find you">
           <FieldGroup>
             <FormField
               control={form.control}
               name="areaId"
-              label="Area"
+              label={`Area in ${market.city}`}
+              description="Customers search by area."
               required
               className="sm:max-w-xs"
               render={({ field, controlProps }) => (
@@ -163,17 +196,23 @@ export function BusinessDetailsForm({ profile, submitLabel = 'Save details', onS
               control={form.control}
               name="address"
               label="Address"
-              description="Street and building, so customers can find you."
+              description="Street, building and a landmark, so customers can find you."
               required
               render={({ field, controlProps }) => (
-                <Input maxLength={200} autoComplete="street-address" {...field} {...controlProps} />
+                <Input
+                  maxLength={200}
+                  autoComplete="street-address"
+                  placeholder="e.g. 2nd floor, 12 J.P. Laurel Ave, near Abreeza"
+                  {...field}
+                  {...controlProps}
+                />
               )}
             />
             <FormField
               control={form.control}
               name="phone"
               label="Mobile number"
-              description="Optional. Shown on your shop page."
+              description="Optional. Shown on your shop page, so customers can call or text you."
               className="sm:max-w-xs"
               render={({ field, controlProps }) => (
                 <Input

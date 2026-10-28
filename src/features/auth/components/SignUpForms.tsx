@@ -160,7 +160,7 @@ export function BusinessSignUpForm({ next }: { next: string }) {
             control={form.control}
             name="businessName"
             label="Business name"
-            description="As customers know it. You can add the rest of your listing next."
+            description="As customers know it, e.g. the name on your signboard or Facebook page."
             required
             render={({ field, controlProps }) => <Input autoComplete="organization" {...field} {...controlProps} />}
           />
@@ -177,7 +177,7 @@ export function BusinessSignUpForm({ next }: { next: string }) {
             control={form.control}
             name="phone"
             label="Mobile number"
-            description="We use it to verify your business before the listing goes live."
+            description="So we can call or text to confirm your shop before it goes live. We’ll also suggest it as your shop’s contact number."
             required
             render={({ field, controlProps }) => (
               <Input

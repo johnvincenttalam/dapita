@@ -22,6 +22,8 @@ export function CalendarEntryLink({ entry, now, variant, style, className }: Cal
   const { booking, kind } = entry
   const span = formatTimeSpan(entry.start, entry.end)
   const note = kindNote[kind]
+  // Done entries are already muted; fading them further fails contrast (WCAG 1.4.3).
+  const secondary = kind === 'done' ? undefined : 'opacity-80'
 
   return (
     <Link
@@ -35,11 +37,11 @@ export function CalendarEntryLink({ entry, now, variant, style, className }: Cal
       )}
     >
       {/* The link's name is its text, so it contains the words on screen (WCAG 2.5.3). */}
-      <span className="block truncate text-xs tabular-nums opacity-80">{span}</span>
+      <span className={cn('block truncate text-xs tabular-nums', secondary)}>{span}</span>
       <span className="sr-only">,</span>{' '}
       <span className={cn('block truncate text-sm', kind !== 'done' && 'font-semibold')}>{booking.contact.name}</span>
       <span className="sr-only">,</span>{' '}
-      <span className="block truncate text-xs opacity-80">
+      <span className={cn('block truncate text-xs', secondary)}>
         {note ? `${note} · ` : null}
         {booking.service.name}
         {variant === 'row' ? ` · ${booking.staffName ?? 'Any staff'}` : null}

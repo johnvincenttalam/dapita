@@ -45,7 +45,10 @@ export const starterHours: WeeklyHours = {
  * shop pages until an admin approves it; policies start at version 0 so the first saved
  * wording is version 1.
  */
-export function createDraftBusiness(db: ListingStore, { id, ownerId, name }: { id: ID; ownerId: ID; name: string }) {
+export function createDraftBusiness(
+  db: ListingStore,
+  { id, ownerId, name, phone }: { id: ID; ownerId: ID; name: string; phone?: string },
+) {
   const now = new Date().toISOString()
   const business: Business = {
     id,
@@ -56,6 +59,8 @@ export function createDraftBusiness(db: ListingStore, { id, ownerId, name }: { i
     categoryIds: [],
     areaId: '',
     address: '',
+    // The owner's sign-up number, offered as the shop's contact number in onboarding.
+    phone,
     status: 'draft',
     bookingMethod: 'request',
     verified: false,

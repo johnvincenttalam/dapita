@@ -134,7 +134,12 @@ const mockAuthService: AuthService = {
     const membership = user.memberships[0]
     if (membership) {
       updateMockDb((db) =>
-        createDraftBusiness(db, { id: membership.businessId, ownerId: id, name: membership.businessName }),
+        createDraftBusiness(db, {
+          id: membership.businessId,
+          ownerId: id,
+          name: membership.businessName,
+          phone: input.phone || undefined,
+        }),
       )
     }
     localStorage.setItem(MOCK_SESSION_KEY, id)
