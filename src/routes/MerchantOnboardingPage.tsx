@@ -16,6 +16,8 @@ import { BusinessDetailsForm } from '@/features/merchant/components/profile/Busi
 import { OpeningHoursForm } from '@/features/merchant/components/profile/OpeningHoursForm'
 import { PoliciesForm } from '@/features/merchant/components/profile/PoliciesForm'
 import { ServiceForm } from '@/features/merchant/components/ServiceForm'
+import { SuggestionChips } from '@/features/merchant/components/SuggestionChips'
+import { suggestServices } from '@/features/merchant/setup-suggestions'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { getErrorMessage } from '@/lib/api-client'
 import { formatDuration, formatPrice } from '@/lib/format'
@@ -30,7 +32,7 @@ const steps: { value: Step; label: string }[] = [
   { value: 'details', label: 'Details' },
   { value: 'hours', label: 'Hours' },
   { value: 'services', label: 'Services' },
-  { value: 'policies', label: 'Policies' },
+  { value: 'policies', label: 'Booking rules' },
   { value: 'review', label: 'Review' },
 ]
 
@@ -83,13 +85,23 @@ function ServicesStep({
   onContinue: () => void
 }) {
   const [adding, setAdding] = useState(menu.services.length === 0)
+  // The suggestion the open form started from; a new pick restarts the form with it.
+  const [picked, setPicked] = useState<ReturnType<typeof suggestServices>[number]>()
   const { services, categories } = menu
+  const suggestions = suggestServices(
+    categories,
+    services.map((service) => service.name),
+  ).slice(0, 8)
+  const close = () => {
+    setAdding(false)
+    setPicked(undefined)
+  }
 
   return (
     <div className="space-y-6">
       <Panel
         title="Services"
-        description="Add what customers can book, with prices as on your price list. You can add more later."
+        description="Add what customers can book, with prices as on your price list. Start with your main services; you can add more later."
       >
         {services.length ? (
           <ul aria-label="Your services" className="-mx-2 divide-y divide-border/70">
@@ -115,20 +127,36 @@ function ServicesStep({
               Go to details
             </Link>
           </p>
-        ) : !adding ? (
-          <Button variant="outline" shape="pill" onClick={() => setAdding(true)}>
-            <PlusIcon aria-hidden="true" />
-            Add a service
-          </Button>
-        ) : null}
+        ) : (
+          <>
+            <SuggestionChips
+              label="Common services for your shop. Tap one, then add your price."
+              items={suggestions}
+              itemLabel={(suggestion) => suggestion.name}
+              onPick={(suggestion) => {
+                setPicked(suggestion)
+                setAdding(true)
+              }}
+            />
+            {adding ? null : (
+              <Button variant="outline" shape="pill" onClick={() => setAdding(true)}>
+                <PlusIcon aria-hidden="true" />
+                Add a service
+              </Button>
+            )}
+          </>
+        )}
       </Panel>
 
       {adding && categories.length ? (
         <ServiceForm
+          key={picked ? `${picked.categoryId}:${picked.name}` : 'blank'}
           businessId={profile.business.id}
           categories={categories}
-          onSaved={() => setAdding(false)}
-          onCancel={services.length ? () => setAdding(false) : undefined}
+          suggestion={picked}
+          simple
+          onSaved={close}
+          onCancel={services.length ? close : undefined}
         />
       ) : null}
 

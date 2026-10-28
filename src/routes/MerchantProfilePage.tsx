@@ -17,7 +17,7 @@ const tabs = [
   { value: 'details', label: 'Details' },
   { value: 'hours', label: 'Hours' },
   { value: 'closures', label: 'Closures' },
-  { value: 'policies', label: 'Policies' },
+  { value: 'policies', label: 'Booking rules' },
 ] as const
 
 type ProfileTab = (typeof tabs)[number]['value']

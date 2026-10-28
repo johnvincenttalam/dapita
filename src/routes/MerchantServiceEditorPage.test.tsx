@@ -52,6 +52,7 @@ describe('MerchantServiceEditorPage', () => {
     await user.type(screen.getByRole('textbox', { name: /Service name/ }), 'Buzz Cut')
     await user.click(screen.getByRole('radio', { name: 'Beard & Shave' }))
     await user.type(screen.getByRole('textbox', { name: /^Price/ }), '150')
+    await user.click(screen.getByRole('radio', { name: 'Other' }))
     const duration = screen.getByRole('spinbutton', { name: /Duration/ })
     await user.clear(duration)
     await user.type(duration, '20')
