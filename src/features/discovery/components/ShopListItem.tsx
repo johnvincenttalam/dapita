@@ -6,19 +6,28 @@ import { categoryIcons } from '@/config/category-icons'
 import { ShopNameLink } from '@/features/discovery/components/ShopNameLink'
 import { OpenStatusText } from '@/features/shops/components/OpenStatusText'
 import { ShopRating } from '@/features/shops/components/ShopRating'
-import { formatPeso } from '@/lib/format'
+import { formatDistance, formatPeso } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import type { ShopSummary } from '@/types/business'
 import type { ServiceCategory } from '@/types/catalog'
 
 interface ShopListItemProps {
   shop: ShopSummary
   category?: ServiceCategory
+  /** Kilometres from the viewer, once they've shared their location. */
+  distance?: number
+  className?: string
 }
 
 /** A search result row, modelled on the shop card in the map view (design screen 4). */
-export function ShopListItem({ shop, category }: ShopListItemProps) {
+export function ShopListItem({ shop, category, distance, className }: ShopListItemProps) {
   return (
-    <article className="group relative flex gap-3 rounded-2xl card-surface p-3 transition-shadow focus-within:ring-3 focus-within:ring-ring/50 hover:shadow-md sm:gap-4">
+    <article
+      className={cn(
+        'group relative flex gap-3 rounded-2xl card-surface p-3 transition-shadow focus-within:ring-3 focus-within:ring-ring/50 hover:shadow-md sm:gap-4',
+        className,
+      )}
+    >
       <ImageWithFallback
         src={shop.coverPhoto?.url}
         alt=""
@@ -35,6 +44,7 @@ export function ShopListItem({ shop, category }: ShopListItemProps) {
           <span className="truncate">
             {category ? `${category.name} · ` : ''}
             {shop.area.name}
+            {distance !== undefined ? ` · ${formatDistance(distance)}` : ''}
           </span>
         </p>
         <OpenStatusText hours={shop.hours} closures={shop.closures} />

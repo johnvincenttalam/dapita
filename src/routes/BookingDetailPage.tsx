@@ -23,6 +23,7 @@ import { AppointmentFacts, PriceBreakdown } from '@/features/booking/components/
 import { BookingTimeline } from '@/features/booking/components/BookingTimeline'
 import { bookingHref } from '@/features/booking/links'
 import { useShopQuery } from '@/features/shops/api/queries'
+import { supportHref } from '@/features/support/links'
 import { bookingHref as shopBookingHref, shopHref } from '@/features/shops/links'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useNow } from '@/hooks/use-now'
@@ -132,6 +133,15 @@ function BookingDetail({ booking }: { booking: BookingDetails }) {
             ) : null}
           </Panel>
         ) : null}
+        <p className="text-sm text-pretty text-muted-foreground">
+          Something wrong that the shop can’t fix?{' '}
+          <Link
+            to={supportHref('booking', { booking: booking.id })}
+            className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+          >
+            Get help with this booking
+          </Link>
+        </p>
         <MockNotice>Changes here are saved in this browser only. No shop is notified.</MockNotice>
       </aside>
 

@@ -23,6 +23,7 @@ const MerchantServicesController = () => import('#controllers/merchant_services_
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const AdminController = () => import('#controllers/admin_controller')
+const SupportController = () => import('#controllers/support_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
 
@@ -70,6 +71,8 @@ router
         router.post('conversations/:id/messages', [ConversationsController, 'sendMessage'])
         router.post('conversations/:id/read', [ConversationsController, 'markRead'])
         router.post('conversations/:id/report', [ConversationsController, 'report'])
+
+        router.post('support/requests', [SupportController, 'store'])
 
         router
           .group(() => {

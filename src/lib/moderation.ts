@@ -1,4 +1,4 @@
-import type { CaseStatus, ModerationActionType } from '@/types/admin'
+import type { CaseKind, CaseListItem, CaseStatus, ModerationActionType } from '@/types/admin'
 import type { BusinessStatus } from '@/types/business'
 
 /** Which decisions apply to a listing in each state, and where each one leads (ADM-01). */
@@ -37,4 +37,28 @@ export const caseStatusLabels: Record<CaseStatus, string> = {
   open: 'Open',
   in_progress: 'In progress',
   resolved: 'Resolved',
+}
+
+export const caseKindLabels: Record<CaseKind, string> = {
+  message: 'Reported conversation',
+  booking: 'Booking',
+  listing: 'Listing report',
+  account: 'Account or data',
+  other: 'Other request',
+}
+
+/** The headline for a case in lists and on its page: who or what it's about. */
+export function caseTitle(item: Pick<CaseListItem, 'kind' | 'customerName' | 'businessName' | 'reporterName'>) {
+  switch (item.kind) {
+    case 'message':
+      return `${item.customerName ?? 'A customer'} and ${item.businessName ?? 'a shop'}`
+    case 'booking':
+      return item.businessName ? `Booking at ${item.businessName}` : `Booking help for ${item.reporterName}`
+    case 'listing':
+      return `${item.businessName ?? 'A shop'}’s listing`
+    case 'account':
+      return `${item.reporterName}’s account`
+    case 'other':
+      return `Request from ${item.reporterName}`
+  }
 }

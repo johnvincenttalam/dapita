@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { toast } from 'sonner'
 
@@ -12,19 +12,97 @@ import { useCaseQuery, useCaseStepMutation } from '@/features/admin/api/queries'
 import { CaseStatusBadge } from '@/features/admin/components/CaseStatusBadge'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { ApiError, getErrorMessage } from '@/lib/api-client'
-import { formatDateTime } from '@/lib/format'
+import { bookingStatusMeta } from '@/lib/booking-status'
+import { formatAppointment, formatDateTime } from '@/lib/format'
+import { caseKindLabels, caseTitle } from '@/lib/moderation'
 import { cn } from '@/lib/utils'
-import type { CaseEvent } from '@/types/admin'
+import type { CaseDetails, CaseEvent } from '@/types/admin'
 
 const eventLabel: Record<CaseEvent['kind'], string> = {
-  opened: 'Reported by',
+  opened: 'Opened by',
   reported_again: 'Reported again by',
   taken: 'Taken by',
   note: 'Note from',
   resolved: 'Resolved by',
 }
 
-/** One case: the reported conversation as it happened, what's been done, and the next step (ADM-03). */
+function Fact({ term, children }: { term: string; children: ReactNode }) {
+  return (
+    <div className="grid gap-0.5 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="text-muted-foreground">{term}</dt>
+      <dd className="min-w-0 break-words">{children}</dd>
+    </div>
+  )
+}
+
+/** Who sent it and where to reply, plus the booking it's about. */
+function CaseFacts({ item }: { item: CaseDetails }) {
+  return (
+    <dl className="space-y-2 text-sm">
+      <Fact term="Sent by">
+        {item.reporterName} ({item.reporterSide === 'customer' ? 'customer' : 'shop'})
+      </Fact>
+      <Fact term="Reply to">
+        {item.reporterEmail ? (
+          <a
+            href={`mailto:${item.reporterEmail}`}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {item.reporterEmail}
+          </a>
+        ) : (
+          'Account no longer exists'
+        )}
+      </Fact>
+      {item.booking ? (
+        <Fact term="Booking">
+          <span className="font-mono font-semibold">{item.booking.reference}</span> · {item.booking.serviceName},{' '}
+          {formatAppointment(item.booking.start)} · {bookingStatusMeta[item.booking.status].label}
+        </Fact>
+      ) : null}
+    </dl>
+  )
+}
+
+function ReportedConversation({ item }: { item: CaseDetails }) {
+  return (
+    <Panel title="Reported conversation" description={`“${item.reason}”`}>
+      <div role="log" aria-label="Conversation" className="space-y-2">
+        {item.messages.map((message) => {
+          const fromCustomer = message.senderRole === 'customer'
+          return (
+            <div key={message.id} className={cn('flex flex-col', fromCustomer ? 'items-start' : 'items-end')}>
+              <p
+                className={cn(
+                  'max-w-[85%] rounded-2xl px-3.5 py-2 text-sm [overflow-wrap:anywhere] whitespace-pre-wrap',
+                  fromCustomer ? 'rounded-bl-md bg-muted' : 'rounded-br-md bg-secondary text-secondary-foreground',
+                )}
+              >
+                <span className="sr-only">{fromCustomer ? item.customerName : item.businessName}: </span>
+                {message.body}
+              </p>
+              <span className="mt-0.5 px-1 type-micro font-normal text-muted-foreground">
+                {fromCustomer ? item.customerName : item.businessName} · {formatDateTime(message.sentAt)}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+      <CaseFacts item={item} />
+    </Panel>
+  )
+}
+
+function SupportRequest({ item }: { item: CaseDetails }) {
+  return (
+    <Panel title="Request" description={caseKindLabels[item.kind]}>
+      <p className="rounded-2xl bg-muted/70 p-4 text-sm [overflow-wrap:anywhere] whitespace-pre-wrap">{item.reason}</p>
+      <CaseFacts item={item} />
+    </Panel>
+  )
+}
+
+/** One case: the reported conversation or the request, what's been done, and the next step (ADM-03). */
 export default function AdminCasePage() {
   const { caseId = '' } = useParams()
   const details = useCaseQuery(caseId)
@@ -67,44 +145,24 @@ export default function AdminCasePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`${item.customerName} and ${item.businessName}`}
+        title={caseTitle(item)}
         description={<CaseStatusBadge status={item.status} />}
         actions={
-          <Button asChild variant="outline" shape="pill">
-            <Link
-              to={`/admin/merchants/${encodeURIComponent(item.businessId)}`}
-              aria-label={`Review ${item.businessName}`}
-            >
-              Review the shop
-            </Link>
-          </Button>
+          item.businessId ? (
+            <Button asChild variant="outline" shape="pill">
+              <Link
+                to={`/admin/merchants/${encodeURIComponent(item.businessId)}`}
+                aria-label={`Review ${item.businessName ?? 'the shop'}`}
+              >
+                Review the shop
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <Panel title="Reported conversation" description={`“${item.reason}”`}>
-          <div role="log" aria-label="Conversation" className="space-y-2">
-            {item.messages.map((message) => {
-              const fromCustomer = message.senderRole === 'customer'
-              return (
-                <div key={message.id} className={cn('flex flex-col', fromCustomer ? 'items-start' : 'items-end')}>
-                  <p
-                    className={cn(
-                      'max-w-[85%] rounded-2xl px-3.5 py-2 text-sm [overflow-wrap:anywhere] whitespace-pre-wrap',
-                      fromCustomer ? 'rounded-bl-md bg-muted' : 'rounded-br-md bg-secondary text-secondary-foreground',
-                    )}
-                  >
-                    <span className="sr-only">{fromCustomer ? item.customerName : item.businessName}: </span>
-                    {message.body}
-                  </p>
-                  <span className="mt-0.5 px-1 type-micro font-normal text-muted-foreground">
-                    {fromCustomer ? item.customerName : item.businessName} · {formatDateTime(message.sentAt)}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </Panel>
+        {item.kind === 'message' ? <ReportedConversation item={item} /> : <SupportRequest item={item} />}
 
         <div className="min-w-0 space-y-6 lg:sticky lg:top-24">
           {resolved ? null : (

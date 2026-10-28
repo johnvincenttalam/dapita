@@ -37,6 +37,7 @@ export {
 } from '@/schemas/business'
 export { moderationSchema } from '@/schemas/moderation'
 export { serviceSchema } from '@/schemas/service'
+export { maxOpenSupportRequests, supportRequestSchema } from '@/schemas/support'
 export { slugify, starterHours } from '@/services/mock/draft-business'
 
 export type * from '@/types/account'
@@ -48,3 +49,4 @@ export type * from '@/types/catalog'
 export type * from '@/types/common'
 export type * from '@/types/message'
 export type * from '@/types/settings'
+export type { SupportRequestInput, SupportTopic } from '@/schemas/support'

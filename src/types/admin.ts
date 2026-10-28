@@ -1,4 +1,5 @@
 import type { UserRole } from '@/types/auth'
+import type { BookingStatus } from '@/types/booking'
 import type { Business, BusinessStatus, Service } from '@/types/business'
 import type { ServiceCategory } from '@/types/catalog'
 import type { ID, ISODateTime } from '@/types/common'
@@ -55,10 +56,25 @@ export interface CaseEvent {
   at: ISODateTime
 }
 
-/** A support case (ADM-03). For now every case comes from a reported conversation. */
+/**
+ * Where a case came from: a reported conversation (`message`), or a request sent
+ * from the support page about a booking, a shop's listing, the sender's own
+ * account or data, or anything else.
+ */
+export type CaseKind = 'message' | 'booking' | 'listing' | 'account' | 'other'
+
+/** A support case (ADM-03). */
 export interface SupportCase {
   id: ID
-  conversationId: ID
+  kind: CaseKind
+  /** `message` cases: the reported conversation. */
+  conversationId?: ID
+  /** `listing` cases, and `booking` cases about a booking: the shop it's about. */
+  businessId?: ID
+  bookingId?: ID
+  /** Who opened it. A reported conversation keeps its first reporter here. */
+  reporterId: ID
+  reporterSide: ConversationSide
   status: CaseStatus
   ownerId?: ID
   ownerName?: string
@@ -70,22 +86,31 @@ export interface SupportCase {
 
 export interface CaseListItem {
   id: ID
-  conversationId: ID
+  kind: CaseKind
   status: CaseStatus
   ownerName?: string
-  /** The latest report's reason. */
+  /** The latest report's reason, or what the sender wrote. */
   reason: string
+  /** Who sent the latest report or the request. */
+  reporterName: string
   reporterSide: ConversationSide
-  customerName: string
-  businessName: string
+  conversationId?: ID
+  /** `message` cases: the customer in the conversation. */
+  customerName?: string
+  businessId?: ID
+  businessName?: string
+  bookingId?: ID
   createdAt: ISODateTime
   updatedAt: ISODateTime
 }
 
 export interface CaseDetails extends CaseListItem {
-  businessId: ID
+  /** Where to reply. Missing once the sender's account is gone. */
+  reporterEmail?: string
   events: CaseEvent[]
+  /** `message` cases: the conversation as it happened. Empty otherwise. */
   messages: Message[]
+  booking?: { reference: string; serviceName: string; start: ISODateTime; status: BookingStatus }
 }
 
 /** A category in the admin taxonomy editor, with how much uses it (ADM-02). */

@@ -204,8 +204,10 @@ test.group('Admin: support cases', (group) => {
       (candidate) => candidate.conversationId === conversationId
     )!
     assert.include(item, {
+      kind: 'message',
       status: 'open',
       reason: 'The shop replied rudely.',
+      reporterName: 'Andrea Reyes',
       reporterSide: 'customer',
       customerName: 'Andrea Reyes',
       businessName: 'The Good Cut Barbershop',
@@ -215,6 +217,7 @@ test.group('Admin: support cases', (group) => {
     details.assertStatus(200)
     const before = details.body() as CaseDetails
     assert.equal(before.businessId, goodCutId)
+    assert.equal(before.reporterEmail, customerEmail)
     assert.equal(before.messages.at(-1)?.body, 'Why was my booking declined?')
     assert.deepEqual(
       before.events.map((event) => event.kind),

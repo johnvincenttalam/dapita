@@ -242,7 +242,12 @@ export async function reportConversation(user: User, id: ID, reason: string) {
       await SupportCase.create(
         {
           id: newId('case'),
+          kind: 'message',
           conversationId: id,
+          businessId: conversation.businessId,
+          bookingId: null,
+          reporterId: user.id,
+          reporterSide: side,
           status: 'open',
           ownerId: null,
           ownerName: null,

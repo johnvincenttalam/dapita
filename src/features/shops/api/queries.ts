@@ -10,8 +10,8 @@ export const shopKeys = {
   staff: (slug: string) => [...shopKeys.detail(slug), 'staff'] as const,
 }
 
-export function useShopQuery(slug: string) {
-  return useQuery({ queryKey: shopKeys.detail(slug), queryFn: () => shopsService.getShop(slug) })
+export function useShopQuery(slug: string, { enabled = true } = {}) {
+  return useQuery({ queryKey: shopKeys.detail(slug), queryFn: () => shopsService.getShop(slug), enabled })
 }
 
 export function useShopServicesQuery(slug: string) {
