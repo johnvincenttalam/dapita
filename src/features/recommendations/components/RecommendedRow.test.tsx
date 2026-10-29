@@ -18,7 +18,7 @@ vi.mock('@/services/mock/utils', async (importOriginal) => ({
 /** Near Bajada, a few hundred metres from Clearday Skin. */
 const bajada: Coordinates = { lat: 7.0927, lng: 125.6117 }
 
-function renderRow(props: { position?: Coordinates; showError?: boolean } = {}) {
+function renderRow(props: { position?: Coordinates; prominent?: boolean } = {}) {
   const router = createMemoryRouter([
     {
       path: '/',
@@ -48,14 +48,14 @@ describe('RecommendedRow', () => {
 
   it('shows nothing when the list is empty', async () => {
     const list = vi.spyOn(recommendationsService, 'listRecommendations').mockResolvedValue([])
-    renderRow({ position: bajada, showError: true })
+    renderRow({ position: bajada, prominent: true })
     await waitFor(() => expect(list).toHaveBeenCalled())
     await waitFor(() => expect(screen.queryByText('Recommended near you')).not.toBeInTheDocument())
   })
 
-  it('shows a retryable error only when showError is set', async () => {
+  it('shows a retryable error only when prominent is set', async () => {
     vi.spyOn(recommendationsService, 'listRecommendations').mockRejectedValue(new ApiError('Server down', 500))
-    const { unmount } = renderRow({ position: bajada, showError: true })
+    const { unmount } = renderRow({ position: bajada, prominent: true })
     expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument()
     unmount()
 

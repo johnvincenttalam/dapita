@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { HorizontalScroller } from '@/components/shared/HorizontalScroller'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { ErrorState } from '@/components/feedback/ErrorState'
@@ -12,17 +14,20 @@ interface RecommendedRowProps {
   headingId: string
   /** The viewer's stored location; without it the row ranks by fit alone and shows no distances. */
   position?: Coordinates
-  /** The home page shows a retryable error; elsewhere a failed row just stays hidden. */
-  showError?: boolean
+  /** The home page's row shows its loading and error states; elsewhere the row stays hidden until it has shops. */
+  prominent?: boolean
+  /** Shown beside the heading, e.g. a link to set a location. */
+  actions?: ReactNode
 }
 
 /** Suggested shops near the viewer, each tagged with why it's there. */
-export function RecommendedRow({ title, headingId, position, showError = false }: RecommendedRowProps) {
+export function RecommendedRow({ title, headingId, position, prominent = false, actions }: RecommendedRowProps) {
   const recommendations = useRecommendationsQuery()
   const categories = useCategoriesQuery()
 
   let content
   if (recommendations.isPending) {
+    if (!prominent) return null
     content = (
       <div className="flex gap-3 overflow-hidden md:grid md:grid-cols-3 md:gap-5 lg:grid-cols-4" aria-hidden="true">
         {Array.from({ length: 4 }, (_, index) => (
@@ -31,7 +36,7 @@ export function RecommendedRow({ title, headingId, position, showError = false }
       </div>
     )
   } else if (recommendations.isError) {
-    if (!showError) return null
+    if (!prominent) return null
     content = (
       <ErrorState
         title="We couldn’t load suggestions"
@@ -63,7 +68,7 @@ export function RecommendedRow({ title, headingId, position, showError = false }
 
   return (
     <section aria-labelledby={headingId} className="space-y-4">
-      <SectionHeader id={headingId} title={title} />
+      <SectionHeader id={headingId} title={title} actions={actions} />
       {content}
     </section>
   )

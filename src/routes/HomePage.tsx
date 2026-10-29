@@ -39,7 +39,7 @@ export default function HomePage() {
       {position ? (
         <div className="space-y-3">
           <LocationControl />
-          <RecommendedRow title="Recommended near you" headingId="recommended-heading" position={position} showError />
+          <RecommendedRow title="Recommended near you" headingId="recommended-heading" position={position} prominent />
         </div>
       ) : (
         <LocationPrompt />
