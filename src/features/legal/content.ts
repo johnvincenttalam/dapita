@@ -163,7 +163,7 @@ export const legalContent: Record<ConsentPurpose, LegalDocumentContent> = {
               'To run your account and the bookings and messages you ask for (to perform our agreement with you).',
               'To review listings, handle reports and support requests, and prevent fraud and abuse (our legitimate interest in a safe marketplace).',
               'To keep records the law requires.',
-              'To suggest shops you might like, using bookings and saved shops combined across customers. No one else can see what you booked or saved.',
+              'To suggest shops you might like, using bookings and saved shops combined across customers. Suggestions never show anyone what you booked or saved.',
             ],
           },
           'We don’t sell your data and don’t use it for advertising. If we ever want to send you marketing, we’ll ask first, and you can say no.',
