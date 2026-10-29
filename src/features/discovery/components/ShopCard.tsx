@@ -1,13 +1,14 @@
 import { MapPinIcon } from 'lucide-react'
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { categoryIcons } from '@/config/category-icons'
 import { ShopNameLink } from '@/features/discovery/components/ShopNameLink'
 import { FavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { OpenStatusText } from '@/features/shops/components/OpenStatusText'
 import { ShopRating } from '@/features/shops/components/ShopRating'
-import { formatPeso } from '@/lib/format'
+import { formatDistance, formatPeso } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { ShopSummary } from '@/types/business'
 import type { ServiceCategory } from '@/types/catalog'
@@ -19,15 +20,27 @@ interface ShopCardProps {
   /** `tile`: compact card in a row (design screen 3). `feature`: wide image card in a listing (screen 10). */
   variant?: 'tile' | 'feature'
   headingLevel?: 'h2' | 'h3'
+  /** Kilometres from the viewer, when they've set a location. */
+  distanceKm?: number
+  /** Why the shop is suggested, e.g. "Customers like you". */
+  tag?: string
   className?: string
 }
 
 /**
  * A shop in a listing. The whole card is clickable through the name link's
  * stretched hit area, so screen readers hear one link named after the shop.
- * Distance appears only with location permission (plan C14), so cards show the area.
+ * Cards show the area, plus the distance once the viewer has set a location (plan C14).
  */
-export function ShopCard({ shop, category, variant = 'tile', headingLevel: Heading = 'h3', className }: ShopCardProps) {
+export function ShopCard({
+  shop,
+  category,
+  variant = 'tile',
+  headingLevel: Heading = 'h3',
+  distanceKm,
+  tag,
+  className,
+}: ShopCardProps) {
   const feature = variant === 'feature'
 
   return (
@@ -51,10 +64,21 @@ export function ShopCard({ shop, category, variant = 'tile', headingLevel: Headi
         <Heading className={cn('font-semibold text-pretty', feature ? 'text-base' : 'text-sm leading-snug')}>
           <ShopNameLink shop={shop} />
         </Heading>
+        {tag ? (
+          <Badge variant="secondary" className="w-fit">
+            {tag}
+          </Badge>
+        ) : null}
         {category ? <p className="text-xs text-muted-foreground">{category.name}</p> : null}
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPinIcon aria-hidden="true" className="size-3.5 shrink-0" />
           <span className="truncate">{shop.area.name}</span>
+          {distanceKm === undefined ? null : (
+            <>
+              <span aria-hidden="true">·</span>
+              <span className="shrink-0 tabular-nums">{formatDistance(distanceKm)}</span>
+            </>
+          )}
         </p>
         {feature ? <OpenStatusText hours={shop.hours} closures={shop.closures} className="text-xs" /> : null}
         {/* Stack by card width, not by text length, so cards in one row match. */}
