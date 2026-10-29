@@ -57,10 +57,10 @@ There's very little booking history at launch: the seed has about 13 shops, 5 us
 
 1. **Signals and exclusions are two different sets.**
    - **Used (the matching signal).** A customer "used" a shop if they saved it, or have a booking there with status `confirmed` or `completed`. `pending`, `alternative_proposed`, `declined`, `cancelled`, `no_show`, `expired` and `draft` don't count.
-   - **Excluded from the viewer's suggestions.** Every shop the viewer saved, every shop where they have *any* non-`draft` booking (pending, declined or cancelled included), and every shop they're a member of. "Already booked" means they've dealt with the shop at all, so a pending request is never suggested back to them.
+   - **Excluded from the viewer's suggestions.** Every shop the viewer saved, every shop where they have _any_ non-`draft` booking (pending, declined or cancelled included), and every shop they're a member of. "Already booked" means they've dealt with the shop at all, so a pending request is never suggested back to them.
 2. **Overlap threshold.** A shop gets the "Customers like you" reason only when **at least 3 distinct other customers** who share a shop with you also used it. Below that, it can only qualify by popularity.
 3. **Popularity window.** Count `confirmed` and `completed` bookings whose start time is **90 days ago or later, upcoming confirmed bookings included**. Most confirmed bookings are in the future, and they're real demand. Ties are broken by the number of saves, then by name.
-4. **Your categories.** These are the *primary* category (`categoryIds[0]`) of every shop you've used. A candidate matches if any of its categories is in that set.
+4. **Your categories.** These are the _primary_ category (`categoryIds[0]`) of every shop you've used. A candidate matches if any of its categories is in that set.
 5. **Nearby radius.**
    - Start at 5 km from the customer.
    - If fewer than 3 candidates fall inside, widen to 10 km, then 20 km, then the whole city.
@@ -84,6 +84,7 @@ There's very little booking history at launch: the seed has about 13 shops, 5 us
 `src/lib/recommendations.ts` is exported through `server/app/shared/domain.ts`, like the booking rules, so mock mode and the server can't drift apart. It holds no I/O.
 
 **Inputs:**
+
 - `viewerId?`
 - `uses`: a list of `{ userId, businessId }` rows built from the signals in call 1
 - `recentBookings`: a list of `{ businessId }` rows in the 90-day window
@@ -137,6 +138,7 @@ There's very little booking history at launch: the seed has about 13 shops, 5 us
 5. Return the top 8.
 
 **Tag per card:**
+
 - `similar_customers` → "Customers like you"
 - `popular_in_category` → "Popular in {category name}"
 - `popular` → "Popular near you"

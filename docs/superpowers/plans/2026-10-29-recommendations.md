@@ -5,6 +5,7 @@
 **Goal:** Location-first shop suggestions: a "Recommended near you" row on the home page and a "You might also like" row on Favorites. They blend "customers like you" (collaborative filtering) with popular shops in your categories and with distance.
 
 **Architecture:**
+
 - **Shared scorer.** One pure scorer in `src/lib/recommendations.ts`, shared with the server through `server/app/shared/domain.ts`. It turns bookings, saves and shops into `{ businessId, fit, reason }` entries.
 - **Server.** `GET /api/recommendations` loads the rows, runs the scorer and returns shop summaries with fit and reason. The response never includes another user's id.
 - **Mock mode.** The mock service does the same from `MockDb`.
@@ -32,14 +33,15 @@
 - **Withdrawn users.** Users with a deletion request are left out of everyone's used data.
 - **Tag copy:**
 
-  | Reason | Tag |
-  |---|---|
-  | `similar_customers` | "Customers like you" |
+  | Reason                | Tag                          |
+  | --------------------- | ---------------------------- |
+  | `similar_customers`   | "Customers like you"         |
   | `popular_in_category` | "Popular in {category name}" |
-  | `popular` | "Popular near you" |
-  | `none` | "Nearest" |
+  | `popular`             | "Popular near you"           |
+  | `none`                | "Nearest"                    |
 
   Without a position, `popular` reads "Popular" and `none` gets no tag.
+
 - **Copy:**
   - Home row heading: "Recommended near you".
   - Favorites row heading: "You might also like".
@@ -64,19 +66,34 @@
 ### Task 1: Shared scorer
 
 **Files:**
+
 - Create: `src/types/recommendation.ts`, `src/lib/recommendations.ts`, `src/lib/recommendations.test.ts`
 - Modify: `server/app/shared/domain.ts`. Add `export { recommendShops, recommendationRules } from '@/lib/recommendations'` and `export type * from '@/types/recommendation'`.
 
 **Interfaces:**
+
 - Produces, in `src/types/recommendation.ts`:
   ```ts
   export type RecommendationReason = 'similar_customers' | 'popular_in_category' | 'popular' | 'none'
   /** What GET /api/recommendations returns per shop. */
-  export interface Recommendation { shop: ShopSummary; fit: number; reason: RecommendationReason; categoryId?: ID }
+  export interface Recommendation {
+    shop: ShopSummary
+    fit: number
+    reason: RecommendationReason
+    categoryId?: ID
+  }
   ```
 - Produces, in `src/lib/recommendations.ts`:
+
   ```ts
-  export const recommendationRules = { minNeighbours: 3, popularityWindowDays: 90, radiiKm: [5, 10, 20], minNearby: 3, limit: 8, fitWeight: 0.6 } as const
+  export const recommendationRules = {
+    minNeighbours: 3,
+    popularityWindowDays: 90,
+    radiiKm: [5, 10, 20],
+    minNearby: 3,
+    limit: 8,
+    fitWeight: 0.6,
+  } as const
   export interface RecommendInput {
     viewer?: { id: ID; memberBusinessIds: readonly ID[] }
     bookings: readonly Pick<Booking, 'customerId' | 'businessId' | 'status' | 'start'>[]
@@ -86,9 +103,15 @@
     shops: readonly Pick<ShopSummary, 'id' | 'name' | 'categoryIds'>[]
     now: Date
   }
-  export interface ScoredShop { businessId: ID; fit: number; reason: RecommendationReason; categoryId?: ID }
+  export interface ScoredShop {
+    businessId: ID
+    fit: number
+    reason: RecommendationReason
+    categoryId?: ID
+  }
   export function recommendShops(input: RecommendInput): ScoredShop[]
   ```
+
   It returns one entry per non-excluded shop, sorted by fit descending, then name.
 
 - [ ] **Step 1: Write failing tests** in `src/lib/recommendations.test.ts`. Use a small fixture builder (shops `s1`…`s6` with categories, `now = new Date('2026-10-29T00:00:00Z')`):
@@ -119,15 +142,28 @@
 ### Task 2: Distance blend and tags
 
 **Files:**
+
 - Modify: `src/lib/recommendations.ts`, `src/lib/recommendations.test.ts`
 
 **Interfaces:**
+
 - Consumes: `Recommendation` (Task 1), `distanceKm` from `src/lib/geo.ts`.
 - Produces:
+
   ```ts
-  export interface RankedRecommendation extends Recommendation { distanceKm?: number }
-  export function rankNearby(entries: readonly Recommendation[], position?: Coordinates, limit?: number): RankedRecommendation[]
-  export function recommendationTag(entry: Recommendation, categoryName?: string, hasPosition?: boolean): string | undefined
+  export interface RankedRecommendation extends Recommendation {
+    distanceKm?: number
+  }
+  export function rankNearby(
+    entries: readonly Recommendation[],
+    position?: Coordinates,
+    limit?: number,
+  ): RankedRecommendation[]
+  export function recommendationTag(
+    entry: Recommendation,
+    categoryName?: string,
+    hasPosition?: boolean,
+  ): string | undefined
   ```
 
 - [ ] **Step 1: Write failing tests:**
@@ -147,6 +183,7 @@
 ### Task 3: Seed saves for the demo
 
 **Files:**
+
 - Create: `src/services/mock/seed/favorites.ts`
 - Modify:
   - `src/services/mock/db.ts`: add `favorites: createSeedFavorites(now)` to `createSeedDb`, and bump `MOCK_DB_VERSION` 19 → 20.
@@ -154,6 +191,7 @@
   - `server/database/seeders/main_seeder.ts`: add `favorites: Domain.Favorite[]` to `SeedData` and `Favorite.createMany(...)` after bookings.
 
 **Interfaces:**
+
 - Produces: `createSeedFavorites(now: Date): Favorite[]`.
   - `usr_john`, `usr_mark` and `usr_alyssa` each save `biz_glow_go` and `biz_clearday`.
   - `savedAt` is 1–10 days before `now`.
@@ -168,10 +206,12 @@
 ### Task 4: Server endpoint
 
 **Files:**
+
 - Create: `server/app/services/recommendations.ts`, `server/app/controllers/recommendations_controller.ts`, `server/tests/functional/recommendations.spec.ts`
 - Modify: `server/start/routes.ts`. Add `router.get('recommendations', [RecommendationsController, 'index'])` in the **public** group, next to `shops/featured`.
 
 **Interfaces:**
+
 - Consumes: `recommendShops` (Task 1), `getShopSummaries` (`#services/shops`), and the `Booking`, `Favorite`, `Business`, `BusinessMembership` and `DeletionRequest` models.
 - Produces: `export async function listRecommendations(user: User | undefined, now = new Date()): Promise<Recommendation[]>`.
   - Run 5 queries: approved businesses; bookings with status ≠ `draft` (only the columns the scorer needs); favorites; deletion-request user ids; the viewer's memberships.
@@ -195,17 +235,24 @@
 ### Task 5: Frontend service, mock half and query
 
 **Files:**
+
 - Create: `src/services/recommendations.service.ts`, `src/services/recommendations.service.test.ts`, `src/features/recommendations/api/queries.ts`
 - Modify:
   - `src/features/favorites/api/queries.ts`: `onSettled` also invalidates `recommendationKeys.all`.
   - `src/features/booking/api/queries.ts`: `useCreateBookingMutation` `onSuccess` also invalidates `recommendationKeys.all`.
 
 **Interfaces:**
+
 - Produces:
   ```ts
-  export interface RecommendationsService { listRecommendations: () => Promise<Recommendation[]> }
-  export const recommendationKeys = { all: ['recommendations'] as const, forViewer: (userId: ID | undefined) => [...recommendationKeys.all, userId ?? 'guest'] as const }
-  export function useRecommendationsQuery(): UseQueryResult<Recommendation[]>  // key uses useSession().user?.id
+  export interface RecommendationsService {
+    listRecommendations: () => Promise<Recommendation[]>
+  }
+  export const recommendationKeys = {
+    all: ['recommendations'] as const,
+    forViewer: (userId: ID | undefined) => [...recommendationKeys.all, userId ?? 'guest'] as const,
+  }
+  export function useRecommendationsQuery(): UseQueryResult<Recommendation[]> // key uses useSession().user?.id
   ```
 - The mock half follows the favorites service pattern:
   - read `MockDb` and `getMockSessionUser()`;
@@ -225,10 +272,12 @@
 ### Task 6: Remembered location (device or area)
 
 **Files:**
+
 - Modify: `src/hooks/use-user-location.ts`. Update its doc comment: the location is remembered on this device and never sent.
 - Create: `src/hooks/use-user-location.test.ts`
 
 **Interfaces:**
+
 - Produces (Explore's existing `status`, `position` and `locate` keep working):
   ```ts
   export type LocationSource = 'device' | 'area'
@@ -239,8 +288,8 @@
     /** Set when source is 'area'. */
     area?: Pick<Area, 'id' | 'name'>
     locate: () => void
-    chooseArea: (area: Area) => void   // position = area.center, status 'found'
-    clear: () => void                  // back to 'idle', nothing stored
+    chooseArea: (area: Area) => void // position = area.center, status 'found'
+    clear: () => void // back to 'idle', nothing stored
   }
   ```
 - Persist with `zustand/middleware` `persist` + `createJSONStorage(() => localStorage)`, name `dapita-location`, saving only `position`, `source` and `area`. On rehydrate, a stored position sets `status: 'found'`.
@@ -259,10 +308,12 @@
 ### Task 7: Recommendation row and card details
 
 **Files:**
+
 - Modify: `src/features/discovery/components/ShopCard.tsx`. Add optional `distanceKm?: number` (shown after the area as "Bajada · 0.4 km" via `formatDistance`) and `tag?: string`, a tinted pill reusing the tag style DESIGN.md already uses for chips. Keep the existing callers unchanged.
 - Create: `src/features/recommendations/components/RecommendedRow.tsx` and its test.
 
 **Interfaces:**
+
 - Consumes: `useRecommendationsQuery` (Task 5), `rankNearby` and `recommendationTag` (Task 2), `useUserLocation` (Task 6), `useCategoriesQuery`, and `HorizontalScroller`.
 - Produces: `RecommendedRow({ title, headingId, position, showError }: { title: string; headingId: string; position?: Coordinates; showError?: boolean })`.
   - It renders a `section` labelled by the heading and a `HorizontalScroller` (`label = title`) of `ShopCard`s with `tag` and `distanceKm`.
@@ -282,6 +333,7 @@
 ### Task 8: Home page, location first
 
 **Files:**
+
 - Create:
   - `src/features/recommendations/components/LocationPrompt.tsx`: the "Where are you?" card with the two buttons. "Choose your area" opens an area picker from `useAreasQuery`; the builder picks the control. It also shows the denied or unavailable message.
   - `src/features/recommendations/components/LocationControl.tsx`: "📍 {area name | Near you} · Change", where Change calls `clear()`.
@@ -304,6 +356,7 @@
 ### Task 9: Favorites page row
 
 **Files:**
+
 - Modify: `src/routes/FavoritesPage.tsx`. Below the list (or below the empty state), add `<RecommendedRow title="You might also like" headingId="also-like-heading" position={location.position} />`. With no position, show a "Set your location" link to `/` above the row (call 10).
 - Test: `src/routes/FavoritesPage.test.tsx` (create).
 
@@ -319,6 +372,7 @@
 ### Task 10: Privacy notice
 
 **Files:**
+
 - Modify:
   - `src/features/legal/content.ts`. Add one item to the "Why we use it" list and one sentence to "Cookies and storage".
   - `src/config/legal.ts`: `privacy_notice.version` `'draft-2026-10'` → `'draft-2026-11'`.
