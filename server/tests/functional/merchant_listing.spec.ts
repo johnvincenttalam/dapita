@@ -212,7 +212,7 @@ test.group('Merchant: submitting a draft listing for review', (group) => {
       businessName: 'Lea’s Nail Bar',
       consents: [
         { purpose: 'terms', version: 'draft-2026-10' },
-        { purpose: 'privacy_notice', version: 'draft-2026-10' },
+        { purpose: 'privacy_notice', version: 'draft-2026-11' },
         { purpose: 'merchant_policy', version: 'draft-2026-10' },
       ],
     })

@@ -6,6 +6,6 @@ import type { ConsentPurpose } from '@/types/account'
 
 export const legalDocuments: Record<ConsentPurpose, { title: string; href: string; version: string }> = {
   terms: { title: 'Terms of use', href: '/legal/terms', version: 'draft-2026-10' },
-  privacy_notice: { title: 'Privacy notice', href: '/legal/privacy', version: 'draft-2026-10' },
+  privacy_notice: { title: 'Privacy notice', href: '/legal/privacy', version: 'draft-2026-11' },
   merchant_policy: { title: 'Merchant listing policy', href: '/legal/merchant-policy', version: 'draft-2026-10' },
 }
