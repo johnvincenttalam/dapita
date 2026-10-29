@@ -1,5 +1,6 @@
 import { createSeedBookings } from '@/services/mock/seed/bookings'
 import { createSeedConversations } from '@/services/mock/seed/conversations'
+import { createSeedFavorites } from '@/services/mock/seed/favorites'
 import { createSeedBusinesses, createSeedServices, createSeedStaff } from '@/services/mock/seed/businesses'
 import { seedAreas, seedCategories } from '@/services/mock/seed/catalog'
 import { toDateKey } from '@/lib/datetime'
@@ -18,7 +19,7 @@ import type { MerchantNotificationSettings } from '@/types/settings'
 // content changes (e.g. new photos), so existing demos reseed and pick it up.
 
 export const MOCK_DB_KEY = 'glamspot-mock-db'
-const MOCK_DB_VERSION = 19
+const MOCK_DB_VERSION = 20
 
 export interface MockDb {
   version: number
@@ -64,6 +65,7 @@ export function createSeedDb(now: Date = new Date()): MockDb {
     conversationReports: reports,
     moderationActions: [],
     supportCases: cases,
+    favorites: createSeedFavorites(now),
   }
 }
 
