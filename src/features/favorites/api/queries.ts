@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { recommendationKeys } from '@/features/recommendations/api/queries'
 import { favoritesService } from '@/services/favorites.service'
 import type { ID } from '@/types/common'
 
@@ -26,6 +27,11 @@ export function useToggleFavoriteMutation() {
   return useMutation({
     mutationFn: ({ businessId, save }: ToggleFavoriteInput) =>
       save ? favoritesService.saveFavorite(businessId) : favoritesService.removeFavorite(businessId),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: favoriteKeys.all }),
+    // Saved shops also drop out of the suggestions.
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: favoriteKeys.all }),
+        queryClient.invalidateQueries({ queryKey: recommendationKeys.all }),
+      ]),
   })
 }
