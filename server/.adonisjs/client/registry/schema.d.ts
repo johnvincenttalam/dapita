@@ -137,6 +137,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['featured']>>>
     }
   }
+  'recommendations.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/recommendations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/recommendations_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/recommendations_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/recommendations_controller').default['index']>>>
+    }
+  }
   'shops.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/shops/:slug'

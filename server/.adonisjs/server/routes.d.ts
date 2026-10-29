@@ -14,6 +14,7 @@ export type ScannedRoutes = {
     'catalog.areas': { paramsTuple?: []; params?: {} }
     'shops.index': { paramsTuple?: []; params?: {} }
     'shops.featured': { paramsTuple?: []; params?: {} }
+    'recommendations.index': { paramsTuple?: []; params?: {} }
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
@@ -85,6 +86,7 @@ export type ScannedRoutes = {
     'catalog.areas': { paramsTuple?: []; params?: {} }
     'shops.index': { paramsTuple?: []; params?: {} }
     'shops.featured': { paramsTuple?: []; params?: {} }
+    'recommendations.index': { paramsTuple?: []; params?: {} }
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
@@ -115,6 +117,7 @@ export type ScannedRoutes = {
     'catalog.areas': { paramsTuple?: []; params?: {} }
     'shops.index': { paramsTuple?: []; params?: {} }
     'shops.featured': { paramsTuple?: []; params?: {} }
+    'recommendations.index': { paramsTuple?: []; params?: {} }
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }

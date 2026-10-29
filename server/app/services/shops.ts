@@ -204,6 +204,12 @@ export async function getShopSummaries(businessIds: string[]) {
   })
 }
 
+/** Every public listing card, for recommendations to rank. */
+export async function getPublicShopSummaries() {
+  const catalog = await loadPublicCatalog()
+  return catalog.businesses.map((business) => toSummary(catalog, business))
+}
+
 export async function getFeaturedShops() {
   const catalog = await loadPublicCatalog()
   return catalog.businesses

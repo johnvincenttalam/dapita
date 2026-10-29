@@ -23,6 +23,7 @@ const MerchantServicesController = () => import('#controllers/merchant_services_
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const FavoritesController = () => import('#controllers/favorites_controller')
+const RecommendationsController = () => import('#controllers/recommendations_controller')
 const AdminController = () => import('#controllers/admin_controller')
 const SupportController = () => import('#controllers/support_controller')
 
@@ -47,6 +48,7 @@ router
     router.get('areas', [CatalogController, 'areas'])
     router.get('shops', [ShopsController, 'index'])
     router.get('shops/featured', [ShopsController, 'featured'])
+    router.get('recommendations', [RecommendationsController, 'index'])
     router.get('shops/:slug', [ShopsController, 'show'])
     router.get('shops/:slug/services', [ShopsController, 'services'])
     router.get('shops/:slug/staff', [ShopsController, 'staff'])

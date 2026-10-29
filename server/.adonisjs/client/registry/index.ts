@@ -66,6 +66,12 @@ const routes = {
     tokens: [[0,"api"],[0,"shops"],[0,"featured"]],
     types: placeholder as Registry['shops.featured']['types'],
   },
+  'recommendations.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/recommendations',
+    tokens: [[0,"api"],[0,"recommendations"]],
+    types: placeholder as Registry['recommendations.index']['types'],
+  },
   'shops.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/shops/:slug',
