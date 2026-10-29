@@ -1,8 +1,9 @@
+import { distanceKm } from '@/lib/geo'
 import type { Favorite } from '@/types/account'
 import type { Booking, BookingStatus } from '@/types/booking'
 import type { ShopSummary } from '@/types/business'
-import type { ID } from '@/types/common'
-import type { RecommendationReason } from '@/types/recommendation'
+import type { Coordinates, ID } from '@/types/common'
+import type { Recommendation, RecommendationReason } from '@/types/recommendation'
 
 // Shop suggestions (docs/superpowers/specs/2026-10-28-recommendations-design.md).
 // Pure, so the server (via server/app/shared/domain.ts) and mock mode score the same way.
@@ -147,4 +148,58 @@ export function recommendShops({
       return categoryId ? { businessId: shop.id, fit, reason, categoryId } : { businessId: shop.id, fit, reason }
     })
     .sort((a, b) => b.fit - a.fit || shopById.get(a.businessId)!.name.localeCompare(shopById.get(b.businessId)!.name))
+}
+
+export interface RankedRecommendation extends Recommendation {
+  distanceKm?: number
+}
+
+/**
+ * Picks the shops to show near `position`. It searches the closest radius that holds
+ * enough shops (shops without coordinates only join the whole-city step), then blends
+ * fit with closeness. Runs on the device, so the position never reaches the server.
+ */
+export function rankNearby(
+  entries: readonly Recommendation[],
+  position?: Coordinates,
+  limit: number = recommendationRules.limit,
+): RankedRecommendation[] {
+  const byName = (a: RankedRecommendation, b: RankedRecommendation) => a.shop.name.localeCompare(b.shop.name)
+  if (!position) return [...entries].sort((a, b) => b.fit - a.fit || byName(a, b)).slice(0, limit)
+
+  const located: RankedRecommendation[] = entries.map((entry) =>
+    entry.shop.coordinates ? { ...entry, distanceKm: distanceKm(position, entry.shop.coordinates) } : { ...entry },
+  )
+  const radius = recommendationRules.radiiKm.find(
+    (km) =>
+      located.filter((entry) => entry.distanceKm !== undefined && entry.distanceKm <= km).length >=
+      recommendationRules.minNearby,
+  )
+  const pool =
+    radius === undefined
+      ? located
+      : located.filter((entry) => entry.distanceKm !== undefined && entry.distanceKm <= radius)
+
+  const { fitWeight } = recommendationRules
+  const blended = (entry: RankedRecommendation) =>
+    fitWeight * entry.fit +
+    (radius === undefined || entry.distanceKm === undefined ? 0 : (1 - fitWeight) * (1 - entry.distanceKm / radius))
+
+  return pool
+    .sort((a, b) => blended(b) - blended(a) || (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity) || byName(a, b))
+    .slice(0, limit)
+}
+
+/** The card's reason tag. Without a position there's nothing to say about "near you". */
+export function recommendationTag(entry: Recommendation, categoryName?: string, hasPosition = false) {
+  switch (entry.reason) {
+    case 'similar_customers':
+      return 'Customers like you'
+    case 'popular_in_category':
+      return categoryName ? `Popular in ${categoryName}` : 'Popular'
+    case 'popular':
+      return hasPosition ? 'Popular near you' : 'Popular'
+    case 'none':
+      return hasPosition ? 'Nearest' : undefined
+  }
 }

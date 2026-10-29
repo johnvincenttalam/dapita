@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { recommendShops, type RecommendInput, type ScoredShop } from '@/lib/recommendations'
+import {
+  rankNearby,
+  recommendationTag,
+  recommendShops,
+  type RecommendInput,
+  type ScoredShop,
+} from '@/lib/recommendations'
 import type { BookingStatus } from '@/types/booking'
+import type { ShopSummary } from '@/types/business'
+import type { Recommendation } from '@/types/recommendation'
 
 const now = new Date('2026-10-29T00:00:00Z')
 const daysFromNow = (days: number) => new Date(now.getTime() + days * 86_400_000).toISOString()
@@ -160,5 +168,85 @@ describe('recommendShops', () => {
     }
     expect(byId(score(input)).get('s2')?.reason).toBe('similar_customers')
     expect(byId(score({ ...input, withdrawnUserIds: new Set(['c']) })).get('s2')?.reason).not.toBe('similar_customers')
+  })
+})
+
+const origin = { lat: 7.07, lng: 125.6 }
+/** A shop `km` north of the origin (1° of latitude ≈ 111.2 km). */
+function entry(id: string, km: number | null, fit = 0, reason: Recommendation['reason'] = 'none'): Recommendation {
+  const shop = {
+    id,
+    name: `Shop ${id}`,
+    coordinates: km === null ? undefined : { lat: origin.lat + km / 111.195, lng: origin.lng },
+  } as ShopSummary
+  return { shop, fit, reason }
+}
+const ids = (ranked: Recommendation[]) => ranked.map((item) => item.shop.id)
+
+describe('rankNearby', () => {
+  it('keeps shops within 5 km when at least 3 are there', () => {
+    const ranked = rankNearby([entry('a', 1), entry('b', 2), entry('c', 4.5), entry('d', 6)], origin)
+    expect(ids(ranked)).toEqual(['a', 'b', 'c'])
+    expect(ranked[0]?.distanceKm).toBeCloseTo(1, 1)
+  })
+
+  it('widens to 10 km, then 20 km, then the whole city', () => {
+    expect(ids(rankNearby([entry('a', 1), entry('b', 8), entry('c', 9), entry('d', 15)], origin))).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
+    expect(ids(rankNearby([entry('a', 1), entry('b', 12), entry('c', 18), entry('d', 30)], origin))).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
+    expect(ids(rankNearby([entry('a', 1), entry('b', 25), entry('c', 30)], origin))).toEqual(['a', 'b', 'c'])
+  })
+
+  it('places shops without coordinates only in the whole-city step', () => {
+    expect(ids(rankNearby([entry('a', 1), entry('b', 2), entry('c', 3), entry('x', null, 1)], origin))).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
+    expect(ids(rankNearby([entry('a', 1), entry('b', 40), entry('x', null)], origin))).toEqual(['a', 'b', 'x'])
+  })
+
+  it('with fit 0 everywhere, orders by distance', () => {
+    expect(ids(rankNearby([entry('c', 3), entry('a', 0.5), entry('b', 2)], origin))).toEqual(['a', 'b', 'c'])
+  })
+
+  it('a strong fit beats a slightly nearer weak fit', () => {
+    const ranked = rankNearby([entry('near', 0.5), entry('fit', 4, 1, 'similar_customers'), entry('mid', 2)], origin)
+    expect(ids(ranked)[0]).toBe('fit')
+  })
+
+  it('without a position, orders by fit and sets no distance', () => {
+    const ranked = rankNearby([entry('a', 1, 0.2, 'popular'), entry('b', 2, 0.9, 'similar_customers')])
+    expect(ids(ranked)).toEqual(['b', 'a'])
+    expect(ranked.every((item) => item.distanceKm === undefined)).toBe(true)
+  })
+
+  it('caps at 8', () => {
+    const many = Array.from({ length: 12 }, (_, index) => entry(`s${index}`, index * 0.3))
+    expect(rankNearby(many, origin)).toHaveLength(8)
+    expect(rankNearby(many)).toHaveLength(8)
+  })
+})
+
+describe('recommendationTag', () => {
+  it('says why a shop is suggested near you', () => {
+    expect(recommendationTag(entry('a', 1, 0.9, 'similar_customers'), undefined, true)).toBe('Customers like you')
+    expect(recommendationTag(entry('a', 1, 0.5, 'popular_in_category'), 'Barber', true)).toBe('Popular in Barber')
+    expect(recommendationTag(entry('a', 1, 0.2, 'popular'), undefined, true)).toBe('Popular near you')
+    expect(recommendationTag(entry('a', 1, 0, 'none'), undefined, true)).toBe('Nearest')
+  })
+
+  it('drops the distance wording without a position', () => {
+    expect(recommendationTag(entry('a', 1, 0.9, 'similar_customers'))).toBe('Customers like you')
+    expect(recommendationTag(entry('a', 1, 0.5, 'popular_in_category'), 'Barber')).toBe('Popular in Barber')
+    expect(recommendationTag(entry('a', 1, 0.2, 'popular'))).toBe('Popular')
+    expect(recommendationTag(entry('a', 1, 0, 'none'))).toBeUndefined()
   })
 })
