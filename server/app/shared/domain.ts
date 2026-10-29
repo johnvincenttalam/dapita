@@ -27,6 +27,7 @@ export {
   moderationRules,
 } from '@/lib/moderation'
 export { getOpenStatus, isPreferredStartTime } from '@/lib/opening-hours'
+export { recommendationRules, recommendShops } from '@/lib/recommendations'
 export { hasAnyRole } from '@/lib/roles'
 export { myProfileSchema } from '@/schemas/account'
 export {
@@ -48,5 +49,6 @@ export type * from '@/types/business'
 export type * from '@/types/catalog'
 export type * from '@/types/common'
 export type * from '@/types/message'
+export type * from '@/types/recommendation'
 export type * from '@/types/settings'
 export type { SupportRequestInput, SupportTopic } from '@/schemas/support'
