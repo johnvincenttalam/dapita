@@ -9,6 +9,7 @@
  */
 
 export { bookingRules } from '@/config/booking'
+export { photoMessages, photoRules } from '@/config/photos'
 export { legalDocuments } from '@/config/legal'
 export { defaultNotificationSettings } from '@/config/merchant-notifications'
 export {
@@ -27,6 +28,7 @@ export {
   moderationRules,
 } from '@/lib/moderation'
 export { getOpenStatus, isPreferredStartTime } from '@/lib/opening-hours'
+export { hasCover, photoAlt, photoFileProblem } from '@/lib/photos'
 export { hasAnyRole } from '@/lib/roles'
 export { myProfileSchema } from '@/schemas/account'
 export {

@@ -28,6 +28,21 @@ export async function openSlot(serviceId: string, afterHours = 3) {
   throw new Error(`No open slot for ${serviceId}`)
 }
 
+/** Gives the business a seed-style cover photo, so its listing can be submitted. */
+export async function giveCover(businessId: string) {
+  const business = await Business.findOrFail(businessId)
+  business.photos = [
+    ...business.photos,
+    {
+      id: `ph_cover_${businessId}`,
+      url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
+      alt: business.name,
+      kind: 'cover',
+    },
+  ]
+  await business.save()
+}
+
 /** Records every realtime broadcast until `stop()` is called. */
 export function recordBroadcasts() {
   const events: { channel: string; payload: RealtimeEvent }[] = []

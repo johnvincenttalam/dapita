@@ -11,6 +11,7 @@ import { adminService } from '@/services/admin.service'
 import { authService, signUpConsents } from '@/services/auth.service'
 import { merchantBusinessService } from '@/services/merchant-business.service'
 import { merchantServicesService } from '@/services/merchant-services.service'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import type { BusinessStatus } from '@/types/business'
 import MerchantOnboardingPage from '@/routes/MerchantOnboardingPage'
@@ -76,6 +77,14 @@ async function finishListing(id: string) {
     cancellation: 'Free cancellation up to 3 hours before your appointment.',
     noShow: '',
     deposit: '',
+  })
+  updateMockDb((db) => {
+    db.businesses.find((b) => b.id === id)!.photos.push({
+      id: 'ph_test',
+      url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
+      alt: 'Lea’s Nail Bar',
+      kind: 'cover',
+    })
   })
 }
 

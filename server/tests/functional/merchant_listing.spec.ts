@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
-import { customerEmail, goodCutId, ownerEmail, userByEmail } from '#tests/helpers'
+import { customerEmail, goodCutId, ownerEmail, giveCover, userByEmail } from '#tests/helpers'
 import { toDateKey, type SessionUser } from '#shared/domain'
 
 const businessPath = `/api/merchant/businesses/${goodCutId}`
@@ -218,12 +218,13 @@ test.group('Merchant: submitting a draft listing for review', (group) => {
     })
     signUp.assertStatus(200)
     const owner = await User.findByOrFail('email', 'lea@example.com')
-    const path = `/api/merchant/businesses/${signUp.body().memberships[0].businessId}`
+    const businessId = signUp.body().memberships[0].businessId as string
+    const path = `/api/merchant/businesses/${businessId}`
 
     const early = await client.post(`${path}/submit`).loginAs(owner)
     early.assertStatus(422)
     early.assertBodyContains({
-      message: 'Finish these first: business details, services and cancellation policy.',
+      message: 'Finish these first: business details, cover photo, services and cancellation policy.',
     })
 
     const details = await client
@@ -258,6 +259,7 @@ test.group('Merchant: submitting a draft listing for review', (group) => {
       .loginAs(owner)
     policies.assertStatus(200)
 
+    await giveCover(businessId)
     const submitted = await client.post(`${path}/submit`).loginAs(owner)
     submitted.assertStatus(200)
     assert.equal(submitted.body().status, 'pending_review')
