@@ -55,6 +55,7 @@ npm run dev                  # http://localhost:5173
 | Command                           | Purpose                                                       |
 | --------------------------------- | ------------------------------------------------------------- |
 | `npm run dev`                     | Start the dev server with HMR                                 |
+| `npm run dev:all`                 | Start Vite and the API server together in one terminal        |
 | `npm run build`                   | Type-check (`tsc -b`) and build to `dist/`                    |
 | `npm run preview`                 | Serve the production build locally                            |
 | `npm run typecheck`               | Type-check app, config and e2e projects                       |
