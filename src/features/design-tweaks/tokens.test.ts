@@ -81,13 +81,15 @@ describe('CSS output', () => {
   it('builds page overrides and a paste-ready export', () => {
     const state = { light: { brandHue: 300 }, dark: {}, radiusRem: 1, displayFont: 'sans' as const }
     const page = buildTweaksCss(baseline, state, 'page')
-    expect(page).toContain(':root,\n.light {')
-    expect(page).toContain('--primary: oklch(0.565 0.17 300);')
-    expect(page).toContain('--radius: 1rem;')
+    // Unlayered and later than globals.css, a bare :root would beat .dark on <html>.
+    expect(page).toContain(':root:not(.dark),\n.light {\n  --primary: oklch(0.565 0.17 300);')
+    expect(page).toContain(':root {\n  --radius: 1rem;\n}')
     expect(page).toContain(".font-display {\n  font-family: 'Geist Variable'")
     expect(page).not.toContain('.dark {')
 
     const exported = buildTweaksCss(baseline, state, 'export')
+    expect(exported).toContain(':root,\n.light {')
+    expect(exported).toContain('--radius: 1rem;')
     expect(exported).toContain('/* --font-display: ')
     expect(exported).not.toContain('.font-display')
   })

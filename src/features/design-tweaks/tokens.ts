@@ -133,8 +133,9 @@ function block(selector: string, vars: Record<string, string>) {
 export function buildTweaksCss(baseline: Baseline, state: TweakState, mode: 'page' | 'export') {
   const light = changedVars(baseline.light, derivePalette(baseline.light, state.light))
   const dark = changedVars(baseline.dark, derivePalette(baseline.dark, state.dark))
+  const radius: Record<string, string> = {}
   if (state.radiusRem !== undefined && state.radiusRem !== baseline.radiusRem)
-    light['--radius'] = `${state.radiusRem}rem`
+    (mode === 'page' ? radius : light)['--radius'] = `${state.radiusRem}rem`
 
   const font = state.displayFont && state.displayFont !== 'playfair' ? displayFonts[state.displayFont].stack : null
   const fontCss =
@@ -144,7 +145,12 @@ export function buildTweaksCss(baseline: Baseline, state: TweakState, mode: 'pag
         ? `.font-display {\n  font-family: ${font};\n}`
         : `/* In the @theme inline block: */\n/* --font-display: ${font}; */`
 
-  return [block(':root,\n.light', light), block('.dark', dark), fontCss].filter(Boolean).join('\n\n')
+  // On the page this comes after globals.css, so a bare :root would also beat .dark on <html>
+  // and leak light-theme tweaks into dark mode. The radius isn't per theme, so it stays on :root.
+  const lightSelector = mode === 'page' ? ':root:not(.dark),\n.light' : ':root,\n.light'
+  return [block(':root', radius), block(lightSelector, light), block('.dark', dark), fontCss]
+    .filter(Boolean)
+    .join('\n\n')
 }
 
 /** Text/background pairs the UI relies on. WCAG AA needs 4.5:1 for normal-size text. */
