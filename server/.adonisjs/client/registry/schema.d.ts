@@ -176,6 +176,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['staff']>>>
     }
   }
+  'uploads.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/uploads/*'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { '*': ParamValue[] }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+    }
+  }
   'bookings.store': {
     methods: ["POST"]
     pattern: '/api/bookings'

@@ -84,6 +84,12 @@ const routes = {
     tokens: [[0,"api"],[0,"shops"],[1,"slug"],[0,"staff"]],
     types: placeholder as Registry['shops.staff']['types'],
   },
+  'uploads.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/uploads/*',
+    tokens: [[0,"api"],[0,"uploads"],[2,"*"]],
+    types: placeholder as Registry['uploads.show']['types'],
+  },
   'bookings.store': {
     methods: ["POST"],
     pattern: '/api/bookings',

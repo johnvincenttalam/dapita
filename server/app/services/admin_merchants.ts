@@ -143,7 +143,7 @@ export async function moderateMerchant(admin: User, businessId: ID, input: unkno
         409
       )
     }
-    const blocker = moderationBlocker(action, locked)
+    const blocker = moderationBlocker(action, { photos: locked.publicPhotos })
     if (blocker) throw new ApiError(blocker, 422)
     const now = new Date().toISOString()
     await ModerationAction.create(

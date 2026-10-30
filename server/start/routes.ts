@@ -24,6 +24,7 @@ const ConversationsController = () => import('#controllers/conversations_control
 const ProfileController = () => import('#controllers/profile_controller')
 const AdminController = () => import('#controllers/admin_controller')
 const SupportController = () => import('#controllers/support_controller')
+const UploadsController = () => import('#controllers/uploads_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
 
@@ -49,6 +50,7 @@ router
     router.get('shops/:slug', [ShopsController, 'show'])
     router.get('shops/:slug/services', [ShopsController, 'services'])
     router.get('shops/:slug/staff', [ShopsController, 'staff'])
+    router.get('uploads/*', [UploadsController, 'show'])
 
     // Signed in
     router

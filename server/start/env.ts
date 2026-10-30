@@ -34,4 +34,8 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Where the SPA runs, for links in emails (verification, password reset)
   FRONTEND_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+
+  // Shop photos: the folder they're written to, and the base their public URLs start with
+  UPLOADS_DIR: Env.schema.string.optional(),
+  UPLOADS_PUBLIC_URL: Env.schema.string.optional(),
 })

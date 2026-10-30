@@ -17,6 +17,7 @@ export type ScannedRoutes = {
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'uploads.show': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
     'bookings.store': { paramsTuple?: []; params?: {} }
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -85,6 +86,7 @@ export type ScannedRoutes = {
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'uploads.show': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
@@ -114,6 +116,7 @@ export type ScannedRoutes = {
     'shops.show': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.services': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
     'shops.staff': { paramsTuple: [ParamValue]; params: {'slug': ParamValue} }
+    'uploads.show': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }

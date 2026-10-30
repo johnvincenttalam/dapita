@@ -4,6 +4,9 @@ build
 tmp/*
 !tmp/.gitkeep
 
+# Uploaded shop photos (UPLOADS_DIR)
+storage/
+
 # Secrets
 .env
 .env.local

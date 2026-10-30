@@ -21,6 +21,9 @@ export interface ApiDefinition {
     services: typeof routes['shops.services']
     staff: typeof routes['shops.staff']
   }
+  uploads: {
+    show: typeof routes['uploads.show']
+  }
   bookings: {
     store: typeof routes['bookings.store']
     index: typeof routes['bookings.index']

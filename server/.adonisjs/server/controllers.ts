@@ -15,4 +15,5 @@ export const controllers = {
   Profile: () => import('#controllers/profile_controller'),
   Shops: () => import('#controllers/shops_controller'),
   Support: () => import('#controllers/support_controller'),
+  Uploads: () => import('#controllers/uploads_controller'),
 }

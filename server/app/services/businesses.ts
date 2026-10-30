@@ -46,7 +46,7 @@ export function toBusinessData(business: Business): BusinessData {
     hours: business.hours,
     closures: business.closures,
     policies: business.policies,
-    photos: business.photos,
+    photos: business.publicPhotos,
     rating: business.rating ?? undefined,
     moderationNote: business.moderationNote ?? undefined,
     createdAt: business.createdAt,

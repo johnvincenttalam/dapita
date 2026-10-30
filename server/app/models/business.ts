@@ -1,5 +1,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { bool, iso, json } from '#models/columns'
+import { toPublicPhoto, type StoredPhoto } from '#helpers/photos'
 import type {
   BookingMethod,
   BusinessPhoto,
@@ -69,8 +70,9 @@ export default class Business extends BaseModel {
   @column(json)
   declare policies: BusinessPolicies
 
+  /** Uploaded photos hold a storage key here; serializers send `publicPhotos`. */
   @column(json)
-  declare photos: BusinessPhoto[]
+  declare photos: StoredPhoto[]
 
   @column(json)
   declare rating: RatingSummary | null
@@ -84,7 +86,13 @@ export default class Business extends BaseModel {
   @column(iso)
   declare updatedAt: ISODateTime
 
-  get coverPhoto() {
-    return this.photos.find((photo) => photo.kind === 'cover')
+  /** The photos with their URLs, as clients see them. */
+  get publicPhotos(): BusinessPhoto[] {
+    return this.photos.map(toPublicPhoto)
+  }
+
+  get coverPhoto(): BusinessPhoto | undefined {
+    const cover = this.photos.find((photo) => photo.kind === 'cover')
+    return cover && toPublicPhoto(cover)
   }
 }
