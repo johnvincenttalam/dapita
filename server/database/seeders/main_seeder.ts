@@ -9,6 +9,7 @@ import Business from '#models/business'
 import BusinessMembership from '#models/business_membership'
 import Category from '#models/category'
 import Consent from '#models/consent'
+import Favorite from '#models/favorite'
 import Conversation from '#models/conversation'
 import Message from '#models/message'
 import Service from '#models/service'
@@ -30,6 +31,7 @@ interface SeedData {
   bookingEvents: Domain.BookingEvent[]
   conversations: Domain.Conversation[]
   messages: Domain.Message[]
+  favorites: Domain.Favorite[]
 }
 
 export const SEED_FILE = 'seed.json'
@@ -178,5 +180,6 @@ export default class MainSeeder extends BaseSeeder {
     await Message.createMany(
       seed.messages.map((message) => ({ ...message, readAt: message.readAt ?? null }))
     )
+    await Favorite.createMany(seed.favorites)
   }
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { recommendationKeys } from '@/features/recommendations/api/queries'
 import { bookingsService, type CreateBookingInput } from '@/services/bookings.service'
 import type { BookingDetails } from '@/types/booking'
 
@@ -28,12 +29,15 @@ function useBookingUpdated() {
 }
 
 export function useCreateBookingMutation() {
+  const queryClient = useQueryClient()
   const onUpdated = useBookingUpdated()
   return useMutation({
     mutationFn: (input: CreateBookingInput) => bookingsService.createBooking(input),
     // The form shows the error next to the submit button.
     meta: { showErrorToast: false },
-    onSuccess: onUpdated,
+    // A booked shop drops out of the suggestions.
+    onSuccess: (booking) =>
+      Promise.all([onUpdated(booking), queryClient.invalidateQueries({ queryKey: recommendationKeys.all })]),
   })
 }
 

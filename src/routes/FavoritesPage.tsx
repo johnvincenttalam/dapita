@@ -8,15 +8,18 @@ import { Button } from '@/components/ui/button'
 import { useCategoriesQuery } from '@/features/discovery/api/queries'
 import { ShopCard, ShopCardSkeleton } from '@/features/discovery/components/ShopCard'
 import { useMyFavoritesQuery } from '@/features/favorites/api/queries'
+import { RecommendedRow } from '@/features/recommendations/components/RecommendedRow'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { useUserLocation } from '@/hooks/use-user-location'
 
 const gridClass = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3'
 
-/** Saved shops, most recently saved first (CUS-07). */
+/** Saved shops, most recently saved first (CUS-07), then similar shops near the customer. */
 export default function FavoritesPage() {
   useDocumentTitle('Favorites')
   const favorites = useMyFavoritesQuery()
   const categories = useCategoriesQuery()
+  const { position } = useUserLocation()
 
   let content
   if (favorites.isPending) {
@@ -70,6 +73,18 @@ export default function FavoritesPage() {
     <div className="space-y-5">
       <ScreenHeader title="Favorites" description="Shops you’ve saved, most recent first." />
       {content}
+      <RecommendedRow
+        title="You might also like"
+        headingId="also-like-heading"
+        position={position}
+        actions={
+          position ? null : (
+            <Button asChild variant="link" className="px-0">
+              <Link to="/">Set your location</Link>
+            </Button>
+          )
+        }
+      />
     </div>
   )
 }

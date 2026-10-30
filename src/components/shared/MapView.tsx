@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css'
 
 import { divIcon, latLngBounds } from 'leaflet'
-import { useEffect, useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet'
 
 import { cn } from '@/lib/utils'
@@ -90,9 +90,14 @@ function Camera({
     if (selected && !map.getBounds().pad(-0.1).contains(selected)) map.panTo(selected)
   }, [map, selected])
 
+  // A position remembered from an earlier visit is already there on mount; when there are pins
+  // to fit, they win, so a filtered map isn't pulled back to where the viewer once was.
+  const positionAtMount = useRef(userPosition)
   const hasUser = Boolean(userPosition)
   useEffect(() => {
-    if (userPosition) map.setView(userPosition, Math.max(map.getZoom(), 14))
+    if (!userPosition) return
+    if (fitPins && pins.length && userPosition === positionAtMount.current) return
+    map.setView(userPosition, Math.max(map.getZoom(), 14))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- centre once, when the position first arrives
   }, [map, hasUser])
 

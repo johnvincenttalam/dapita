@@ -46,6 +46,7 @@ try {
     bookingEvents: db.bookingEvents,
     conversations: db.conversations,
     messages: db.messages,
+    favorites: db.favorites,
   }
   await mkdir(path.dirname(path.resolve(output)), { recursive: true })
   await writeFile(output, JSON.stringify(seed, null, 2))

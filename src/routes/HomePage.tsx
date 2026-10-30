@@ -12,20 +12,38 @@ import { useCategoriesQuery, useFeaturedShopsQuery } from '@/features/discovery/
 import { CategoryGrid, CategoryGridSkeleton } from '@/features/discovery/components/CategoryGrid'
 import { HomeHero } from '@/features/discovery/components/HomeHero'
 import { ShopCard, ShopCardSkeleton } from '@/features/discovery/components/ShopCard'
+import { LocationControl } from '@/features/recommendations/components/LocationControl'
+import { LocationPrompt } from '@/features/recommendations/components/LocationPrompt'
+import { RecommendedRow } from '@/features/recommendations/components/RecommendedRow'
 import { useDocumentTitle } from '@/hooks/use-document-title'
+import { useUserLocation } from '@/hooks/use-user-location'
+import { distanceKm } from '@/lib/geo'
 
-/** Customer home (design screen 3): search, banner, category shortcuts and featured shops (CUS-01). */
+/**
+ * Customer home (design screen 3): search, banner, category shortcuts and featured shops (CUS-01).
+ * Location first: until the visitor says where they are it asks, then suggestions near them lead.
+ */
 export default function HomePage() {
   useDocumentTitle()
   const categories = useCategoriesQuery()
   const featured = useFeaturedShopsQuery()
   const categoryById = useMemo(() => new Map(categories.data?.map((c) => [c.id, c])), [categories.data])
+  const { position } = useUserLocation()
 
   return (
     <Container className="space-y-8 py-page md:space-y-12">
       <SiteSearchForm className="md:hidden" inputClassName="h-11 shadow-xs" />
 
       <HomeHero />
+
+      {position ? (
+        <div className="space-y-3">
+          <LocationControl />
+          <RecommendedRow title="Recommended near you" headingId="recommended-heading" position={position} prominent />
+        </div>
+      ) : (
+        <LocationPrompt />
+      )}
 
       <section aria-labelledby="categories-heading" className="space-y-4">
         <h2 id="categories-heading" className="sr-only type-heading md:not-sr-only">
@@ -74,7 +92,13 @@ export default function HomePage() {
             label="Featured shops"
             items={featured.data}
             getKey={(shop) => shop.id}
-            renderItem={(shop) => <ShopCard shop={shop} category={categoryById.get(shop.categoryIds[0] ?? '')} />}
+            renderItem={(shop) => (
+              <ShopCard
+                shop={shop}
+                category={categoryById.get(shop.categoryIds[0] ?? '')}
+                distanceKm={position && shop.coordinates ? distanceKm(position, shop.coordinates) : undefined}
+              />
+            )}
           />
         )}
       </section>
