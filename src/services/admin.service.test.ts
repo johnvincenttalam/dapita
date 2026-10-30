@@ -7,6 +7,7 @@ import { authService } from '@/services/auth.service'
 import { catalogService } from '@/services/catalog.service'
 import { conversationsService } from '@/services/conversations.service'
 import { merchantBusinessService } from '@/services/merchant-business.service'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers, type MockAccount } from '@/services/mock/users'
 import { shopsService } from '@/services/shops.service'
 
@@ -33,6 +34,13 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
 })
+
+function giveKulotACover() {
+  updateMockDb((db) => {
+    const kulot = db.businesses.find((business) => business.id === 'biz_kulot')
+    kulot?.photos.push({ id: 'ph_kulot_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' })
+  })
+}
 
 describe('availableModerationActions', () => {
   it('follows the listing’s state', () => {
@@ -75,7 +83,16 @@ describe('listing moderation (mock service)', () => {
     expect(review.history).toEqual([])
   })
 
+  it('refuses to approve a listing that has no cover photo', async () => {
+    await expect(
+      adminService.moderateMerchant('biz_kulot', { action: 'approve', reason: 'Details look right.' }),
+    ).rejects.toMatchObject({ status: 422, message: 'This shop needs a cover photo before it can go live.' })
+    const { business } = await adminService.getMerchantReview('biz_kulot')
+    expect(business.status).toBe('pending_review')
+  })
+
   it('approves a listing, making it public and recording who and why', async () => {
+    giveKulotACover()
     const review = await adminService.moderateMerchant('biz_kulot', {
       action: 'approve',
       reason: 'Address and services check out.',

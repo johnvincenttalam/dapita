@@ -24,6 +24,7 @@ export { listingChecklist } from '@/lib/listing-checklist'
 export {
   availableModerationActions,
   businessStatusLabels,
+  moderationBlocker,
   moderationLabels,
   moderationRules,
 } from '@/lib/moderation'

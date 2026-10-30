@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Panel } from '@/components/shared/Panel'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,7 +14,7 @@ import { OpeningHoursList } from '@/features/shops/components/OpeningHoursList'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { ApiError } from '@/lib/api-client'
 import { formatDateTime, formatDuration, formatPrice } from '@/lib/format'
-import { moderationLabels } from '@/lib/moderation'
+import { moderationBlocker, moderationLabels } from '@/lib/moderation'
 import type { ModerationActionType } from '@/types/admin'
 
 /** One listing as submitted, the decisions it allows, and every decision so far (ADM-01). */
@@ -41,6 +42,10 @@ export default function AdminMerchantReviewPage() {
   if (!review.data) return <Skeleton aria-hidden="true" className="h-[32rem] rounded-3xl" />
 
   const { business, services, owner, history, availableActions, areaName, categoryNames } = review.data
+  const cover = business.photos.find((photo) => photo.kind === 'cover')
+  const gallery = business.photos.filter((photo) => photo.kind === 'gallery')
+  // Approving and reinstating share the one blocker, so it reads once under the buttons.
+  const blocker = availableActions.map((item) => moderationBlocker(item, business)).find(Boolean)
   const facts: [string, string][] = [
     ['Categories', categoryNames.join(', ') || 'None chosen'],
     ['Area', areaName || 'None chosen'],
@@ -76,6 +81,37 @@ export default function AdminMerchantReviewPage() {
                 </div>
               ))}
             </dl>
+          </Panel>
+
+          <Panel title="Photos">
+            {cover ? (
+              <div className="space-y-3">
+                <ImageWithFallback
+                  src={cover.url}
+                  srcSet={cover.srcSet}
+                  sizes="(min-width: 1024px) 40rem, 100vw"
+                  alt={cover.alt}
+                  className="aspect-[16/9] w-full rounded-2xl"
+                />
+                {gallery.length ? (
+                  <ul className="grid grid-cols-4 gap-2">
+                    {gallery.map((photo) => (
+                      <li key={photo.id}>
+                        <ImageWithFallback
+                          src={photo.url}
+                          srcSet={photo.srcSet}
+                          sizes="10rem"
+                          alt={photo.alt}
+                          className="aspect-square w-full rounded-xl"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No cover photo yet.</p>
+            )}
           </Panel>
 
           <Panel title="Services" description={`${services.length} on the menu`}>
@@ -142,26 +178,30 @@ export default function AdminMerchantReviewPage() {
             }
           >
             {availableActions.length ? (
-              <div className="flex flex-wrap gap-2">
-                {availableActions.map((item) => (
-                  <Button
-                    key={item}
-                    shape="pill"
-                    variant={
-                      item === 'approve' || item === 'reinstate'
-                        ? 'default'
-                        : item === 'request_changes'
-                          ? 'outline'
-                          : 'ghost'
-                    }
-                    className={
-                      item === 'reject' || item === 'suspend' ? 'text-destructive hover:text-destructive' : undefined
-                    }
-                    onClick={() => setAction(item)}
-                  >
-                    {moderationLabels[item].verb}
-                  </Button>
-                ))}
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {availableActions.map((item) => (
+                    <Button
+                      key={item}
+                      shape="pill"
+                      variant={
+                        item === 'approve' || item === 'reinstate'
+                          ? 'default'
+                          : item === 'request_changes'
+                            ? 'outline'
+                            : 'ghost'
+                      }
+                      className={
+                        item === 'reject' || item === 'suspend' ? 'text-destructive hover:text-destructive' : undefined
+                      }
+                      disabled={Boolean(moderationBlocker(item, business))}
+                      onClick={() => setAction(item)}
+                    >
+                      {moderationLabels[item].verb}
+                    </Button>
+                  ))}
+                </div>
+                {blocker ? <p className="text-sm text-muted-foreground">{blocker}</p> : null}
               </div>
             ) : null}
           </Panel>
