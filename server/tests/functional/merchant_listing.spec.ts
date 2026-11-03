@@ -224,7 +224,8 @@ test.group('Merchant: submitting a draft listing for review', (group) => {
     const early = await client.post(`${path}/submit`).loginAs(owner)
     early.assertStatus(422)
     early.assertBodyContains({
-      message: 'Finish these first: business details, cover photo, services and cancellation policy.',
+      message:
+        'Finish these first: business details, cover photo, services and cancellation policy.',
     })
 
     const details = await client

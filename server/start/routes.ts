@@ -19,6 +19,7 @@ const ShopsController = () => import('#controllers/shops_controller')
 const BookingsController = () => import('#controllers/bookings_controller')
 const MerchantBookingsController = () => import('#controllers/merchant_bookings_controller')
 const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
+const MerchantPhotosController = () => import('#controllers/merchant_photos_controller')
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
@@ -105,6 +106,17 @@ router
               MerchantBusinessesController,
               'updateNotificationSettings',
             ])
+
+            router.put('businesses/:businessId/photos/cover', [
+              MerchantPhotosController,
+              'setCover',
+            ])
+            router.post('businesses/:businessId/photos', [MerchantPhotosController, 'store'])
+            router.delete('businesses/:businessId/photos/:photoId', [
+              MerchantPhotosController,
+              'destroy',
+            ])
+            router.put('businesses/:businessId/photos/order', [MerchantPhotosController, 'reorder'])
 
             router.get('businesses/:businessId/services', [MerchantServicesController, 'index'])
             router.post('businesses/:businessId/services', [MerchantServicesController, 'store'])

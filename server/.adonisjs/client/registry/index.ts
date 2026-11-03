@@ -246,6 +246,30 @@ const routes = {
     tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"notification-settings"]],
     types: placeholder as Registry['merchant_businesses.update_notification_settings']['types'],
   },
+  'merchant_photos.set_cover': {
+    methods: ["PUT"],
+    pattern: '/api/merchant/businesses/:businessId/photos/cover',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"photos"],[0,"cover"]],
+    types: placeholder as Registry['merchant_photos.set_cover']['types'],
+  },
+  'merchant_photos.store': {
+    methods: ["POST"],
+    pattern: '/api/merchant/businesses/:businessId/photos',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"photos"]],
+    types: placeholder as Registry['merchant_photos.store']['types'],
+  },
+  'merchant_photos.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/merchant/businesses/:businessId/photos/:photoId',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"photos"],[1,"photoId"]],
+    types: placeholder as Registry['merchant_photos.destroy']['types'],
+  },
+  'merchant_photos.reorder': {
+    methods: ["PUT"],
+    pattern: '/api/merchant/businesses/:businessId/photos/order',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"photos"],[0,"order"]],
+    types: placeholder as Registry['merchant_photos.reorder']['types'],
+  },
   'merchant_services.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/merchant/businesses/:businessId/services',

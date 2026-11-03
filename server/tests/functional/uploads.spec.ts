@@ -7,7 +7,7 @@ import sharp from 'sharp'
 import Business from '#models/business'
 import { putFile, resolveUploadPath, uploadsRoot } from '#services/photo_storage'
 import { toWebpCopies } from '#services/photo_images'
-import { goodCutId } from '#tests/helpers'
+import { goodCutId, removeTestUploads } from '#tests/helpers'
 import { photoMessages, type ShopDetails, type ShopSummary } from '#shared/domain'
 
 const seededCover = () =>
@@ -15,7 +15,7 @@ const seededCover = () =>
 
 test.group('Uploads: stored photos and the public file route', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  group.teardown(() => rm(uploadsRoot(), { recursive: true, force: true }))
+  group.teardown(removeTestUploads)
 
   test('serves an uploaded file with long-lived caching', async ({ client, assert }) => {
     const data = await sharp(seededCover()).resize(64).webp().toBuffer()

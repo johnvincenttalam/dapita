@@ -44,6 +44,10 @@ export type ScannedRoutes = {
     'merchant_businesses.submit': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.set_cover': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'photoId': ParamValue} }
+    'merchant_photos.reorder': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
@@ -155,6 +159,7 @@ export type ScannedRoutes = {
     'support.store': { paramsTuple?: []; params?: {} }
     'merchant_businesses.add_closure': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.submit': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.move': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_bookings.accept': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -179,12 +184,15 @@ export type ScannedRoutes = {
     'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_policies': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_notification_settings': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.set_cover': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
+    'merchant_photos.reorder': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'admin.featured': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.update_category': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'merchant_businesses.delete_closure': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'closureId': ParamValue} }
+    'merchant_photos.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'photoId': ParamValue} }
     'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
   }
   OPTIONS: {

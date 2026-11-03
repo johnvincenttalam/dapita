@@ -61,6 +61,12 @@ export interface ApiDefinition {
     notificationSettings: typeof routes['merchant_businesses.notification_settings']
     updateNotificationSettings: typeof routes['merchant_businesses.update_notification_settings']
   }
+  merchantPhotos: {
+    setCover: typeof routes['merchant_photos.set_cover']
+    store: typeof routes['merchant_photos.store']
+    destroy: typeof routes['merchant_photos.destroy']
+    reorder: typeof routes['merchant_photos.reorder']
+  }
   merchantServices: {
     index: typeof routes['merchant_services.index']
     store: typeof routes['merchant_services.store']
