@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { readdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from '@japa/runner'
 import app from '@adonisjs/core/services/app'
@@ -30,6 +31,21 @@ const shopFiles = () =>
 const cover = (business: BusinessData) => business.photos.find((photo) => photo.kind === 'cover')!
 const gallery = (business: BusinessData) =>
   business.photos.filter((photo) => photo.kind === 'gallery')
+
+/** The multipart temp files in the OS temp folder: Adonis names each one with a bare UUID. */
+const uuidName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+async function multipartTempFiles() {
+  const names = await readdir(tmpdir())
+  return names.filter((name) => uuidName.test(name))
+}
+
+/** Runs `send` and returns the multipart temp files it left behind. */
+async function tempFilesLeftBy(send: () => Promise<unknown>) {
+  const before = new Set(await multipartTempFiles())
+  await send()
+  const after = await multipartTempFiles()
+  return after.filter((name) => !before.has(name))
+}
 
 async function storedPhotos() {
   const business = await Business.findOrFail(goodCutId)
@@ -184,6 +200,51 @@ test.group('Merchant: cover and gallery photos', (group) => {
     )
   })
 
+  test('deletes the original upload from the temp folder, kept or refused', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await userByEmail(ownerEmail)
+    const customer = await userByEmail(customerEmail)
+    const fake = app.tmpPath('menu.jpg')
+    await writeFile(fake, 'Haircut 150, Shave 100')
+    try {
+      const sends: Record<string, () => Promise<void>> = {
+        'kept cover': async () => {
+          const response = await client
+            .put(`${photosPath}/cover`)
+            .file('file', fixture())
+            .loginAs(owner)
+          response.assertStatus(200)
+        },
+        'not a photo': async () => {
+          const response = await client
+            .post(photosPath)
+            .file('file', fake, { contentType: 'image/jpeg' })
+            .loginAs(owner)
+          response.assertStatus(422)
+          response.assertBodyContains({ message: photoMessages.notAPhoto })
+        },
+        'customer cover': async () => {
+          const response = await client
+            .put(`${photosPath}/cover`)
+            .file('file', fixture())
+            .loginAs(customer)
+          response.assertStatus(403)
+        },
+        'customer gallery': async () => {
+          const response = await client.post(photosPath).file('file', fixture()).loginAs(customer)
+          response.assertStatus(403)
+        },
+      }
+      for (const [name, send] of Object.entries(sends)) {
+        assert.deepEqual(await tempFilesLeftBy(send), [], name)
+      }
+    } finally {
+      await rm(fake, { force: true })
+    }
+  })
+
   test('only members can manage photos', async ({ client }) => {
     const customer = await userByEmail(customerEmail)
     const business = await Business.findOrFail(goodCutId)
@@ -222,6 +283,38 @@ test.group('Merchant: concurrent photo uploads', (group) => {
     assert.lengthOf(
       saved.photos.filter((photo) => photo.kind === 'gallery'),
       photos.filter((photo) => photo.kind === 'gallery').length + 2
+    )
+  })
+
+  test('keeps the cap at 8 when two uploads race for the last slot', async ({
+    client,
+    assert,
+    cleanup,
+  }) => {
+    const owner = await userByEmail(ownerEmail)
+    const { photos, updatedAt } = await Business.findOrFail(goodCutId)
+    cleanup(async () => {
+      const business = await Business.findOrFail(goodCutId)
+      business.merge({ photos, updatedAt })
+      await business.save()
+    })
+
+    for (let i = photos.filter((photo) => photo.kind === 'gallery').length; i < 7; i++) {
+      const response = await client.post(photosPath).file('file', fixture()).loginAs(owner)
+      response.assertStatus(200)
+    }
+    const responses = await Promise.all([
+      client.post(photosPath).file('file', fixture()).loginAs(owner),
+      client.post(photosPath).file('file', fixture()).loginAs(owner),
+    ])
+    const statuses = responses.map((response) => response.status()).sort()
+    assert.deepEqual(statuses, [200, 422])
+    const refused = responses.find((response) => response.status() === 422)!
+    refused.assertBodyContains({ message: photoMessages.galleryFull })
+    const saved = await Business.findOrFail(goodCutId)
+    assert.lengthOf(
+      saved.photos.filter((photo) => photo.kind === 'gallery'),
+      8
     )
   })
 })

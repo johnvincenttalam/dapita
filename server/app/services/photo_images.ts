@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import sharp from 'sharp'
 import ApiError from '#exceptions/api_error'
 import { photoMessages, photoRules } from '#shared/domain'
@@ -10,10 +11,12 @@ const notAPhoto = () => new ApiError(photoMessages.notAPhoto, 422)
  * The WebP copies of an uploaded photo, one per width, never wider than the
  * original. The format comes from the file's content, not its name or declared
  * type. Turned upright from its EXIF orientation; sharp drops the metadata (GPS
- * included) unless asked to keep it. The original isn't kept.
+ * included) unless asked to keep it. The original isn't kept: it is read into
+ * memory rather than opened by path, because libvips keeps files it opened
+ * cached, and on Windows an open file can't be deleted afterwards.
  */
 export async function toWebpCopies(filePath: string): Promise<Record<Width, Buffer>> {
-  const image = sharp(filePath)
+  const image = sharp(await readFile(filePath))
   const { format } = await image.metadata().catch(() => {
     throw notAPhoto()
   })
