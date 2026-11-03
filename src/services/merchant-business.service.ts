@@ -119,6 +119,15 @@ function checkPhotoFile(file: File | undefined): asserts file is File {
   if (problem) throw new ApiError(problem, 422)
 }
 
+/** The resized photo, or `notAPhoto` when the browser can't decode it (a text file named `menu.jpg`), like the server. */
+async function resizedPhoto(file: File) {
+  try {
+    return await resizeImageToDataUrl(file)
+  } catch {
+    throw new ApiError(photoMessages.notAPhoto, 422)
+  }
+}
+
 const galleryOf = (business: Business) => business.photos.filter((photo) => photo.kind === 'gallery')
 
 const mockMerchantBusinessService: MerchantBusinessService = {
@@ -233,7 +242,7 @@ const mockMerchantBusinessService: MerchantBusinessService = {
     await delay(600)
     requireMember(businessId)
     checkPhotoFile(file)
-    const url = await resizeImageToDataUrl(file)
+    const url = await resizedPhoto(file)
     return change(businessId, (business) => {
       const cover = { id: createMockId('ph'), url, alt: photoAlt(business.name, 'cover'), kind: 'cover' as const }
       business.photos = [cover, ...galleryOf(business)]
@@ -244,7 +253,7 @@ const mockMerchantBusinessService: MerchantBusinessService = {
     await delay(600)
     requireMember(businessId)
     checkPhotoFile(file)
-    const url = await resizeImageToDataUrl(file)
+    const url = await resizedPhoto(file)
     return change(businessId, (business) => {
       const gallery = galleryOf(business)
       if (gallery.length >= photoRules.maxGalleryPhotos) throw new ApiError(photoMessages.galleryFull, 422)

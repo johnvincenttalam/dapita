@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { photoMessages, photoRules } from '@/config/photos'
 
 import type * as MockUtils from '@/services/mock/utils'
+import { resizeImageToDataUrl } from '@/lib/resize-image'
 import type { BusinessProfileInput } from '@/schemas/business'
 import { authService, signUpConsents } from '@/services/auth.service'
 import { bookingsService } from '@/services/bookings.service'
@@ -13,7 +14,9 @@ import { MOCK_SESSION_KEY, mockUsers, type MockAccount } from '@/services/mock/u
 import { shopsService } from '@/services/shops.service'
 import type { WeeklyHours } from '@/types/business'
 
-vi.mock('@/lib/resize-image', () => ({ resizeImageToDataUrl: () => Promise.resolve('data:image/webp;base64,AA') }))
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: vi.fn(() => Promise.resolve('data:image/webp;base64,AA')),
+}))
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
@@ -271,6 +274,19 @@ describe('shop photos (mock service)', () => {
       status: 422,
       message: photoMessages.noFile,
     })
+  })
+
+  it('rejects a file named like a photo that can’t be decoded', async () => {
+    await merchantBusinessService.setCoverPhoto(BIZ, photo())
+    const before = await photosOf()
+    for (const upload of [merchantBusinessService.setCoverPhoto, merchantBusinessService.addGalleryPhoto]) {
+      vi.mocked(resizeImageToDataUrl).mockRejectedValueOnce(new Error('decode'))
+      await expect(upload(BIZ, photo('menu.jpg'))).rejects.toMatchObject({
+        status: 422,
+        message: photoMessages.notAPhoto,
+      })
+    }
+    expect(await photosOf()).toEqual(before)
   })
 
   it('removes gallery photos, but not the cover', async () => {
