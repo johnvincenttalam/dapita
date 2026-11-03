@@ -1,5 +1,5 @@
 import { ArrowLeftIcon, ArrowRightIcon, ImagePlusIcon, Loader2Icon, XIcon } from 'lucide-react'
-import { useId, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { useEffect, useId, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Panel } from '@/components/shared/Panel'
@@ -99,7 +99,7 @@ function CoverPanel({ business }: { business: Business }) {
 
   return (
     <Panel title="Cover photo">
-      <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-muted">
+      <div className="relative aspect-video overflow-hidden rounded-2xl bg-muted">
         {cover ? (
           <ImageWithFallback
             src={cover.url}
@@ -142,6 +142,15 @@ function GalleryPanel({ business }: { business: Business }) {
   const running = useRef(false)
   const nextKey = useRef(0)
   const dragged = useRef<number>(undefined)
+  const unmounted = useRef(false)
+
+  // Leaving the tab stops the queue after the file in flight, so nothing uploads unseen.
+  useEffect(() => {
+    unmounted.current = false
+    return () => {
+      unmounted.current = true
+    }
+  }, [])
 
   const commit = (next: QueuedFile[]) => {
     uploadsRef.current = next
@@ -157,7 +166,7 @@ function GalleryPanel({ business }: { business: Business }) {
     running.current = true
     try {
       let item = uploadsRef.current.find((u) => u.state === 'queued')
-      while (item) {
+      while (item && !unmounted.current) {
         patch(item.key, { state: 'uploading' })
         try {
           await add.mutateAsync(item.file)

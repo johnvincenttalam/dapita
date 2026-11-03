@@ -16,7 +16,11 @@ vi.mock('@/services/mock/utils', async (importOriginal) => ({
   delay: () => Promise.resolve(),
 }))
 
-vi.mock('@/lib/resize-image', () => ({ resizeImageToDataUrl: () => Promise.resolve('data:image/webp;base64,AA') }))
+// Tests can hold uploads open by swapping `resizing.gate` for a promise they resolve later.
+const resizing = vi.hoisted(() => ({ gate: Promise.resolve() }))
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: () => resizing.gate.then(() => 'data:image/webp;base64,AA'),
+}))
 
 // Wednesday 21 Oct 2026, 11:00 in Manila. The mock database seeds relative to this.
 const NOW = new Date('2026-10-21T03:00:00Z')
@@ -216,6 +220,21 @@ describe('MerchantProfilePage', () => {
       renderAt('/business/profile?tab=photos')
       await user.click(await screen.findByRole('button', { name: 'Move photo 2 earlier' }))
       await waitFor(async () => expect(await galleryIds()).toEqual(['ph_seed_1', 'ph_seed_0']))
+    })
+
+    it('stops uploading the rest of a batch when the owner leaves the tab', async () => {
+      const user = userEvent.setup()
+      seedGallery(1)
+      renderAt('/business/profile?tab=photos')
+      let release = () => {}
+      resizing.gate = new Promise<void>((resolve) => (release = resolve))
+      await user.upload(await screen.findByLabelText('Add photos'), [png('a.png'), png('b.png')])
+      await user.click(screen.getByRole('tab', { name: 'Hours' }))
+      release()
+      resizing.gate = Promise.resolve()
+      await waitFor(async () => expect(await galleryIds()).toHaveLength(2))
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(await galleryIds()).toHaveLength(2)
     })
   })
 })
