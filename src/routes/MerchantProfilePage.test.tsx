@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
 import { AppProviders } from '@/app/providers'
+import { updateMockDb } from '@/services/mock/db'
 import { createQueryClient } from '@/lib/query-client'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import { shopsService } from '@/services/shops.service'
@@ -13,6 +14,12 @@ import MerchantProfilePage from '@/routes/MerchantProfilePage'
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
   delay: () => Promise.resolve(),
+}))
+
+// Tests can hold uploads open by swapping `resizing.gate` for a promise they resolve later.
+const resizing = vi.hoisted(() => ({ gate: Promise.resolve() }))
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: () => resizing.gate.then(() => 'data:image/webp;base64,AA'),
 }))
 
 // Wednesday 21 Oct 2026, 11:00 in Manila. The mock database seeds relative to this.
@@ -134,5 +141,126 @@ describe('MerchantProfilePage', () => {
 
     expect(await screen.findByText('Booking rules saved. New requests use version 3.')).toBeInTheDocument()
     expect((await shopsService.getShop(SLUG)).policies).toMatchObject({ version: 3 })
+  })
+
+  describe('photos', () => {
+    const png = (name = 'a.png') => new File(['x'], name, { type: 'image/png' })
+    const seedGallery = (count: number) =>
+      updateMockDb((db) => {
+        const business = db.businesses.find((b) => b.slug === SLUG)!
+        const cover = business.photos.filter((p) => p.kind === 'cover')
+        business.photos = [
+          ...cover,
+          ...Array.from({ length: count }, (_, i) => ({
+            id: `ph_seed_${i}`,
+            url: `/seed-${i}.webp`,
+            alt: `Seed ${i}`,
+            kind: 'gallery' as const,
+          })),
+        ]
+      })
+    const items = async () =>
+      within(await screen.findByRole('list', { name: 'Gallery photos' })).getAllByRole('listitem')
+    const galleryIds = async () =>
+      (await shopsService.getShop(SLUG)).photos.filter((p) => p.kind === 'gallery').map((p) => p.id)
+
+    it('adds a gallery photo and shows it on the shop page', async () => {
+      const user = userEvent.setup()
+      seedGallery(1)
+      renderAt('/business/profile?tab=photos')
+      const before = (await items()).length
+      await user.upload(screen.getByLabelText('Add photos'), png())
+      await waitFor(async () => expect(await items()).toHaveLength(before + 1))
+      expect(await galleryIds()).toHaveLength(before + 1)
+    })
+
+    it('replaces the cover photo', async () => {
+      const user = userEvent.setup()
+      renderAt('/business/profile?tab=photos')
+      await user.upload(await screen.findByLabelText('Replace cover photo'), png())
+      await waitFor(async () =>
+        expect((await shopsService.getShop(SLUG)).photos.find((p) => p.kind === 'cover')?.url).toBe(
+          'data:image/webp;base64,AA',
+        ),
+      )
+    })
+
+    it('only adds as many photos as fit', async () => {
+      const user = userEvent.setup()
+      seedGallery(7)
+      renderAt('/business/profile?tab=photos')
+      await user.upload(await screen.findByLabelText('Add photos'), [png('a.png'), png('b.png'), png('c.png')])
+      expect(await screen.findByText('You can add up to 8 gallery photos, so 2 weren’t added.')).toBeInTheDocument()
+      await waitFor(async () => expect(await galleryIds()).toHaveLength(8))
+    })
+
+    it('doesn’t let a rejected file take a free slot', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      seedGallery(7)
+      renderAt('/business/profile?tab=photos')
+      await user.upload(await screen.findByLabelText('Add photos'), [
+        new File(['x'], 'a.gif', { type: 'image/gif' }),
+        png('b.png'),
+        png('c.png'),
+      ])
+      expect(await screen.findByText('That file isn’t a photo. Use JPG, PNG or WebP.')).toBeInTheDocument()
+      expect(screen.getByText('You can add up to 8 gallery photos, so 1 wasn’t added.')).toBeInTheDocument()
+      await waitFor(async () => expect(await galleryIds()).toHaveLength(8))
+    })
+
+    it('rejects a file that isn’t a photo', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      seedGallery(1)
+      renderAt('/business/profile?tab=photos')
+      await user.upload(await screen.findByLabelText('Add photos'), new File(['x'], 'a.txt', { type: 'text/plain' }))
+      expect(await screen.findByText('That file isn’t a photo. Use JPG, PNG or WebP.')).toBeInTheDocument()
+      expect(await galleryIds()).toHaveLength(1)
+    })
+
+    it('removes a photo after confirming', async () => {
+      const user = userEvent.setup()
+      seedGallery(2)
+      renderAt('/business/profile?tab=photos')
+      expect(await items()).toHaveLength(2)
+      await user.click(screen.getByRole('button', { name: 'Remove photo 1' }))
+      const dialog = await screen.findByRole('alertdialog', { name: 'Remove this photo?' })
+      await user.click(within(dialog).getByRole('button', { name: 'Remove' }))
+      await waitFor(async () => expect(await items()).toHaveLength(1))
+    })
+
+    it('moves a photo earlier', async () => {
+      const user = userEvent.setup()
+      seedGallery(2)
+      renderAt('/business/profile?tab=photos')
+      await user.click(await screen.findByRole('button', { name: 'Move photo 2 earlier' }))
+      await waitFor(async () => expect(await galleryIds()).toEqual(['ph_seed_1', 'ph_seed_0']))
+    })
+
+    it('keeps focus on a photo moved with the keyboard and announces where it went', async () => {
+      const user = userEvent.setup()
+      seedGallery(3)
+      renderAt('/business/profile?tab=photos')
+      await user.click(await screen.findByRole('button', { name: 'Move photo 2 earlier' }))
+      expect(await screen.findByText('Photo moved to position 1.')).toBeInTheDocument()
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Move photo 1 later' })),
+      )
+      expect(within((await items())[0]!).getByRole('img')).toHaveAttribute('alt', 'Seed 1')
+    })
+
+    it('stops uploading the rest of a batch when the owner leaves the tab', async () => {
+      const user = userEvent.setup()
+      seedGallery(1)
+      renderAt('/business/profile?tab=photos')
+      let release = () => {}
+      resizing.gate = new Promise<void>((resolve) => (release = resolve))
+      await user.upload(await screen.findByLabelText('Add photos'), [png('a.png'), png('b.png')])
+      await user.click(screen.getByRole('tab', { name: 'Hours' }))
+      release()
+      resizing.gate = Promise.resolve()
+      await waitFor(async () => expect(await galleryIds()).toHaveLength(2))
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(await galleryIds()).toHaveLength(2)
+    })
   })
 })

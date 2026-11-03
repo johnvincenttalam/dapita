@@ -10,11 +10,13 @@ import { useBusinessProfileQuery } from '@/features/merchant/api/business-querie
 import { BusinessDetailsForm } from '@/features/merchant/components/profile/BusinessDetailsForm'
 import { ClosuresPanel } from '@/features/merchant/components/profile/ClosuresPanel'
 import { OpeningHoursForm } from '@/features/merchant/components/profile/OpeningHoursForm'
+import { PhotosPanel } from '@/features/merchant/components/profile/PhotosPanel'
 import { PoliciesForm } from '@/features/merchant/components/profile/PoliciesForm'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 
 const tabs = [
   { value: 'details', label: 'Details' },
+  { value: 'photos', label: 'Photos' },
   { value: 'hours', label: 'Hours' },
   { value: 'closures', label: 'Closures' },
   { value: 'policies', label: 'Booking rules' },
@@ -73,6 +75,9 @@ export default function MerchantProfilePage() {
           <div className="max-w-2xl">
             <TabsContent value="details">
               <BusinessDetailsForm profile={profile.data} />
+            </TabsContent>
+            <TabsContent value="photos">
+              <PhotosPanel business={profile.data.business} />
             </TabsContent>
             <TabsContent value="hours">
               <OpeningHoursForm business={profile.data.business} />

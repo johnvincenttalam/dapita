@@ -9,6 +9,22 @@ async function signInWithPrototypeAccount(page: Page, account: 'Customer' | 'Bus
   await page.getByRole('button', { name: account }).click()
 }
 
+/**
+ * Gives the seeded pending shop a cover so an admin can approve it. Mirrors giveKulotACover in the unit tests.
+ * The key is MOCK_DB_KEY in src/services/mock/db.ts (e2e files do not import from src/).
+ */
+async function giveKulotACover(page: Page) {
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('glamspot-mock-db')
+    if (!raw) throw new Error('mock db not seeded yet')
+    const db = JSON.parse(raw) as { businesses: { id: string; photos: unknown[] }[] }
+    const kulot = db.businesses.find((b) => b.id === 'biz_kulot')
+    if (!kulot) throw new Error('biz_kulot missing')
+    kulot.photos.push({ id: 'ph_kulot_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' })
+    localStorage.setItem('glamspot-mock-db', JSON.stringify(db))
+  })
+}
+
 test.describe('marketplace navigation', () => {
   test('uses the tab bar on mobile and the header on desktop', async ({ page, isMobile }) => {
     await page.goto('/')
@@ -147,6 +163,12 @@ test.describe('new shops', () => {
     await expectNoHorizontalOverflow(page)
     await page.getByRole('button', { name: 'Save and continue' }).click()
 
+    await page
+      .getByLabel('Add a cover photo')
+      .setInputFiles('public/images/shops/shop-the-good-cut-barbershop-cover-640.webp')
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Continue' }).click()
+
     await expect(page.getByRole('heading', { name: 'Opening hours' })).toBeVisible()
     await page.getByRole('button', { name: 'Save and continue' }).click()
 
@@ -173,6 +195,9 @@ test.describe('admin console', () => {
   test('an administrator approves a listing and the shop goes live', async ({ page }) => {
     await page.goto('/shops/kulot-studio')
     await expect(page.getByText('This shop isn’t available')).toBeVisible()
+
+    // Approval needs a cover photo, and the seed leaves this shop without one on purpose.
+    await giveKulotACover(page)
 
     await page.goto('/auth/sign-in?next=/admin')
     await signInWithPrototypeAccount(page, 'Administrator')

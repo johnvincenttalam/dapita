@@ -11,9 +11,16 @@ import { adminService } from '@/services/admin.service'
 import { authService, signUpConsents } from '@/services/auth.service'
 import { merchantBusinessService } from '@/services/merchant-business.service'
 import { merchantServicesService } from '@/services/merchant-services.service'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import type { BusinessStatus } from '@/types/business'
 import MerchantOnboardingPage from '@/routes/MerchantOnboardingPage'
+
+// Tests can hold uploads open by swapping `resizing.gate` for a promise they resolve later.
+const resizing = vi.hoisted(() => ({ gate: Promise.resolve() }))
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: () => resizing.gate.then(() => 'data:image/webp;base64,AA'),
+}))
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
@@ -52,7 +59,7 @@ async function signUpOwner() {
   return owner.memberships[0]?.businessId ?? ''
 }
 
-async function finishListing(id: string) {
+async function finishListing(id: string, { cover = true } = {}) {
   await merchantBusinessService.updateProfile(id, {
     name: 'Lea’s Nail Bar',
     description: 'Gel nails, nail art and pedicures in a calm little studio.',
@@ -77,12 +84,24 @@ async function finishListing(id: string) {
     noShow: '',
     deposit: '',
   })
+  if (!cover) return
+  updateMockDb((db) => {
+    db.businesses
+      .find((b) => b.id === id)!
+      .photos.push({
+        id: 'ph_test',
+        url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
+        alt: 'Lea’s Nail Bar',
+        kind: 'cover',
+      })
+  })
 }
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   localStorage.clear()
+  resizing.gate = Promise.resolve()
 })
 
 afterEach(() => {
@@ -107,9 +126,55 @@ describe('MerchantOnboardingPage', () => {
     await user.type(screen.getByRole('textbox', { name: /Address/ }), '12 J.P. Laurel Ave, Bajada, Davao City')
     await user.click(screen.getByRole('button', { name: 'Save and continue' }))
 
+    await waitFor(() => expect(router.state.location.search).toBe('?step=photos'))
+    expect(await screen.findByLabelText('Add a cover photo')).toBeInTheDocument()
+    expect(within(steps).getByRole('link', { name: /Details, done/ })).toBeInTheDocument()
+  })
+
+  it('asks for a cover photo before moving on to the hours', async () => {
+    const user = userEvent.setup()
+    const id = await signUpOwner()
+    await finishListing(id, { cover: false })
+    const router = renderAt('/business/onboarding?step=photos')
+    const next = await screen.findByRole('button', { name: 'Continue' })
+    expect(next).toBeDisabled()
+
+    await user.upload(screen.getByLabelText('Add a cover photo'), new File(['x'], 'cover.jpg', { type: 'image/jpeg' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+
     await waitFor(() => expect(router.state.location.search).toBe('?step=hours'))
     expect(await screen.findByRole('heading', { name: 'Opening hours' })).toBeInTheDocument()
-    expect(within(steps).getByRole('link', { name: /Details, done/ })).toBeInTheDocument()
+  })
+
+  it('waits for gallery uploads before moving on', async () => {
+    const user = userEvent.setup()
+    const id = await signUpOwner()
+    await finishListing(id)
+    renderAt('/business/onboarding?step=photos')
+    expect(await screen.findByRole('button', { name: 'Continue' })).toBeEnabled()
+
+    let release = () => {}
+    resizing.gate = new Promise<void>((resolve) => (release = resolve))
+    await user.upload(screen.getByLabelText('Add photos'), new File(['x'], 'a.png', { type: 'image/png' }))
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
+    expect(screen.getByText('Wait for your photos to finish uploading.')).toBeInTheDocument()
+
+    release()
+    resizing.gate = Promise.resolve()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled())
+    expect(screen.queryByText('Wait for your photos to finish uploading.')).not.toBeInTheDocument()
+  })
+
+  it('points back to the photos step when the cover is missing', async () => {
+    const id = await signUpOwner()
+    await finishListing(id, { cover: false })
+    renderAt('/business/onboarding?step=review')
+    const review = await screen.findByRole('region', { name: 'Ready to submit?' })
+    expect(within(review).getByRole('link', { name: 'Fix cover photo' })).toHaveAttribute(
+      'href',
+      '/business/onboarding?step=photos',
+    )
   })
 
   it('offers the categories just chosen when adding the first service', async () => {
@@ -124,6 +189,12 @@ describe('MerchantOnboardingPage', () => {
     await user.selectOptions(screen.getByRole('combobox', { name: /Area/ }), 'Bajada')
     await user.type(screen.getByRole('textbox', { name: /Address/ }), '12 J.P. Laurel Ave, Bajada, Davao City')
     await user.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await user.upload(
+      await screen.findByLabelText('Add a cover photo'),
+      new File(['x'], 'cover.jpg', { type: 'image/jpeg' }),
+    )
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
     await screen.findByRole('heading', { name: 'Opening hours' })
     await user.click(screen.getByRole('button', { name: 'Save and continue' }))
 

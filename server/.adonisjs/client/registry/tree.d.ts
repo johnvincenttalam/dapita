@@ -24,6 +24,9 @@ export interface ApiDefinition {
   recommendations: {
     index: typeof routes['recommendations.index']
   }
+  uploads: {
+    show: typeof routes['uploads.show']
+  }
   bookings: {
     store: typeof routes['bookings.store']
     index: typeof routes['bookings.index']
@@ -65,6 +68,12 @@ export interface ApiDefinition {
     submit: typeof routes['merchant_businesses.submit']
     notificationSettings: typeof routes['merchant_businesses.notification_settings']
     updateNotificationSettings: typeof routes['merchant_businesses.update_notification_settings']
+  }
+  merchantPhotos: {
+    setCover: typeof routes['merchant_photos.set_cover']
+    store: typeof routes['merchant_photos.store']
+    destroy: typeof routes['merchant_photos.destroy']
+    reorder: typeof routes['merchant_photos.reorder']
   }
   merchantServices: {
     index: typeof routes['merchant_services.index']

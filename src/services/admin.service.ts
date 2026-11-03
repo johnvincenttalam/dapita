@@ -1,6 +1,12 @@
 import { ApiError, apiClient } from '@/lib/api-client'
 import { env } from '@/lib/env'
-import { availableModerationActions, businessStatusLabels, moderationLabels, moderationRules } from '@/lib/moderation'
+import {
+  availableModerationActions,
+  businessStatusLabels,
+  moderationBlocker,
+  moderationLabels,
+  moderationRules,
+} from '@/lib/moderation'
 import { hasAnyRole } from '@/lib/roles'
 import { moderationSchema, type ModerationInput } from '@/schemas/moderation'
 import { readMockDb, updateMockDb, type MockDb } from '@/services/mock/db'
@@ -312,6 +318,8 @@ const mockAdminService: AdminService = {
           409,
         )
       }
+      const blocker = moderationBlocker(action, business)
+      if (blocker) throw new ApiError(blocker, 422)
       const now = new Date().toISOString()
       db.moderationActions.push({
         id: createMockId('mod'),

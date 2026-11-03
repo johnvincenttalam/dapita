@@ -71,3 +71,16 @@ export const useUpdatePoliciesMutation = (businessId: string) =>
 
 export const useSubmitForReviewMutation = (businessId: string) =>
   useBusinessMutation<void>(businessId, (id) => merchantBusinessService.submitForReview(id))
+
+export const useSetCoverPhotoMutation = (businessId: string) =>
+  useBusinessMutation<File>(businessId, merchantBusinessService.setCoverPhoto)
+
+export const useAddGalleryPhotoMutation = (businessId: string) =>
+  useBusinessMutation<File>(businessId, merchantBusinessService.addGalleryPhoto)
+
+/** Removing and reordering happen from a grid, not a form, so failures toast. */
+export const useRemovePhotoMutation = (businessId: string) =>
+  useBusinessMutation<string>(businessId, merchantBusinessService.removePhoto, { showErrorToast: true })
+
+export const useReorderGalleryMutation = (businessId: string) =>
+  useBusinessMutation<string[]>(businessId, merchantBusinessService.reorderGallery, { showErrorToast: true })

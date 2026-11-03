@@ -189,6 +189,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/shops_controller').default['staff']>>>
     }
   }
+  'uploads.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/uploads/*'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { '*': ParamValue[] }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['show']>>>
+    }
+  }
   'bookings.store': {
     methods: ["POST"]
     pattern: '/api/bookings'
@@ -564,6 +577,58 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_businesses_controller').default['updateNotificationSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'merchant_photos.set_cover': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/photos/cover'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['setCover']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['setCover']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['setCover']>>>
+    }
+  }
+  'merchant_photos.store': {
+    methods: ["POST"]
+    pattern: '/api/merchant/businesses/:businessId/photos'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['store']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['store']>>>
+    }
+  }
+  'merchant_photos.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/merchant/businesses/:businessId/photos/:photoId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; photoId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['destroy']>>>
+    }
+  }
+  'merchant_photos.reorder': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/photos/order'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { businessId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['reorder']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['reorder']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_photos_controller').default['reorder']>>>
     }
   }
   'merchant_services.index': {

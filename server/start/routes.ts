@@ -19,6 +19,7 @@ const ShopsController = () => import('#controllers/shops_controller')
 const BookingsController = () => import('#controllers/bookings_controller')
 const MerchantBookingsController = () => import('#controllers/merchant_bookings_controller')
 const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
+const MerchantPhotosController = () => import('#controllers/merchant_photos_controller')
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
@@ -26,6 +27,7 @@ const FavoritesController = () => import('#controllers/favorites_controller')
 const RecommendationsController = () => import('#controllers/recommendations_controller')
 const AdminController = () => import('#controllers/admin_controller')
 const SupportController = () => import('#controllers/support_controller')
+const UploadsController = () => import('#controllers/uploads_controller')
 
 router.get('/', () => ({ name: 'Dapita API', status: 'ok' }))
 
@@ -52,6 +54,7 @@ router
     router.get('shops/:slug', [ShopsController, 'show'])
     router.get('shops/:slug/services', [ShopsController, 'services'])
     router.get('shops/:slug/staff', [ShopsController, 'staff'])
+    router.get('uploads/*', [UploadsController, 'show'])
 
     // Signed in
     router
@@ -110,6 +113,17 @@ router
               MerchantBusinessesController,
               'updateNotificationSettings',
             ])
+
+            router.put('businesses/:businessId/photos/cover', [
+              MerchantPhotosController,
+              'setCover',
+            ])
+            router.post('businesses/:businessId/photos', [MerchantPhotosController, 'store'])
+            router.delete('businesses/:businessId/photos/:photoId', [
+              MerchantPhotosController,
+              'destroy',
+            ])
+            router.put('businesses/:businessId/photos/order', [MerchantPhotosController, 'reorder'])
 
             router.get('businesses/:businessId/services', [MerchantServicesController, 'index'])
             router.post('businesses/:businessId/services', [MerchantServicesController, 'store'])

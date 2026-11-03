@@ -1,5 +1,7 @@
+import { photoMessages } from '@/config/photos'
+import { hasCover } from '@/lib/photos'
 import type { CaseKind, CaseListItem, CaseStatus, ModerationActionType } from '@/types/admin'
-import type { BusinessStatus } from '@/types/business'
+import type { Business, BusinessStatus } from '@/types/business'
 
 /** Which decisions apply to a listing in each state, and where each one leads (ADM-01). */
 export const moderationRules: Record<ModerationActionType, { from: BusinessStatus[]; to: BusinessStatus }> = {
@@ -14,6 +16,15 @@ const order: ModerationActionType[] = ['approve', 'request_changes', 'reject', '
 
 export function availableModerationActions(status: BusinessStatus): ModerationActionType[] {
   return order.filter((action) => moderationRules[action].from.includes(status))
+}
+
+/** Why a decision can't be made on this listing right now, if it can't: a shop with no cover never goes live. */
+export function moderationBlocker(
+  action: ModerationActionType,
+  business: Pick<Business, 'photos'>,
+): string | undefined {
+  if ((action === 'approve' || action === 'reinstate') && !hasCover(business)) return photoMessages.needsCoverToGoLive
+  return undefined
 }
 
 export const moderationLabels: Record<ModerationActionType, { verb: string; done: string }> = {

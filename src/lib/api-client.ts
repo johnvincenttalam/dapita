@@ -19,7 +19,7 @@ export class ApiError extends Error {
 type QueryValue = string | number | boolean | null | undefined
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
-  /** Serialised as JSON. */
+  /** Serialised as JSON, except FormData, which is sent as is. */
   body?: unknown
   /** Appended as a query string; null/undefined values are skipped. */
   query?: Record<string, QueryValue>
@@ -35,16 +35,18 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
 }
 
 async function request<T>(path: string, { body, query, headers, ...init }: RequestOptions = {}): Promise<T> {
+  const isForm = body instanceof FormData
   let response: Response
   try {
     response = await fetch(buildUrl(path, query), {
       ...init,
       headers: {
         Accept: 'application/json',
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        // For FormData the browser sets the multipart Content-Type, boundary included.
+        ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
       // Send cookies for same-origin session auth. Tokens should live in
       // httpOnly cookies set by your backend, not in frontend code.
       credentials: 'include',

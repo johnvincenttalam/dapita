@@ -45,6 +45,7 @@ describe('listingChecklist', () => {
     const checklist = listingChecklist(draft(), [])
     expect(checklist.items.map((item) => [item.step, item.done])).toEqual([
       ['details', false],
+      ['photos', false],
       ['hours', false],
       ['services', false],
       ['policies', false],
@@ -54,11 +55,11 @@ describe('listingChecklist', () => {
   })
 
   it('needs at least one service customers can see', () => {
-    expect(listingChecklist(draft(), [service(false)]).items[2]).toMatchObject({
+    expect(listingChecklist(draft(), [service(false)]).items[3]).toMatchObject({
       done: false,
       missing: 'Show at least one service to customers.',
     })
-    expect(listingChecklist(draft(), [service(true)]).items[2]?.done).toBe(true)
+    expect(listingChecklist(draft(), [service(true)]).items[3]?.done).toBe(true)
   })
 
   it('is ready once every part is done', () => {
@@ -69,10 +70,21 @@ describe('listingChecklist', () => {
       address: '12 J.P. Laurel Ave, Bajada, Davao City',
       hours: { ...closed, 2: [{ open: '10:00', close: '19:00' }] },
       policies: { cancellation: 'Free cancellation up to 3 hours before.', version: 1 },
+      photos: [{ id: 'ph_1', url: '/x.webp', alt: 'Kulot Studio', kind: 'cover' }],
     })
     const checklist = listingChecklist(complete, [service(true)])
     expect(checklist.items.every((item) => item.done)).toBe(true)
     expect(checklist.ready).toBe(true)
+  })
+
+  it('asks for a cover photo, and a gallery photo alone isn’t enough', () => {
+    const gallery = { id: 'ph_1', url: '/x.webp', alt: 'x', kind: 'gallery' as const }
+    expect(listingChecklist(draft({ photos: [gallery] }), []).items[1]).toMatchObject({
+      step: 'photos',
+      done: false,
+      missing: 'Add a cover photo.',
+    })
+    expect(listingChecklist(draft({ photos: [{ ...gallery, kind: 'cover' }] }), []).items[1]?.done).toBe(true)
   })
 
   it('names only the missing details', () => {

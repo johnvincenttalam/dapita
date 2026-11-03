@@ -14,6 +14,7 @@ import { useBusinessProfileQuery, useSubmitForReviewMutation } from '@/features/
 import { useServiceMenuQuery } from '@/features/merchant/api/service-queries'
 import { BusinessDetailsForm } from '@/features/merchant/components/profile/BusinessDetailsForm'
 import { OpeningHoursForm } from '@/features/merchant/components/profile/OpeningHoursForm'
+import { PhotosPanel } from '@/features/merchant/components/profile/PhotosPanel'
 import { PoliciesForm } from '@/features/merchant/components/profile/PoliciesForm'
 import { ServiceForm } from '@/features/merchant/components/ServiceForm'
 import { SuggestionChips } from '@/features/merchant/components/SuggestionChips'
@@ -30,6 +31,7 @@ type Step = OnboardingStep | 'review'
 
 const steps: { value: Step; label: string }[] = [
   { value: 'details', label: 'Details' },
+  { value: 'photos', label: 'Photos' },
   { value: 'hours', label: 'Hours' },
   { value: 'services', label: 'Services' },
   { value: 'policies', label: 'Booking rules' },
@@ -326,7 +328,9 @@ function Wizard({
         </p>
       ) : null}
       {step === 'details' ? (
-        <BusinessDetailsForm profile={profile} submitLabel="Save and continue" onSaved={() => go('hours')} />
+        <BusinessDetailsForm profile={profile} submitLabel="Save and continue" onSaved={() => go('photos')} />
+      ) : step === 'photos' ? (
+        <PhotosPanel business={profile.business} onContinue={() => go('hours')} />
       ) : step === 'hours' ? (
         <OpeningHoursForm business={profile.business} submitLabel="Save and continue" onSaved={() => go('services')} />
       ) : step === 'services' ? (

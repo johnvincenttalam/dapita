@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as MockUtils from '@/services/mock/utils'
 import { AppProviders } from '@/app/providers'
 import { createQueryClient } from '@/lib/query-client'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import { shopsService } from '@/services/shops.service'
 import AdminMerchantReviewPage from '@/routes/AdminMerchantReviewPage'
@@ -66,7 +67,21 @@ describe('AdminMerchantsPage', () => {
 })
 
 describe('AdminMerchantReviewPage', () => {
+  it('won’t approve a listing without a cover photo', async () => {
+    renderAt('/admin/merchants/biz_kulot')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Kulot Studio' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeDisabled()
+    expect(screen.getByText('This shop needs a cover photo before it can go live.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Request changes' })).toBeEnabled()
+    expect(screen.getByRole('region', { name: 'Photos' })).toHaveTextContent('No cover photo yet.')
+  })
+
   it('approves a listing with a reason, making it live', async () => {
+    updateMockDb((db) => {
+      db.businesses
+        .find((business) => business.id === 'biz_kulot')
+        ?.photos.push({ id: 'ph_kulot_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' })
+    })
     const user = userEvent.setup()
     renderAt('/admin/merchants/biz_kulot')
     expect(await screen.findByRole('heading', { level: 1, name: 'Kulot Studio' })).toBeInTheDocument()

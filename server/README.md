@@ -107,3 +107,4 @@ npm run db:reset   # re-export demo data, drop and recreate the tables, reseed
 - Set `APP_KEY`, `NODE_ENV=production`, the CORS allowlist and HTTPS (secure cookies switch on in production).
 - With more than one server instance, give Transmit a Redis transport (`config/transmit.ts`) so events reach clients on every instance.
 - Choose an email provider for verification and password-reset links.
+- Shop photos are written to local disk (`UPLOADS_DIR`, default `storage/uploads`), which doesn't survive a redeploy on most hosts. Mount a persistent volume there or swap `app/services/photo_storage.ts` for a cloud storage driver, and set `UPLOADS_PUBLIC_URL` if the files are served from another origin.

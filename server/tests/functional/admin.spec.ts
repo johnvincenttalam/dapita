@@ -3,7 +3,7 @@ import type { ApiClient } from '@japa/api-client'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { newId } from '#helpers/ids'
-import { customerEmail, goodCutId, ownerEmail, userByEmail } from '#tests/helpers'
+import { customerEmail, giveCover, goodCutId, ownerEmail, userByEmail } from '#tests/helpers'
 import type {
   AdminCategory,
   AdminUser,
@@ -68,6 +68,7 @@ test.group('Admin: listing review and moderation', (group) => {
 
   test('approving a listing records why and makes it public', async ({ client, assert }) => {
     const admin = await userByEmail(adminEmail)
+    await giveCover(kulotId)
 
     const review = await client.get(`/api/admin/merchants/${kulotId}`).loginAs(admin)
     review.assertStatus(200)
@@ -97,6 +98,20 @@ test.group('Admin: listing review and moderation', (group) => {
 
     const shop = await client.get(`/api/shops/${after.business.slug}`)
     shop.assertStatus(200)
+  })
+
+  test('a listing without a cover photo can’t be approved', async ({ client, assert }) => {
+    const admin = await userByEmail(adminEmail)
+
+    const refused = await client
+      .post(`/api/admin/merchants/${kulotId}/moderation`)
+      .json({ action: 'approve', reason: 'Details look right.' })
+      .loginAs(admin)
+    refused.assertStatus(422)
+    refused.assertBodyContains({ message: 'This shop needs a cover photo before it can go live.' })
+
+    const review = await client.get(`/api/admin/merchants/${kulotId}`).loginAs(admin)
+    assert.equal((review.body() as MerchantReview).business.status, 'pending_review')
   })
 
   test('sending a listing back shows the owner why, and wrong-state decisions are refused', async ({

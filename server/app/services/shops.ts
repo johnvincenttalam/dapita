@@ -244,7 +244,7 @@ export async function getShop(slug: string): Promise<ShopDetails> {
     hours: business.hours,
     closures: business.closures,
     policies: business.policies,
-    photos: business.photos,
+    photos: business.publicPhotos,
     rating: business.rating ?? undefined,
     createdAt: business.createdAt,
     updatedAt: business.updatedAt,

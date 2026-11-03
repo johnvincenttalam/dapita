@@ -46,7 +46,7 @@ export function toBusinessData(business: Business): BusinessData {
     hours: business.hours,
     closures: business.closures,
     policies: business.policies,
-    photos: business.photos,
+    photos: business.publicPhotos,
     rating: business.rating ?? undefined,
     moderationNote: business.moderationNote ?? undefined,
     createdAt: business.createdAt,
@@ -78,7 +78,7 @@ export async function getBusinessProfile(businessId: ID) {
 }
 
 /** Locks the listing, applies the change and saves it, so concurrent edits queue up instead of overwriting each other. */
-async function change(
+export async function change(
   businessId: ID,
   apply: (business: Business, trx: TransactionClientContract) => Promise<void> | void
 ) {

@@ -1,8 +1,9 @@
+import { hasCover } from '@/lib/photos'
 import { businessProfileSchema, policiesSchema } from '@/schemas/business'
 import type { Business, Service } from '@/types/business'
 
 /** The onboarding steps that collect something; the review step checks them all. */
-export type OnboardingStep = 'details' | 'hours' | 'services' | 'policies'
+export type OnboardingStep = 'details' | 'photos' | 'hours' | 'services' | 'policies'
 
 export interface ChecklistItem {
   step: OnboardingStep
@@ -33,11 +34,18 @@ function detailsMissing(business: Business) {
  */
 export function listingChecklist(business: Business, services: Service[]): { items: ChecklistItem[]; ready: boolean } {
   const details = detailsMissing(business)
+  const cover = hasCover(business)
   const open = Object.values(business.hours).some((ranges) => ranges.length > 0)
   const visible = services.some((service) => service.active)
   const policies = policiesSchema.shape.cancellation.safeParse(business.policies.cancellation).success
   const items: ChecklistItem[] = [
     { step: 'details', label: 'Business details', done: !details, missing: details },
+    {
+      step: 'photos',
+      label: 'Cover photo',
+      done: cover,
+      missing: cover ? undefined : 'Add a cover photo.',
+    },
     {
       step: 'hours',
       label: 'Opening hours',

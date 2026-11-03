@@ -9,6 +9,7 @@
  */
 
 export { bookingRules } from '@/config/booking'
+export { photoMessages, photoRules } from '@/config/photos'
 export { legalDocuments } from '@/config/legal'
 export { defaultNotificationSettings } from '@/config/merchant-notifications'
 export {
@@ -23,10 +24,12 @@ export { listingChecklist } from '@/lib/listing-checklist'
 export {
   availableModerationActions,
   businessStatusLabels,
+  moderationBlocker,
   moderationLabels,
   moderationRules,
 } from '@/lib/moderation'
 export { getOpenStatus, isPreferredStartTime } from '@/lib/opening-hours'
+export { hasCover, photoAlt, photoFileProblem } from '@/lib/photos'
 export { recommendationRules, recommendShops } from '@/lib/recommendations'
 export { hasAnyRole } from '@/lib/roles'
 export { myProfileSchema } from '@/schemas/account'

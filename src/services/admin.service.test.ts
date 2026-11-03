@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
-import { availableModerationActions } from '@/lib/moderation'
+import { photoMessages } from '@/config/photos'
+import { availableModerationActions, moderationBlocker } from '@/lib/moderation'
 import { adminService } from '@/services/admin.service'
 import { authService } from '@/services/auth.service'
 import { catalogService } from '@/services/catalog.service'
 import { conversationsService } from '@/services/conversations.service'
 import { merchantBusinessService } from '@/services/merchant-business.service'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers, type MockAccount } from '@/services/mock/users'
 import { shopsService } from '@/services/shops.service'
 
@@ -34,6 +36,13 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+function giveKulotACover() {
+  updateMockDb((db) => {
+    const kulot = db.businesses.find((business) => business.id === 'biz_kulot')
+    kulot?.photos.push({ id: 'ph_kulot_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' })
+  })
+}
+
 describe('availableModerationActions', () => {
   it('follows the listing’s state', () => {
     expect(availableModerationActions('pending_review')).toEqual(['approve', 'request_changes', 'reject'])
@@ -42,6 +51,23 @@ describe('availableModerationActions', () => {
     expect(availableModerationActions('changes_requested')).toEqual(['reject'])
     expect(availableModerationActions('draft')).toEqual([])
     expect(availableModerationActions('rejected')).toEqual([])
+  })
+})
+
+describe('moderationBlocker', () => {
+  const cover = { id: 'ph_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' as const }
+
+  it('won’t let a shop without a cover go live, by approval or reinstatement', () => {
+    for (const action of ['approve', 'reinstate'] as const) {
+      expect(moderationBlocker(action, { photos: [] })).toBe(photoMessages.needsCoverToGoLive)
+      expect(moderationBlocker(action, { photos: [cover] })).toBeUndefined()
+    }
+  })
+
+  it('doesn’t hold back decisions that take a shop offline', () => {
+    for (const action of ['request_changes', 'reject', 'suspend'] as const) {
+      expect(moderationBlocker(action, { photos: [] })).toBeUndefined()
+    }
   })
 })
 
@@ -75,7 +101,16 @@ describe('listing moderation (mock service)', () => {
     expect(review.history).toEqual([])
   })
 
+  it('refuses to approve a listing that has no cover photo', async () => {
+    await expect(
+      adminService.moderateMerchant('biz_kulot', { action: 'approve', reason: 'Details look right.' }),
+    ).rejects.toMatchObject({ status: 422, message: 'This shop needs a cover photo before it can go live.' })
+    const { business } = await adminService.getMerchantReview('biz_kulot')
+    expect(business.status).toBe('pending_review')
+  })
+
   it('approves a listing, making it public and recording who and why', async () => {
+    giveKulotACover()
     const review = await adminService.moderateMerchant('biz_kulot', {
       action: 'approve',
       reason: 'Address and services check out.',
@@ -90,6 +125,30 @@ describe('listing moderation (mock service)', () => {
         actorName: 'Mika Santos',
       }),
     ])
+    await expect(shopsService.getShop('kulot-studio')).resolves.toMatchObject({ name: 'Kulot Studio' })
+  })
+
+  it('refuses to reinstate a suspended listing that has no cover photo', async () => {
+    updateMockDb((db) => {
+      db.businesses.find((business) => business.id === 'biz_kulot')!.status = 'suspended'
+    })
+    await expect(
+      adminService.moderateMerchant('biz_kulot', { action: 'reinstate', reason: 'Owner fixed the deposits.' }),
+    ).rejects.toMatchObject({ status: 422, message: photoMessages.needsCoverToGoLive })
+    const { business } = await adminService.getMerchantReview('biz_kulot')
+    expect(business.status).toBe('suspended')
+  })
+
+  it('reinstates a suspended listing that has a cover photo', async () => {
+    updateMockDb((db) => {
+      db.businesses.find((business) => business.id === 'biz_kulot')!.status = 'suspended'
+    })
+    giveKulotACover()
+    const review = await adminService.moderateMerchant('biz_kulot', {
+      action: 'reinstate',
+      reason: 'Owner fixed the deposits.',
+    })
+    expect(review.business.status).toBe('approved')
     await expect(shopsService.getShop('kulot-studio')).resolves.toMatchObject({ name: 'Kulot Studio' })
   })
 

@@ -1,14 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { photoMessages, photoRules } from '@/config/photos'
+
 import type * as MockUtils from '@/services/mock/utils'
+import { resizeImageToDataUrl } from '@/lib/resize-image'
 import type { BusinessProfileInput } from '@/schemas/business'
 import { authService, signUpConsents } from '@/services/auth.service'
 import { bookingsService } from '@/services/bookings.service'
 import { merchantBusinessService } from '@/services/merchant-business.service'
 import { merchantServicesService } from '@/services/merchant-services.service'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers, type MockAccount } from '@/services/mock/users'
 import { shopsService } from '@/services/shops.service'
 import type { WeeklyHours } from '@/types/business'
+
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: vi.fn(() => Promise.resolve('data:image/webp;base64,AA')),
+}))
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
@@ -176,7 +184,7 @@ describe('submitting a new listing for review', () => {
     const id = await newOwner()
     await expect(merchantBusinessService.submitForReview(id)).rejects.toMatchObject({
       status: 422,
-      message: 'Finish these first: business details, services and cancellation policy.',
+      message: 'Finish these first: business details, cover photo, services and cancellation policy.',
     })
   })
 
@@ -203,6 +211,17 @@ describe('submitting a new listing for review', () => {
       deposit: '',
     })
 
+    updateMockDb((db) => {
+      db.businesses
+        .find((b) => b.id === id)!
+        .photos.push({
+          id: 'ph_test',
+          url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
+          alt: 'Lea’s Nail Bar',
+          kind: 'cover',
+        })
+    })
+
     const submitted = await merchantBusinessService.submitForReview(id)
     expect(submitted.status).toBe('pending_review')
     await expect(shopsService.getShop('leas-nail-bar')).rejects.toMatchObject({ status: 404 })
@@ -210,5 +229,110 @@ describe('submitting a new listing for review', () => {
       status: 409,
       message: 'Your listing is already waiting for review.',
     })
+  })
+})
+
+describe('shop photos (mock service)', () => {
+  const photo = (name = 'a.jpg', type = 'image/jpeg') => new File(['x'], name, { type })
+  const photosOf = async () => (await merchantBusinessService.getBusiness(BIZ)).business.photos
+
+  beforeEach(() => {
+    updateMockDb((db) => {
+      db.businesses.find((b) => b.id === BIZ)!.photos = []
+    })
+  })
+
+  it('replaces the one cover and keeps it first', async () => {
+    await merchantBusinessService.setCoverPhoto(BIZ, photo())
+    await merchantBusinessService.addGalleryPhoto(BIZ, photo())
+    const first = (await photosOf()).find((p) => p.kind === 'cover')!
+    const business = await merchantBusinessService.setCoverPhoto(BIZ, photo('b.jpg'))
+    const covers = business.photos.filter((p) => p.kind === 'cover')
+    expect(covers).toHaveLength(1)
+    expect(covers[0]!.id).not.toBe(first.id)
+    expect(covers[0]!.alt).toBe('The Good Cut Barbershop')
+    expect(business.photos[0]!.kind).toBe('cover')
+    expect(business.photos).toHaveLength(2)
+  })
+
+  it('takes eight gallery photos and refuses the ninth', async () => {
+    for (let i = 0; i < photoRules.maxGalleryPhotos; i++) await merchantBusinessService.addGalleryPhoto(BIZ, photo())
+    await expect(merchantBusinessService.addGalleryPhoto(BIZ, photo())).rejects.toMatchObject({
+      status: 422,
+      message: photoMessages.galleryFull,
+    })
+    const photos = await photosOf()
+    expect(photos).toHaveLength(8)
+    expect(photos[2]!.alt).toBe('The Good Cut Barbershop, photo 3')
+  })
+
+  it('rejects files that are not accepted photos or are missing', async () => {
+    await expect(
+      merchantBusinessService.addGalleryPhoto(BIZ, new File(['x'], 'a.gif', { type: 'image/gif' })),
+    ).rejects.toMatchObject({ status: 422, message: photoMessages.notAPhoto })
+    await expect(merchantBusinessService.setCoverPhoto(BIZ, undefined as unknown as File)).rejects.toMatchObject({
+      status: 422,
+      message: photoMessages.noFile,
+    })
+  })
+
+  it('rejects a file named like a photo that can’t be decoded', async () => {
+    await merchantBusinessService.setCoverPhoto(BIZ, photo())
+    const before = await photosOf()
+    for (const upload of [merchantBusinessService.setCoverPhoto, merchantBusinessService.addGalleryPhoto]) {
+      vi.mocked(resizeImageToDataUrl).mockRejectedValueOnce(new Error('decode'))
+      await expect(upload(BIZ, photo('menu.jpg'))).rejects.toMatchObject({
+        status: 422,
+        message: photoMessages.notAPhoto,
+      })
+    }
+    expect(await photosOf()).toEqual(before)
+  })
+
+  it('removes gallery photos, but not the cover', async () => {
+    await merchantBusinessService.setCoverPhoto(BIZ, photo())
+    const withGallery = await merchantBusinessService.addGalleryPhoto(BIZ, photo())
+    const [cover, gallery] = withGallery.photos
+    await expect(merchantBusinessService.removePhoto(BIZ, cover!.id)).rejects.toMatchObject({
+      status: 422,
+      message: photoMessages.cantRemoveCover,
+    })
+    await expect(merchantBusinessService.removePhoto(BIZ, 'ph_nope')).rejects.toMatchObject({
+      status: 404,
+      message: photoMessages.notFound,
+    })
+    const after = await merchantBusinessService.removePhoto(BIZ, gallery!.id)
+    expect(after.photos.map((p) => p.id)).toEqual([cover!.id])
+  })
+
+  it('reorders the gallery under the cover, and refuses a stale list', async () => {
+    await merchantBusinessService.setCoverPhoto(BIZ, photo())
+    await merchantBusinessService.addGalleryPhoto(BIZ, photo())
+    await merchantBusinessService.addGalleryPhoto(BIZ, photo())
+    const photos = await photosOf()
+    const [cover, one, two] = photos
+    const stale = [
+      [one!.id],
+      [one!.id, one!.id],
+      [one!.id, two!.id, 'ph_nope'],
+      [one!.id, 'ph_nope'],
+      [cover!.id, one!.id],
+    ]
+    for (const ids of stale) {
+      await expect(merchantBusinessService.reorderGallery(BIZ, ids)).rejects.toMatchObject({
+        status: 422,
+        message: photoMessages.staleOrder,
+      })
+    }
+    const business = await merchantBusinessService.reorderGallery(BIZ, [two!.id, one!.id])
+    expect(business.photos.map((p) => p.id)).toEqual([cover!.id, two!.id, one!.id])
+  })
+
+  it('is only for members of the business', async () => {
+    signInAs('customer')
+    await expect(merchantBusinessService.addGalleryPhoto(BIZ, photo())).rejects.toMatchObject({ status: 403 })
+    await expect(merchantBusinessService.setCoverPhoto(BIZ, photo())).rejects.toMatchObject({ status: 403 })
+    await expect(merchantBusinessService.removePhoto(BIZ, 'x')).rejects.toMatchObject({ status: 403 })
+    await expect(merchantBusinessService.reorderGallery(BIZ, [])).rejects.toMatchObject({ status: 403 })
   })
 })

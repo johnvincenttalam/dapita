@@ -12,9 +12,11 @@ export const controllers = {
   Favorites: () => import('#controllers/favorites_controller'),
   MerchantBookings: () => import('#controllers/merchant_bookings_controller'),
   MerchantBusinesses: () => import('#controllers/merchant_businesses_controller'),
+  MerchantPhotos: () => import('#controllers/merchant_photos_controller'),
   MerchantServices: () => import('#controllers/merchant_services_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Recommendations: () => import('#controllers/recommendations_controller'),
   Shops: () => import('#controllers/shops_controller'),
   Support: () => import('#controllers/support_controller'),
+  Uploads: () => import('#controllers/uploads_controller'),
 }
