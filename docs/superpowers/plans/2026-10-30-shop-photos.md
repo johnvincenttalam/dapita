@@ -24,15 +24,15 @@
 
 ### Copy (exact strings, defined once in Task 1 as `photoMessages`)
 
-| key | text |
-|---|---|
-| `notAPhoto` | `That file isn’t a photo. Use JPG, PNG or WebP.` |
-| `tooLarge` | `Photos can be up to 10 MB.` |
-| `galleryFull` | `You can add up to 8 gallery photos.` |
-| `noFile` | `Choose a photo to upload.` |
-| `notFound` | `We couldn’t find that photo.` |
-| `cantRemoveCover` | `Your shop needs a cover photo. Replace it instead.` |
-| `staleOrder` | `Your photos changed. Reload and try again.` |
+| key                  | text                                                   |
+| -------------------- | ------------------------------------------------------ |
+| `notAPhoto`          | `That file isn’t a photo. Use JPG, PNG or WebP.`       |
+| `tooLarge`           | `Photos can be up to 10 MB.`                           |
+| `galleryFull`        | `You can add up to 8 gallery photos.`                  |
+| `noFile`             | `Choose a photo to upload.`                            |
+| `notFound`           | `We couldn’t find that photo.`                         |
+| `cantRemoveCover`    | `Your shop needs a cover photo. Replace it instead.`   |
+| `staleOrder`         | `Your photos changed. Reload and try again.`           |
 | `needsCoverToGoLive` | `This shop needs a cover photo before it can go live.` |
 
 ## Review Focus
@@ -48,11 +48,13 @@
 ### Task 1: Shared photo rules and the cover-photo checklist item
 
 **Files:**
+
 - Create: `src/config/photos.ts`, `src/lib/photos.ts`, `src/lib/photos.test.ts`
 - Modify: `src/lib/listing-checklist.ts`, `src/lib/listing-checklist.test.ts`, `server/app/shared/domain.ts`
 - Modify (keep existing tests green): `server/tests/helpers.ts`, `server/tests/functional/merchant_listing.spec.ts:203-275`, `src/routes/MerchantOnboardingPage.test.tsx` (`finishListing`)
 
 **Interfaces:**
+
 - Produces:
   - `photoRules = { maxGalleryPhotos: 8, shownOnShopPage: 4, maxBytes: 10485760, acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'], widths: [320, 640, 1280] } as const`
   - `photoMessages: Record<'notAPhoto' | 'tooLarge' | 'galleryFull' | 'noFile' | 'notFound' | 'cantRemoveCover' | 'staleOrder' | 'needsCoverToGoLive', string>` (copy table above), in `src/config/photos.ts`
@@ -66,13 +68,19 @@
 - [ ] **Step 1: Write the failing tests**
 
 `src/lib/listing-checklist.test.ts`: update `'lists everything a new listing still needs'` to expect `[['details', false], ['photos', false], ['hours', false], ['services', false], ['policies', false]]`. Add:
+
 ```ts
 it('asks for a cover photo, and a gallery photo alone isn’t enough', () => {
   const gallery = { id: 'ph_1', url: '/x.webp', alt: 'x', kind: 'gallery' as const }
-  expect(listingChecklist(draft({ photos: [gallery] }), []).items[1]).toMatchObject({ step: 'photos', done: false, missing: 'Add a cover photo.' })
+  expect(listingChecklist(draft({ photos: [gallery] }), []).items[1]).toMatchObject({
+    step: 'photos',
+    done: false,
+    missing: 'Add a cover photo.',
+  })
   expect(listingChecklist(draft({ photos: [{ ...gallery, kind: 'cover' }] }), []).items[1].done).toBe(true)
 })
 ```
+
 `src/lib/photos.test.ts`: `photoFileProblem({ type: 'image/gif', size: 1 })` → `photoMessages.notAPhoto`. `photoFileProblem({ type: 'image/png', size: 10485761 })` → `tooLarge`. `photoFileProblem({ type: 'image/webp', size: 10485760 })` → `undefined`. `photoAlt('Kulot Studio', 'cover')` → `'Kulot Studio'`. `photoAlt('Kulot Studio', 'gallery', 3)` → `'Kulot Studio, photo 3'`.
 
 - [ ] **Step 2: Run them and confirm they fail**
@@ -105,10 +113,12 @@ git commit -m "Require a cover photo in the listing checklist"
 ### Task 2: Admins can't approve or reinstate a shop without a cover
 
 **Files:**
+
 - Modify: `src/lib/moderation.ts`, `server/app/shared/domain.ts`, `server/app/services/admin_merchants.ts:130-170`, `src/services/admin.service.ts` (`moderateMerchant`), `src/routes/AdminMerchantReviewPage.tsx`
 - Test: `server/tests/functional/admin.spec.ts`, `src/services/admin.service.test.ts`, `src/routes/AdminMerchantsPage.test.tsx` (or a new `src/routes/AdminMerchantReviewPage.test.tsx` following its setup)
 
 **Interfaces:**
+
 - Consumes: `hasCover`, `photoMessages.needsCoverToGoLive` (Task 1), `giveCover` (Task 1)
 - Produces: `moderationBlocker(action: ModerationActionType, business: Pick<Business, 'photos'>): string | undefined` in `src/lib/moderation.ts` (exported from shared domain). It returns `needsCoverToGoLive` for `approve`/`reinstate` when `!hasCover(business)`.
 
@@ -147,10 +157,12 @@ git commit -m "Block approving a shop that has no cover photo"
 ### Task 3: Server photo storage, image copies and the public file route
 
 **Files:**
+
 - Create: `server/app/helpers/photos.ts`, `server/app/services/photo_storage.ts`, `server/app/services/photo_images.ts`, `server/app/controllers/uploads_controller.ts`, `server/tests/functional/uploads.spec.ts`
 - Modify: `server/package.json` (add `sharp`), `server/start/env.ts`, `server/.env.example`, `server/.env.test`, `server/.gitignore`, `server/start/routes.ts` (public group), `server/app/models/business.ts`, `server/app/services/businesses.ts` (`toBusinessData`), `server/app/services/shops.ts:232`, `server/README.md` ("Before a real deployment")
 
 **Interfaces:**
+
 - Produces:
   - `type StoredPhoto = BusinessPhoto | (Omit<BusinessPhoto, 'url' | 'srcSet'> & { storageKey: string })`
   - `isUploaded(photo: StoredPhoto): photo is …storageKey…`
@@ -199,10 +211,12 @@ git commit -m "Store shop photos on disk as resized WebP copies and serve them"
 ### Task 4: Server endpoints to set the cover and manage the gallery
 
 **Files:**
+
 - Create: `server/app/services/business_photos.ts`, `server/app/controllers/merchant_photos_controller.ts`, `server/tests/functional/merchant_photos.spec.ts`
 - Modify: `server/app/services/businesses.ts` (export `change`), `server/start/routes.ts` (merchant group)
 
 **Interfaces:**
+
 - Consumes: Task 3's storage, images and `StoredPhoto`. Task 1's `photoRules`, `photoMessages`, `photoAlt`.
 - Produces:
   - Routes (members only, via `requireMember`), each returning the updated `Business`:
@@ -219,12 +233,14 @@ git commit -m "Store shop photos on disk as resized WebP copies and serve them"
     - All return `Promise<BusinessData>`.
 
 Flow for uploads:
+
 1. No file → `noFile` (422). `file.size > maxBytes` → `tooLarge` (422).
 2. Run `toWebpCopies(file.tmpPath)`, then `putFile` each copy under `businesses/<businessId>/<newId('ph')>`.
 3. Inside `change()`, apply the edit and check the gallery cap there (under the row lock).
 4. If `change()` throws, `deleteUploaded([newKey])` and rethrow. After success, `deleteUploaded` the keys of any replaced or removed uploaded photo. Seeded photos have no key, so nothing gets deleted for them.
 
 Errors:
+
 - `removePhoto` on the cover → `cantRemoveCover` (422). Unknown id → `notFound` (404).
 - `reorderGallery`: `ids` must be the same set as the current gallery ids, with no duplicates, otherwise `staleOrder` (422). The cover stays first in the array, followed by the gallery in the new order.
 
@@ -267,10 +283,12 @@ git commit -m "Add merchant endpoints for the cover and gallery photos"
 ### Task 5: Frontend service methods (HTTP and mock) and query hooks
 
 **Files:**
+
 - Create: `src/lib/resize-image.ts`, `src/lib/api-client.test.ts`
 - Modify: `src/lib/api-client.ts`, `src/services/merchant-business.service.ts`, `src/services/merchant-business.service.test.ts`, `src/features/merchant/api/business-queries.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1 helpers. Task 4's routes and the `file` field.
 - Produces:
   - `apiClient` sends a `FormData` body as is, with no JSON `Content-Type`.
@@ -306,7 +324,7 @@ Expected: FAIL.
 - [ ] **Step 3: Implement.** HTTP methods build `FormData` with `file`. The mock validates with `photoFileProblem`, stores `{ id: createMockId('ph'), url: dataUrl, alt: photoAlt(...), kind }`, and mirrors the server's ordering and errors.
 
 - [ ] **Step 4: Run them and confirm they pass,** then `npm run typecheck`
-Expected: PASS.
+      Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -320,14 +338,17 @@ git commit -m "Add photo upload, removal and reordering to the merchant business
 ### Task 6: The Photos tab on Business profile
 
 **Files:**
+
 - Create: `src/features/merchant/components/profile/PhotosPanel.tsx`
 - Modify: `src/routes/MerchantProfilePage.tsx` (tabs), `src/routes/MerchantProfilePage.test.tsx`
 
 **Interfaces:**
+
 - Consumes: Task 5 hooks, Task 1 `photoRules` / `photoFileProblem` / `hasCover`.
 - Produces: `PhotosPanel({ business, onContinue }: { business: Business; onContinue?: () => void })`. When `onContinue` is given, it renders a `Continue` button that's disabled until `hasCover(business)` (used by Task 7).
 
 Behaviour (copy is exact):
+
 - **Cover `Panel`, title `Cover photo`:**
   - With no cover: an empty drop area reading `Add a cover photo. It’s the first thing customers see.` When the status is `draft` or `changes_requested`, add `You need one to submit your listing.`
   - The file input is labelled `Add a cover photo`, or `Replace cover photo` once a cover exists.
@@ -356,7 +377,7 @@ Expected: FAIL (no Photos tab).
 - [ ] **Step 3: Implement** `PhotosPanel`, and add `{ value: 'photos', label: 'Photos' }` to `tabs` right after `details`, rendering `<PhotosPanel business={profile.data.business} />`. Follow `DESIGN.md` and the existing profile panels (`Panel`, rounded-2xl images, `ImageWithFallback` with `srcSet`).
 
 - [ ] **Step 4: Run** `npm test`, `npm run typecheck` and `npm run lint`
-Expected: PASS.
+      Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -370,9 +391,11 @@ git commit -m "Add a Photos tab where owners manage their cover and gallery"
 ### Task 7: Photos step in the setup wizard
 
 **Files:**
+
 - Modify: `src/routes/MerchantOnboardingPage.tsx` (`steps`, `Wizard`), `src/routes/MerchantOnboardingPage.test.tsx`, `e2e/app.spec.ts:128-165`
 
 **Interfaces:**
+
 - Consumes: `PhotosPanel` with `onContinue` (Task 6), the `'photos'` checklist step (Task 1).
 
 - [ ] **Step 1: Write the failing tests**
@@ -390,7 +413,7 @@ Expected: FAIL.
 - [ ] **Step 3: Implement.** Insert `{ value: 'photos', label: 'Photos' }` after `details` in `steps`. The details step's `onSaved` goes to `'photos'`. Add a `step === 'photos'` branch rendering `<PhotosPanel business={profile.business} onContinue={() => go('hours')} />`.
 
 - [ ] **Step 4: Run** `npm test`, `npm run typecheck`, `npm run lint` and `npm run test:e2e -- e2e/app.spec.ts`
-Expected: PASS.
+      Expected: PASS.
 
 - [ ] **Step 5: Commit**
 

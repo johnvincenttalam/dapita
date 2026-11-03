@@ -79,7 +79,11 @@ describe('listingChecklist', () => {
 
   it('asks for a cover photo, and a gallery photo alone isn’t enough', () => {
     const gallery = { id: 'ph_1', url: '/x.webp', alt: 'x', kind: 'gallery' as const }
-    expect(listingChecklist(draft({ photos: [gallery] }), []).items[1]).toMatchObject({ step: 'photos', done: false, missing: 'Add a cover photo.' })
+    expect(listingChecklist(draft({ photos: [gallery] }), []).items[1]).toMatchObject({
+      step: 'photos',
+      done: false,
+      missing: 'Add a cover photo.',
+    })
     expect(listingChecklist(draft({ photos: [{ ...gallery, kind: 'cover' }] }), []).items[1]?.done).toBe(true)
   })
 

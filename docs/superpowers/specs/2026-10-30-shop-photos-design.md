@@ -36,7 +36,7 @@ The data model already supports this. `Business.photos` is a JSON column of `Bus
 
 1. **Placement:** a new **Photos** tab on Business profile (`src/routes/MerchantProfilePage.tsx`), between **Details** and **Hours**, at `/business/profile?tab=photos`. The cover sits at the top, with the gallery grid below and an "add" tile.
 2. **Cover required to submit.** The listing checklist (`src/lib/listing-checklist.ts`, shared with the server via `#shared/domain`) gets a cover-photo item. Both the review screen and the server's `submitForReview` enforce it through the same function.
-   - *(Our call, extending this):* **approve** and **reinstate** in admin moderation (`moderateMerchant` in `server/app/services/admin_merchants.ts`, and the mock in `src/services/admin.service.ts`) also refuse a shop with no cover, with a 422 message: "This shop needs a cover photo before it can go live." On `AdminMerchantReviewPage`, the Approve and Reinstate buttons are disabled when there's no cover, with a short note explaining why. Otherwise listings already pending without a cover (such as the seeded `kulot-studio`) could still go live with no cover.
+   - _(Our call, extending this):_ **approve** and **reinstate** in admin moderation (`moderateMerchant` in `server/app/services/admin_merchants.ts`, and the mock in `src/services/admin.service.ts`) also refuse a shop with no cover, with a 422 message: "This shop needs a cover photo before it can go live." On `AdminMerchantReviewPage`, the Approve and Reinstate buttons are disabled when there's no cover, with a short note explaining why. Otherwise listings already pending without a cover (such as the seeded `kulot-studio`) could still go live with no cover.
 3. **Approved shops:** photo changes go live immediately, like every other profile edit today.
 4. **One shop per owner** stays.
 
@@ -45,7 +45,7 @@ The data model already supports this. `Business.photos` is a JSON column of `Bus
 ### Photos tab (owner)
 
 - **Cover:** one per shop. With no cover, it shows an empty drop zone ("Add a cover photo, the first thing customers see") and a note that it's required to submit. With a cover, it shows the image and a **Replace** button. The owner can't remove the cover outright, only replace it.
-- **Gallery:** a grid of up to 8 tiles plus an "add" tile while under the limit. Owners can pick several files at once, and only the first files that fit under the cap are accepted (with a message saying how many were skipped). Each tile has a remove action that opens a small confirm dialog ("Remove this photo?"), using the project's existing `alert-dialog`. Confirming deletes it on the server straight away. There's no undo. *(Our call: an undo would need either a delayed delete or a server-side restore, and that's more contract than this is worth.)* Owners can reorder by drag, with keyboard-accessible move-earlier/move-later controls as well. A small note says the first 4 appear on the shop page.
+- **Gallery:** a grid of up to 8 tiles plus an "add" tile while under the limit. Owners can pick several files at once, and only the first files that fit under the cap are accepted (with a message saying how many were skipped). Each tile has a remove action that opens a small confirm dialog ("Remove this photo?"), using the project's existing `alert-dialog`. Confirming deletes it on the server straight away. There's no undo. _(Our call: an undo would need either a delayed delete or a server-side restore, and that's more contract than this is worth.)_ Owners can reorder by drag, with keyboard-accessible move-earlier/move-later controls as well. A small note says the first 4 appear on the shop page.
 - **Uploading state:** each file shows its own progress or spinner tile. A failure shows on that tile with the server's message and a retry action. Other uploads carry on.
 - **Accepted files:** JPEG, PNG or WebP, up to 10 MB each. Anything else is rejected in the browser before upload with a plain message, and again by the server.
 - **Alt text:** generated automatically, with no field for the owner. Cover: `"<Shop name>"`. Gallery: `"<Shop name>, photo <n>"`. Renaming the shop doesn't need to rewrite existing alt text.
@@ -57,7 +57,7 @@ The data model already supports this. `Business.photos` is a JSON column of `Bus
 
 ### Admin review
 
-`src/routes/AdminMerchantReviewPage.tsx` currently shows no photos. Add the cover and the gallery thumbnails so the reviewer can see what will go live. *(Builder's call on exact layout; this was not discussed with the user but follows from the cover being required.)*
+`src/routes/AdminMerchantReviewPage.tsx` currently shows no photos. Add the cover and the gallery thumbnails so the reviewer can see what will go live. _(Builder's call on exact layout; this was not discussed with the user but follows from the cover being required.)_
 
 ### Customer side
 
@@ -68,7 +68,7 @@ No behaviour change. `ShopCard`, `ShopListItem`, `ShopPage`, `BookingCard` and `
 ### Storage
 
 - Files go on local disk under `server/storage/uploads/businesses/<businessId>/` (gitignored), behind a small storage module with `put(key, buffer)`, `delete(key)` and `urlFor(key)`. A cloud driver can replace it later without touching callers.
-- Each uploaded photo's entry in the `photos` JSON stores its storage key (for example, an added `storageKey` field, server-side only). `url` and `srcSet` are **built when the business is serialized** (`toBusinessData` and the shop serializers in `server/app/services/shops.ts`), from a configured public base, `UPLOADS_PUBLIC_URL`, which defaults to `/api/uploads`. That way, moving the API or the files to another origin later is a config change, not a data migration. Photos without a `storageKey` (the seeded `/images/...` ones) pass through unchanged. `storageKey` isn't sent to clients. *(Our call.)*
+- Each uploaded photo's entry in the `photos` JSON stores its storage key (for example, an added `storageKey` field, server-side only). `url` and `srcSet` are **built when the business is serialized** (`toBusinessData` and the shop serializers in `server/app/services/shops.ts`), from a configured public base, `UPLOADS_PUBLIC_URL`, which defaults to `/api/uploads`. That way, moving the API or the files to another origin later is a config change, not a data migration. Photos without a `storageKey` (the seeded `/images/...` ones) pass through unchanged. `storageKey` isn't sent to clients. _(Our call.)_
 - Files are served by the API at **`/api/uploads/...`** so they pass through the existing Vite `/api` proxy in dev and need no extra host config. They're publicly readable, since shop photos are public anyway. Send long-lived cache headers, and give every upload a fresh filename so caches never serve a stale image. Guard against path traversal.
 - `server/README.md` "Before a real deployment" gets a line noting that local disk storage doesn't survive redeploys on most hosts and needs a persistent volume or a cloud driver.
 
@@ -80,12 +80,12 @@ No behaviour change. `ShopCard`, `ShopListItem`, `ShopPage`, `BookingCard` and `
 
 ### API (under `/api/merchant/businesses/:businessId`, members only)
 
-| Method | Path | Body | Effect |
-|---|---|---|---|
-| `PUT` | `/photos/cover` | multipart `file` | Sets or replaces the cover, deleting the old cover's files |
-| `POST` | `/photos` | multipart `file` | Appends a gallery photo; 422 at 8 |
-| `DELETE` | `/photos/:photoId` | none | Removes a gallery photo and its files; 422 if it's the cover |
-| `PUT` | `/photos/order` | `{ ids: string[] }` | Reorders the gallery; the ids must be exactly the current gallery ids |
+| Method   | Path               | Body                | Effect                                                                |
+| -------- | ------------------ | ------------------- | --------------------------------------------------------------------- |
+| `PUT`    | `/photos/cover`    | multipart `file`    | Sets or replaces the cover, deleting the old cover's files            |
+| `POST`   | `/photos`          | multipart `file`    | Appends a gallery photo; 422 at 8                                     |
+| `DELETE` | `/photos/:photoId` | none                | Removes a gallery photo and its files; 422 if it's the cover          |
+| `PUT`    | `/photos/order`    | `{ ids: string[] }` | Reorders the gallery; the ids must be exactly the current gallery ids |
 
 All four return the updated `Business`, like the other merchant endpoints, so the frontend updates the profile query cache the same way (`useBusinessMutation` in `src/features/merchant/api/business-queries.ts`). Errors use `ApiError` with owner-readable messages ("That file isn't a photo. Use JPG, PNG or WebP.", "Photos can be up to 10 MB.", "You can add up to 8 gallery photos."). The multipart body limit in `server/config/bodyparser.ts` (20 MB) already allows 10 MB files. Enforce the 10 MB per-file limit explicitly.
 
@@ -99,7 +99,7 @@ Seeded photos (URLs under `/images/...`, not `/api/uploads/...`) must be replace
 
 ## Mock mode
 
-The frontend service layer has an HTTP and a mock implementation per service (`src/services/merchant-business.service.ts`). Add the four photo operations to `MerchantBusinessService`. The mock version resizes in the browser (canvas, about 1280 px wide WebP or JPEG at moderate quality) and stores a data URL in the mock DB, with no `srcSet`. It enforces the same limits and messages. *(Builder's call on exact quality and size; the point is that localStorage doesn't fill up after a few photos.)* `apiClient` currently always JSON-encodes bodies, so it needs a way to send `FormData` without setting `Content-Type`.
+The frontend service layer has an HTTP and a mock implementation per service (`src/services/merchant-business.service.ts`). Add the four photo operations to `MerchantBusinessService`. The mock version resizes in the browser (canvas, about 1280 px wide WebP or JPEG at moderate quality) and stores a data URL in the mock DB, with no `srcSet`. It enforces the same limits and messages. _(Builder's call on exact quality and size; the point is that localStorage doesn't fill up after a few photos.)_ `apiClient` currently always JSON-encodes bodies, so it needs a way to send `FormData` without setting `Content-Type`.
 
 ## Tests
 

@@ -19,7 +19,10 @@ export function availableModerationActions(status: BusinessStatus): ModerationAc
 }
 
 /** Why a decision can't be made on this listing right now, if it can't: a shop with no cover never goes live. */
-export function moderationBlocker(action: ModerationActionType, business: Pick<Business, 'photos'>): string | undefined {
+export function moderationBlocker(
+  action: ModerationActionType,
+  business: Pick<Business, 'photos'>,
+): string | undefined {
   if ((action === 'approve' || action === 'reinstate') && !hasCover(business)) return photoMessages.needsCoverToGoLive
   return undefined
 }

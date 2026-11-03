@@ -17,8 +17,9 @@ async function giveKulotACover(page: Page) {
   await page.evaluate(() => {
     const raw = localStorage.getItem('glamspot-mock-db')
     if (!raw) throw new Error('mock db not seeded yet')
-    const db = JSON.parse(raw)
-    const kulot = db.businesses.find((b: { id: string }) => b.id === 'biz_kulot')
+    const db = JSON.parse(raw) as { businesses: { id: string; photos: unknown[] }[] }
+    const kulot = db.businesses.find((b) => b.id === 'biz_kulot')
+    if (!kulot) throw new Error('biz_kulot missing')
     kulot.photos.push({ id: 'ph_kulot_cover', url: '/images/shops/kulot.webp', alt: 'Kulot Studio', kind: 'cover' })
     localStorage.setItem('glamspot-mock-db', JSON.stringify(db))
   })

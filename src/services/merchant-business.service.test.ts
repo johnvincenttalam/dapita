@@ -209,12 +209,14 @@ describe('submitting a new listing for review', () => {
     })
 
     updateMockDb((db) => {
-      db.businesses.find((b) => b.id === id)!.photos.push({
-        id: 'ph_test',
-        url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
-        alt: 'Lea’s Nail Bar',
-        kind: 'cover',
-      })
+      db.businesses
+        .find((b) => b.id === id)!
+        .photos.push({
+          id: 'ph_test',
+          url: '/images/shops/shop-the-good-cut-barbershop-cover.webp',
+          alt: 'Lea’s Nail Bar',
+          kind: 'cover',
+        })
     })
 
     const submitted = await merchantBusinessService.submitForReview(id)
@@ -265,9 +267,10 @@ describe('shop photos (mock service)', () => {
     await expect(
       merchantBusinessService.addGalleryPhoto(BIZ, new File(['x'], 'a.gif', { type: 'image/gif' })),
     ).rejects.toMatchObject({ status: 422, message: photoMessages.notAPhoto })
-    await expect(
-      merchantBusinessService.setCoverPhoto(BIZ, undefined as unknown as File),
-    ).rejects.toMatchObject({ status: 422, message: photoMessages.noFile })
+    await expect(merchantBusinessService.setCoverPhoto(BIZ, undefined as unknown as File)).rejects.toMatchObject({
+      status: 422,
+      message: photoMessages.noFile,
+    })
   })
 
   it('removes gallery photos, but not the cover', async () => {

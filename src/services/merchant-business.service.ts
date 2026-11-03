@@ -69,8 +69,7 @@ const httpMerchantBusinessService: MerchantBusinessService = {
   submitForReview: (businessId) => apiClient.post<Business>(`${businessPath(businessId)}/submit`),
   setCoverPhoto: (businessId, file) =>
     apiClient.put<Business>(`${businessPath(businessId)}/photos/cover`, fileForm(file)),
-  addGalleryPhoto: (businessId, file) =>
-    apiClient.post<Business>(`${businessPath(businessId)}/photos`, fileForm(file)),
+  addGalleryPhoto: (businessId, file) => apiClient.post<Business>(`${businessPath(businessId)}/photos`, fileForm(file)),
   removePhoto: (businessId, photoId) =>
     apiClient.delete<Business>(`${businessPath(businessId)}/photos/${encodeURIComponent(photoId)}`),
   reorderGallery: (businessId, ids) => apiClient.put<Business>(`${businessPath(businessId)}/photos/order`, { ids }),
