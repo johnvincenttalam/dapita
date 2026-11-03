@@ -2,6 +2,9 @@ import { toDateKey } from '@/lib/datetime'
 import { ApiError, apiClient } from '@/lib/api-client'
 import { listingChecklist } from '@/lib/listing-checklist'
 import { env } from '@/lib/env'
+import { photoAlt, photoFileProblem } from '@/lib/photos'
+import { resizeImageToDataUrl } from '@/lib/resize-image'
+import { photoMessages, photoRules } from '@/config/photos'
 import {
   businessProfileSchema,
   closureSchema,
@@ -37,10 +40,23 @@ export interface MerchantBusinessService {
   updatePolicies: (businessId: ID, input: PoliciesInput) => Promise<Business>
   /** Sends a finished draft (or one with requested changes) to admin review. It stays private until approved. */
   submitForReview: (businessId: ID) => Promise<Business>
+  /** Replaces the cover photo. */
+  setCoverPhoto: (businessId: ID, file: File) => Promise<Business>
+  addGalleryPhoto: (businessId: ID, file: File) => Promise<Business>
+  /** The cover can't be removed, only replaced. */
+  removePhoto: (businessId: ID, photoId: ID) => Promise<Business>
+  /** `ids` must be exactly the current gallery photos, in the new order. */
+  reorderGallery: (businessId: ID, ids: ID[]) => Promise<Business>
 }
 
 // Endpoints from docs/implementation-plan.md §7.3.
 const businessPath = (businessId: ID) => `/merchant/businesses/${encodeURIComponent(businessId)}`
+
+function fileForm(file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  return form
+}
 
 const httpMerchantBusinessService: MerchantBusinessService = {
   getBusiness: (businessId) => apiClient.get<BusinessProfile>(businessPath(businessId)),
@@ -51,6 +67,13 @@ const httpMerchantBusinessService: MerchantBusinessService = {
     apiClient.delete<Business>(`${businessPath(businessId)}/closures/${encodeURIComponent(closureId)}`),
   updatePolicies: (businessId, input) => apiClient.put<Business>(`${businessPath(businessId)}/policies`, input),
   submitForReview: (businessId) => apiClient.post<Business>(`${businessPath(businessId)}/submit`),
+  setCoverPhoto: (businessId, file) =>
+    apiClient.put<Business>(`${businessPath(businessId)}/photos/cover`, fileForm(file)),
+  addGalleryPhoto: (businessId, file) =>
+    apiClient.post<Business>(`${businessPath(businessId)}/photos`, fileForm(file)),
+  removePhoto: (businessId, photoId) =>
+    apiClient.delete<Business>(`${businessPath(businessId)}/photos/${encodeURIComponent(photoId)}`),
+  reorderGallery: (businessId, ids) => apiClient.put<Business>(`${businessPath(businessId)}/photos/order`, { ids }),
 }
 
 // ─── MOCK ────────────────────────────────────────────────────────────────────
@@ -90,6 +113,14 @@ const listingCategories = (db: MockDb) =>
   db.categories
     .filter((category) => !category.parentId && category.status === 'active')
     .sort((a, b) => a.sortOrder - b.sortOrder)
+
+function checkPhotoFile(file: File | undefined): asserts file is File {
+  if (!file) throw new ApiError(photoMessages.noFile, 422)
+  const problem = photoFileProblem(file)
+  if (problem) throw new ApiError(problem, 422)
+}
+
+const galleryOf = (business: Business) => business.photos.filter((photo) => photo.kind === 'gallery')
 
 const mockMerchantBusinessService: MerchantBusinessService = {
   async getBusiness(businessId) {
@@ -196,6 +227,62 @@ const mockMerchantBusinessService: MerchantBusinessService = {
         throw new ApiError(`Finish these first: ${list}.`, 422)
       }
       business.status = 'pending_review'
+    })
+  },
+
+  async setCoverPhoto(businessId, file) {
+    await delay(600)
+    requireMember(businessId)
+    checkPhotoFile(file)
+    const url = await resizeImageToDataUrl(file)
+    return change(businessId, (business) => {
+      const cover = { id: createMockId('ph'), url, alt: photoAlt(business.name, 'cover'), kind: 'cover' as const }
+      business.photos = [cover, ...galleryOf(business)]
+    })
+  },
+
+  async addGalleryPhoto(businessId, file) {
+    await delay(600)
+    requireMember(businessId)
+    checkPhotoFile(file)
+    const url = await resizeImageToDataUrl(file)
+    return change(businessId, (business) => {
+      const gallery = galleryOf(business)
+      if (gallery.length >= photoRules.maxGalleryPhotos) throw new ApiError(photoMessages.galleryFull, 422)
+      business.photos.push({
+        id: createMockId('ph'),
+        url,
+        alt: photoAlt(business.name, 'gallery', gallery.length + 1),
+        kind: 'gallery',
+      })
+    })
+  },
+
+  async removePhoto(businessId, photoId) {
+    await delay(300)
+    requireMember(businessId)
+    return change(businessId, (business) => {
+      const photo = business.photos.find((candidate) => candidate.id === photoId)
+      if (!photo) throw new ApiError(photoMessages.notFound, 404)
+      if (photo.kind === 'cover') throw new ApiError(photoMessages.cantRemoveCover, 422)
+      business.photos = business.photos.filter((candidate) => candidate.id !== photoId)
+    })
+  },
+
+  async reorderGallery(businessId, ids) {
+    await delay(300)
+    requireMember(businessId)
+    return change(businessId, (business) => {
+      const gallery = galleryOf(business)
+      const current = new Set(gallery.map((photo) => photo.id))
+      if (ids.length !== gallery.length || new Set(ids).size !== ids.length || !ids.every((id) => current.has(id))) {
+        throw new ApiError(photoMessages.staleOrder, 422)
+      }
+      const byId = new Map(gallery.map((photo) => [photo.id, photo]))
+      business.photos = [
+        ...business.photos.filter((photo) => photo.kind === 'cover'),
+        ...ids.map((id) => byId.get(id)!),
+      ]
     })
   },
 }
