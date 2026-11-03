@@ -16,8 +16,10 @@ import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import type { BusinessStatus } from '@/types/business'
 import MerchantOnboardingPage from '@/routes/MerchantOnboardingPage'
 
+// Tests can hold uploads open by swapping `resizing.gate` for a promise they resolve later.
+const resizing = vi.hoisted(() => ({ gate: Promise.resolve() }))
 vi.mock('@/lib/resize-image', () => ({
-  resizeImageToDataUrl: () => Promise.resolve('data:image/webp;base64,AA'),
+  resizeImageToDataUrl: () => resizing.gate.then(() => 'data:image/webp;base64,AA'),
 }))
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
@@ -99,6 +101,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   localStorage.clear()
+  resizing.gate = Promise.resolve()
 })
 
 afterEach(() => {
@@ -142,6 +145,25 @@ describe('MerchantOnboardingPage', () => {
 
     await waitFor(() => expect(router.state.location.search).toBe('?step=hours'))
     expect(await screen.findByRole('heading', { name: 'Opening hours' })).toBeInTheDocument()
+  })
+
+  it('waits for gallery uploads before moving on', async () => {
+    const user = userEvent.setup()
+    const id = await signUpOwner()
+    await finishListing(id)
+    renderAt('/business/onboarding?step=photos')
+    expect(await screen.findByRole('button', { name: 'Continue' })).toBeEnabled()
+
+    let release = () => {}
+    resizing.gate = new Promise<void>((resolve) => (release = resolve))
+    await user.upload(screen.getByLabelText('Add photos'), new File(['x'], 'a.png', { type: 'image/png' }))
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
+    expect(screen.getByText('Wait for your photos to finish uploading.')).toBeInTheDocument()
+
+    release()
+    resizing.gate = Promise.resolve()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled())
+    expect(screen.queryByText('Wait for your photos to finish uploading.')).not.toBeInTheDocument()
   })
 
   it('points back to the photos step when the cover is missing', async () => {

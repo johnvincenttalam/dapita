@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { photoRules } from '@/config/photos'
+import { photoMessages, photoRules } from '@/config/photos'
 import {
   useAddGalleryPhotoMutation,
   useRemovePhotoMutation,
@@ -130,7 +130,14 @@ function CoverPanel({ business }: { business: Business }) {
   )
 }
 
-function GalleryPanel({ business }: { business: Business }) {
+type MoveButton = 'earlier' | 'later' | 'remove'
+
+/** Says how many files didn’t fit, after the gallery-full message. */
+const overflowNote = (dropped: number) =>
+  photoMessages.galleryFull.replace(/\.$/, `, so ${dropped} ${dropped === 1 ? 'wasn’t' : 'weren’t'} added.`)
+
+/** `onBusyChange` hears whether any upload is waiting or in flight. */
+function GalleryPanel({ business, onBusyChange }: { business: Business; onBusyChange?: (busy: boolean) => void }) {
   const add = useAddGalleryPhotoMutation(business.id)
   const reorder = useReorderGalleryMutation(business.id)
   const remove = useRemovePhotoMutation(business.id)
@@ -143,6 +150,12 @@ function GalleryPanel({ business }: { business: Business }) {
   const nextKey = useRef(0)
   const dragged = useRef<number>(undefined)
   const unmounted = useRef(false)
+  // Each photo's controls, so focus can follow a photo moved with the keyboard.
+  const buttons = useRef(new Map<string, Partial<Record<MoveButton, HTMLButtonElement | null>>>())
+  const [moved, setMoved] = useState<{ id: string; position: number }>()
+  const refocus = useRef<string>(undefined)
+  const order = gallery.map((photo) => photo.id).join(' ')
+  const busy = uploads.some((item) => item.state !== 'failed')
 
   // Leaving the tab stops the queue after the file in flight, so nothing uploads unseen.
   useEffect(() => {
@@ -151,6 +164,23 @@ function GalleryPanel({ business }: { business: Business }) {
       unmounted.current = true
     }
   }, [])
+
+  useEffect(() => {
+    onBusyChange?.(busy)
+  }, [busy, onBusyChange])
+
+  // Moving a photo can unmount the button that was pressed, so focus goes to the
+  // same photo's nearest control once the new order is on screen.
+  useEffect(() => {
+    if (!moved || refocus.current !== moved.id || order.split(' ')[moved.position - 1] !== moved.id) return
+    refocus.current = undefined
+    const controls = buttons.current.get(moved.id)
+    ;(controls?.earlier ?? controls?.later ?? controls?.remove)?.focus()
+  }, [moved, order])
+
+  const buttonRef = (id: string, button: MoveButton) => (element: HTMLButtonElement | null) => {
+    buttons.current.set(id, { ...buttons.current.get(id), [button]: element })
+  }
 
   const commit = (next: QueuedFile[]) => {
     uploadsRef.current = next
@@ -184,18 +214,18 @@ function GalleryPanel({ business }: { business: Business }) {
   const onFiles = (files: File[]) => {
     // Files turned away on the spot never take a slot; failed uploads may be retried, so they do.
     const waiting = uploadsRef.current.filter((u) => !photoFileProblem(u.file)).length
-    const free = Math.max(0, photoRules.maxGalleryPhotos - gallery.length - waiting)
-    const accepted = files.slice(0, free)
-    const dropped = files.length - accepted.length
-    setNote(
-      dropped > 0
-        ? `You can add up to ${photoRules.maxGalleryPhotos} gallery photos, so ${dropped} weren’t added.`
-        : undefined,
-    )
-    const added = accepted.map((file): QueuedFile => {
+    let free = Math.max(0, photoRules.maxGalleryPhotos - gallery.length - waiting)
+    let dropped = 0
+    const added: QueuedFile[] = []
+    for (const file of files) {
       const message = photoFileProblem(file)
-      return { key: nextKey.current++, file, state: message ? 'failed' : 'queued', message }
-    })
+      if (message) added.push({ key: nextKey.current++, file, state: 'failed', message })
+      else if (free > 0) {
+        free -= 1
+        added.push({ key: nextKey.current++, file, state: 'queued' })
+      } else dropped += 1
+    }
+    setNote(dropped > 0 ? overflowNote(dropped) : undefined)
     commit([...uploadsRef.current, ...added])
     void drain()
   }
@@ -205,12 +235,14 @@ function GalleryPanel({ business }: { business: Business }) {
     void drain()
   }
 
-  const move = (from: number, to: number) => {
-    if (from === to || to < 0 || to >= gallery.length) return
+  const move = (from: number, to: number, { followFocus = false } = {}) => {
+    if (reorder.isPending || from === to || to < 0 || to >= gallery.length) return
     const ids = gallery.map((photo) => photo.id)
-    const [moved] = ids.splice(from, 1)
-    ids.splice(to, 0, moved!)
-    reorder.mutate(ids)
+    const [id] = ids.splice(from, 1)
+    ids.splice(to, 0, id!)
+    setMoved(undefined)
+    refocus.current = followFocus ? id : undefined
+    reorder.mutate(ids, { onSuccess: () => setMoved({ id: id!, position: to + 1 }) })
   }
 
   const onDrop = (event: DragEvent, to: number) => {
@@ -254,8 +286,10 @@ function GalleryPanel({ business }: { business: Business }) {
                       variant="outline"
                       size="icon-sm"
                       aria-label={`Move photo ${index + 1} earlier`}
-                      disabled={reorder.isPending}
-                      onClick={() => move(index, index - 1)}
+                      aria-disabled={reorder.isPending || undefined}
+                      ref={buttonRef(photo.id, 'earlier')}
+                      onClick={() => move(index, index - 1, { followFocus: true })}
+                      className="aria-disabled:opacity-50"
                     >
                       <ArrowLeftIcon aria-hidden="true" />
                     </Button>
@@ -266,8 +300,10 @@ function GalleryPanel({ business }: { business: Business }) {
                       variant="outline"
                       size="icon-sm"
                       aria-label={`Move photo ${index + 1} later`}
-                      disabled={reorder.isPending}
-                      onClick={() => move(index, index + 1)}
+                      aria-disabled={reorder.isPending || undefined}
+                      ref={buttonRef(photo.id, 'later')}
+                      onClick={() => move(index, index + 1, { followFocus: true })}
+                      className="aria-disabled:opacity-50"
                     >
                       <ArrowRightIcon aria-hidden="true" />
                     </Button>
@@ -278,6 +314,7 @@ function GalleryPanel({ business }: { business: Business }) {
                   variant="ghost"
                   size="icon-sm"
                   aria-label={`Remove photo ${index + 1}`}
+                  ref={buttonRef(photo.id, 'remove')}
                   onClick={() => setRemoving(photo)}
                 >
                   <XIcon aria-hidden="true" />
@@ -324,6 +361,9 @@ function GalleryPanel({ business }: { business: Business }) {
         </ul>
       ) : null}
 
+      <p role="status" className="sr-only">
+        {moved ? `Photo moved to position ${moved.position}.` : null}
+      </p>
       {note ? (
         <p role="status" className="text-sm text-muted-foreground">
           {note}
@@ -351,16 +391,24 @@ function GalleryPanel({ business }: { business: Business }) {
 
 /** The owner's cover and gallery photos (MER-01). The setup wizard reuses it with `onContinue`. */
 export function PhotosPanel({ business, onContinue }: { business: Business; onContinue?: () => void }) {
+  const [uploading, setUploading] = useState(false)
+  const waitId = useId()
   return (
     <div className="space-y-6">
       <CoverPanel business={business} />
-      <GalleryPanel business={business} />
+      <GalleryPanel business={business} onBusyChange={setUploading} />
       {onContinue ? (
-        <div className="flex sm:justify-end">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          {uploading ? (
+            <p id={waitId} className="text-sm text-muted-foreground">
+              Wait for your photos to finish uploading.
+            </p>
+          ) : null}
           <Button
             type="button"
             shape="pill"
-            disabled={!hasCover(business)}
+            disabled={!hasCover(business) || uploading}
+            aria-describedby={uploading ? waitId : undefined}
             onClick={onContinue}
             className="w-full sm:w-auto"
           >

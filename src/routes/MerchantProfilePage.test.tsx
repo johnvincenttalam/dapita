@@ -194,6 +194,20 @@ describe('MerchantProfilePage', () => {
       await waitFor(async () => expect(await galleryIds()).toHaveLength(8))
     })
 
+    it('doesn’t let a rejected file take a free slot', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      seedGallery(7)
+      renderAt('/business/profile?tab=photos')
+      await user.upload(await screen.findByLabelText('Add photos'), [
+        new File(['x'], 'a.gif', { type: 'image/gif' }),
+        png('b.png'),
+        png('c.png'),
+      ])
+      expect(await screen.findByText('That file isn’t a photo. Use JPG, PNG or WebP.')).toBeInTheDocument()
+      expect(screen.getByText('You can add up to 8 gallery photos, so 1 wasn’t added.')).toBeInTheDocument()
+      await waitFor(async () => expect(await galleryIds()).toHaveLength(8))
+    })
+
     it('rejects a file that isn’t a photo', async () => {
       const user = userEvent.setup({ applyAccept: false })
       seedGallery(1)
@@ -220,6 +234,18 @@ describe('MerchantProfilePage', () => {
       renderAt('/business/profile?tab=photos')
       await user.click(await screen.findByRole('button', { name: 'Move photo 2 earlier' }))
       await waitFor(async () => expect(await galleryIds()).toEqual(['ph_seed_1', 'ph_seed_0']))
+    })
+
+    it('keeps focus on a photo moved with the keyboard and announces where it went', async () => {
+      const user = userEvent.setup()
+      seedGallery(3)
+      renderAt('/business/profile?tab=photos')
+      await user.click(await screen.findByRole('button', { name: 'Move photo 2 earlier' }))
+      expect(await screen.findByText('Photo moved to position 1.')).toBeInTheDocument()
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Move photo 1 later' })),
+      )
+      expect(within((await items())[0]!).getByRole('img')).toHaveAttribute('alt', 'Seed 1')
     })
 
     it('stops uploading the rest of a batch when the owner leaves the tab', async () => {
