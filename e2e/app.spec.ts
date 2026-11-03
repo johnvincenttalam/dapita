@@ -64,7 +64,7 @@ test.describe('discovery', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Barber' })).toBeVisible()
     await expectNoHorizontalOverflow(page)
 
-    await page.getByRole('link', { name: 'The Good Cut Barbershop' }).click()
+    await page.getByRole('link', { name: 'The Good Cut Barbershop', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'The Good Cut Barbershop' })).toBeVisible()
     await expect(page.getByText('Request to book')).toBeVisible()
     await expectNoHorizontalOverflow(page)
