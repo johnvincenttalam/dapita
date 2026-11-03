@@ -147,6 +147,12 @@ test.describe('new shops', () => {
     await expectNoHorizontalOverflow(page)
     await page.getByRole('button', { name: 'Save and continue' }).click()
 
+    await page
+      .getByLabel('Add a cover photo')
+      .setInputFiles('public/images/shops/shop-the-good-cut-barbershop-cover-640.webp')
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Continue' }).click()
+
     await expect(page.getByRole('heading', { name: 'Opening hours' })).toBeVisible()
     await page.getByRole('button', { name: 'Save and continue' }).click()
 
