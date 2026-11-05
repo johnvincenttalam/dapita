@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -12,6 +12,7 @@ import { useDocumentTitle } from '@/hooks/use-document-title'
 /** `/business/services/new` and `/business/services/:serviceId` (MER-02). A page, not a dialog, so long forms work on phones. */
 export default function MerchantServiceEditorPage() {
   const { serviceId } = useParams()
+  const state = useLocation().state as { photoProblem?: string } | null
   const businessId = useCurrentBusinessId()
   const menu = useServiceMenuQuery(businessId)
   const service = serviceId ? menu.data?.services.find((candidate) => candidate.id === serviceId) : undefined
@@ -58,6 +59,7 @@ export default function MerchantServiceEditorPage() {
         businessId={businessId}
         categories={menu.data.categories}
         service={service}
+        photoProblem={state?.photoProblem}
       />
     </div>
   )

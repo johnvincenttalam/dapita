@@ -544,3 +544,129 @@ git commit -m "Add a photo spot to the service edit page that uploads on pick"
 
 - Spec coverage: data shape and seeds (Task 1), customer spots with `srcSet` and `alt=""` (Task 1), endpoints, limits, file cleanup, seeded-photo handling, delete-service cleanup, `storageKey` hidden (Task 2), frontend methods, mock, hooks (Task 3), edit page spot, Add page note, `simple` exclusion, form independence, remove confirm, errors (Task 4). The spec's e2e line is satisfied by leaving e2e alone: the merchant journey only adds a service.
 - Names used across tasks: `ServicePhoto`, `Service.photo`, `StoredServicePhoto`, `isUploadedServicePhoto`, `toPublicServicePhoto`, `withMenu`, `serviceNotFound`, `setServicePhoto`, `removeServicePhoto`, `fileForm`, `checkPhotoFile`, `resizedPhoto`, `useSetServicePhotoMutation`, `useRemoveServicePhotoMutation`, `FilePicker`, `UploadingOverlay`, `ServicePhotoField`. Each is defined in the task before it is consumed.
+
+---
+
+### Task 5: A photo on the Add service page, uploaded the moment the service is created
+
+Added 2026-11-05 after the first build. The spec's decision 3 was revised: the Add page gets the same tile; picking a file holds it locally and it uploads right after the service is created on Save.
+
+**Files:**
+
+- Create: `src/features/merchant/components/PendingPhotoField.tsx`
+- Modify: `src/features/merchant/components/ServicePhotoField.tsx` (accept an initial problem)
+- Modify: `src/features/merchant/components/ServiceForm.tsx` (held photo state, submit flow, panel contents)
+- Modify: `src/routes/MerchantServiceEditorPage.tsx` (pass the failure message from navigation state)
+- Test: `src/routes/MerchantServiceEditorPage.test.tsx`
+
+**Interfaces:**
+
+- Consumes: `useSetServicePhotoMutation(businessId)` (`{ serviceId, file }`), `FilePicker`, `UploadingOverlay`, `ImageWithFallback`, `photoFileProblem`, `getErrorMessage`, `categoryIconFor`.
+- Produces (`PendingPhotoField.tsx`):
+  ```tsx
+  export function PendingPhotoField({
+    file,
+    onChange,
+    icon,
+  }: {
+    file?: File
+    onChange: (file: File | undefined) => void
+    icon: LucideIcon
+  })
+  ```
+  Stateless apart from a `problem` string. Renders the same square tile as `ServicePhotoField` (`relative aspect-square w-40 overflow-hidden rounded-2xl bg-muted`, `ImageWithFallback` with `alt="Photo to upload"`, `icon`, `className="size-full"`), with `src` = an object URL for `file` built with `URL.createObjectURL` in a `useMemo`/effect and revoked with `URL.revokeObjectURL` when the file changes or on unmount; no `srcSet`. Under it: the `role="alert"` problem line when set; a `FilePicker` labelled `Add photo` (no file) or `Replace photo` (file held); and, only when a file is held, a `Button type="button" variant="outline" size="sm"` labelled `Remove photo` that calls `onChange(undefined)` with no dialog. Picking: `const rejected = photoFileProblem(file); setProblem(rejected); if (!rejected) onChange(file)`.
+- `ServicePhotoField` gains an optional prop `initialProblem?: string`, used as the initial value of its `problem` state. Nothing else changes.
+- `ServiceForm`:
+  - New state `const [pendingPhoto, setPendingPhoto] = useState<File>()`, and `const setPhoto = useSetServicePhotoMutation(businessId)`.
+  - The "On your shop page" panel (still only when `!simple`) renders `service ? <ServicePhotoField … initialProblem={photoProblem} /> : <PendingPhotoField file={pendingPhoto} onChange={setPendingPhoto} icon={categoryIconFor(categories.find((c) => c.id === categoryId))} />` where `categoryId` is the form's current `categoryId` value (add it to the existing `useWatch` list). The "You can add a photo after saving." note is gone.
+  - New optional prop `photoProblem?: string`, forwarded to `ServicePhotoField` as `initialProblem`.
+  - Submit flow, in the `else` branch (not `onSaved`), when `!service && pendingPhoto`: after `saved = await save.mutateAsync(...)`, `try { await setPhoto.mutateAsync({ serviceId: saved.id, file: pendingPhoto }) } catch (error) { toast.error(\`${saved.name} is on your menu, but the photo didn’t upload.\`); void navigate(\`/business/services/${encodeURIComponent(saved.id)}\`, { state: { photoProblem: getErrorMessage(error) } }); return }`. On success the existing toast and `navigate('/business/services')`run as today. The Save button's`loading`must stay on through the photo upload: use`form.formState.isSubmitting` as today (the handler is still awaiting), and disable both fieldsets as today.
+- `MerchantServiceEditorPage`: `const { state } = useLocation()`; pass `photoProblem={(state as { photoProblem?: string } | null)?.photoProblem}` to `ServiceForm`.
+
+- [ ] **Step 1: Write the failing tests**
+
+In `src/routes/MerchantServiceEditorPage.test.tsx`, at the top of the file stub the object URL API, which jsdom lacks:
+
+```ts
+beforeAll(() => {
+  Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:preview'), revokeObjectURL: vi.fn() })
+})
+```
+
+Replace the test `has no photo spot before the service exists` with these, inside `describe('photo')`, reusing `png()`, `publicPhoto` and the existing form-filling steps from `adds a service that customers can see` (extract a small `fillNewService(user, name)` helper if that keeps the tests short):
+
+```ts
+it('adds a service with a photo in one trip', async () => {
+  const user = userEvent.setup()
+  const router = renderAt('/business/services/new')
+  await fillNewService(user, 'Buzz Cut')
+  await user.upload(screen.getByLabelText('Add photo'), png())
+  expect(screen.getByRole('img', { name: 'Photo to upload' })).toHaveAttribute('src', 'blob:preview')
+  expect(screen.getByLabelText('Replace photo')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Add service' }))
+  expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toBe('/business/services'))
+  const created = (await publicServices()).find((s) => s.name === 'Buzz Cut')!
+  expect(created.photo).toEqual({ url: 'data:image/webp;base64,AA' })
+})
+
+it('lets the merchant drop a held photo before saving', async () => {
+  const user = userEvent.setup()
+  renderAt('/business/services/new')
+  await fillNewService(user, 'Buzz Cut')
+  await user.upload(screen.getByLabelText('Add photo'), png())
+  await user.click(screen.getByRole('button', { name: 'Remove photo' }))
+  expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Add service' }))
+  expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+  expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toBeUndefined()
+})
+
+it('refuses a non-photo on the Add page without holding it', async () => {
+  const user = userEvent.setup({ applyAccept: false })
+  renderAt('/business/services/new')
+  await user.upload(await screen.findByLabelText('Add photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('That file isn’t a photo. Use JPG, PNG or WebP.')
+  expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Remove photo' })).not.toBeInTheDocument()
+})
+
+it('keeps the new service and lands on its edit page when the photo upload fails', async () => {
+  const user = userEvent.setup()
+  vi.spyOn(merchantServicesService, 'setServicePhoto').mockRejectedValueOnce(
+    new ApiError('Photos can be up to 10 MB.', 422),
+  )
+  const router = renderAt('/business/services/new')
+  await fillNewService(user, 'Buzz Cut')
+  await user.upload(screen.getByLabelText('Add photo'), png())
+  await user.click(screen.getByRole('button', { name: 'Add service' }))
+  expect(await screen.findByText('Buzz Cut is on your menu, but the photo didn’t upload.')).toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/business\/services\/svc_/))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Photos can be up to 10 MB.')
+  expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+  expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toBeUndefined()
+})
+```
+
+(`ApiError` from `@/lib/api-client`, `merchantServicesService` from `@/services/merchant-services.service`; the file already imports `vi`.) Keep the onboarding guard in `MerchantOnboardingPage.test.tsx` as is: the quick form must still show neither `Add photo` nor the old note.
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `npx vitest run src/routes/MerchantServiceEditorPage.test.tsx`
+Expected: the four new tests FAIL (no `Add photo` label on the Add page).
+
+- [ ] **Step 3: Implement `PendingPhotoField`, the `initialProblem` prop, the form flow and the page's location state**
+
+As in Interfaces.
+
+- [ ] **Step 4: Run the checks**
+
+Run: `npx vitest run src/routes/MerchantServiceEditorPage.test.tsx src/routes/MerchantOnboardingPage.test.tsx && npx prettier --write src/features/merchant src/routes/MerchantServiceEditorPage.tsx src/routes/MerchantServiceEditorPage.test.tsx && npm run check`
+Expected: PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src
+git commit -m "Let a new service take its photo on the Add page and upload it once the service exists"
+```

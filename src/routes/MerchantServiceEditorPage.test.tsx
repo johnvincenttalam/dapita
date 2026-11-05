@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
 import { AppProviders } from '@/app/providers'
@@ -50,6 +50,15 @@ const withoutPhoto = (id: string) =>
   updateMockDb((db) => {
     delete db.services.find((s) => s.id === id)!.photo
   })
+
+beforeAll(() => {
+  Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:preview'), revokeObjectURL: vi.fn() })
+})
+
+async function fillNewService(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.type(await screen.findByRole('textbox', { name: /Service name/ }), name)
+  await user.type(screen.getByRole('textbox', { name: /^Price/ }), '150')
+}
 
 beforeEach(() => {
   localStorage.clear()
@@ -142,7 +151,11 @@ describe('MerchantServiceEditorPage', () => {
       const user = userEvent.setup()
       withoutPhoto('svc_hot_shave')
       renderAt('/business/services/svc_hot_shave')
-      await user.upload(await screen.findByLabelText('Add photo'), png())
+      const input = await screen.findByLabelText('Add photo')
+      const tile = screen.getByText('Add photo').closest('label')
+      expect(tile).not.toBeNull()
+      expect(tile).toHaveProperty('htmlFor', input.id)
+      await user.upload(input, png())
       await waitFor(async () =>
         expect(await publicPhoto('svc_hot_shave')).toEqual({ url: 'data:image/webp;base64,AA' }),
       )
@@ -192,10 +205,80 @@ describe('MerchantServiceEditorPage', () => {
       expect(await publicPhoto('svc_mens_haircut')).toEqual(before)
     })
 
-    it('has no photo spot before the service exists', async () => {
+    it('adds a service with a photo in one trip', async () => {
+      const user = userEvent.setup()
+      const router = renderAt('/business/services/new')
+      await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), png())
+      expect(screen.getByRole('img', { name: 'Photo to upload', hidden: true })).toHaveAttribute('src', 'blob:preview')
+      expect(screen.getByLabelText('Replace photo')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Add service' }))
+      expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+      await waitFor(() => expect(router.state.location.pathname).toBe('/business/services'))
+      const created = (await publicServices()).find((s) => s.name === 'Buzz Cut')!
+      expect(created.photo).toEqual({ url: 'data:image/webp;base64,AA' })
+    })
+
+    it('lets the merchant drop a held photo before saving', async () => {
+      const user = userEvent.setup({ applyAccept: false })
       renderAt('/business/services/new')
-      expect(await screen.findByText('You can add a photo after saving.')).toBeInTheDocument()
-      expect(screen.queryByLabelText('Add photo')).not.toBeInTheDocument()
+      await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toBeInTheDocument()
+      await user.upload(screen.getByLabelText('Add photo'), png())
+      await user.click(screen.getByRole('button', { name: 'Remove photo' }))
+      expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Add service' }))
+      expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+      expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toBeUndefined()
+    })
+
+    it('locks the held photo while the service is being saved', async () => {
+      const user = userEvent.setup()
+      const create = merchantServicesService.createService.bind(merchantServicesService)
+      let release!: () => void
+      const gate = new Promise<void>((resolve) => (release = resolve))
+      vi.spyOn(merchantServicesService, 'createService').mockImplementationOnce(async (...args) => {
+        await gate
+        return create(...args)
+      })
+      renderAt('/business/services/new')
+      await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), png())
+      await user.click(screen.getByRole('button', { name: 'Add service' }))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Remove photo' })).toBeDisabled())
+      expect(screen.getByLabelText('Replace photo')).toBeDisabled()
+      release()
+      expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+      expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toEqual({
+        url: 'data:image/webp;base64,AA',
+      })
+    })
+
+    it('refuses a non-photo on the Add page without holding it', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      renderAt('/business/services/new')
+      await user.upload(await screen.findByLabelText('Add photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toHaveTextContent('That file isn’t a photo. Use JPG, PNG or WebP.')
+      expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Remove photo' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the new service and lands on its edit page when the photo upload fails', async () => {
+      const user = userEvent.setup()
+      vi.spyOn(merchantServicesService, 'setServicePhoto').mockRejectedValueOnce(
+        new ApiError('Photos can be up to 10 MB.', 422),
+      )
+      const router = renderAt('/business/services/new')
+      await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), png())
+      await user.click(screen.getByRole('button', { name: 'Add service' }))
+      expect(await screen.findByText('Buzz Cut is on your menu, but the photo didn’t upload.')).toBeInTheDocument()
+      await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/business\/services\/svc_/))
+      expect(await screen.findByRole('alert')).toHaveTextContent('Photos can be up to 10 MB.')
+      expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+      expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toBeUndefined()
     })
   })
 })

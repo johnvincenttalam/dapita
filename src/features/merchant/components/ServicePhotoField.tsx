@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +13,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useRemoveServicePhotoMutation, useSetServicePhotoMutation } from '@/features/merchant/api/service-queries'
-import { FilePicker, UploadingOverlay } from '@/features/merchant/components/FilePicker'
+import { PhotoTile } from '@/features/merchant/components/PhotoTile'
 import { getErrorMessage } from '@/lib/api-client'
 import { photoFileProblem } from '@/lib/photos'
 import type { Service } from '@/types/business'
@@ -24,14 +23,17 @@ export function ServicePhotoField({
   businessId,
   service,
   icon,
+  initialProblem,
 }: {
   businessId: string
   service: Service
   icon: LucideIcon
+  /** A problem from a failed upload on the page before, shown until the next pick. */
+  initialProblem?: string
 }) {
   const setPhoto = useSetServicePhotoMutation(businessId)
   const removePhoto = useRemoveServicePhotoMutation(businessId)
-  const [problem, setProblem] = useState<string>()
+  const [problem, setProblem] = useState(initialProblem)
   const [confirming, setConfirming] = useState(false)
   const busy = setPhoto.isPending || removePhoto.isPending
 
@@ -44,31 +46,29 @@ export function ServicePhotoField({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative aspect-square w-40 overflow-hidden rounded-2xl bg-muted">
-        <ImageWithFallback
-          src={service.photo?.url}
-          srcSet={service.photo?.srcSet}
-          sizes="160px"
-          alt={service.name}
-          icon={icon}
-          className="size-full"
-        />
-        {setPhoto.isPending ? <UploadingOverlay /> : null}
-      </div>
-      {problem ? (
-        <p role="alert" className="text-sm text-destructive">
-          {problem}
-        </p>
+    <PhotoTile
+      src={service.photo?.url}
+      srcSet={service.photo?.srcSet}
+      alt={service.name}
+      icon={icon}
+      hasPhoto={Boolean(service.photo)}
+      busy={setPhoto.isPending}
+      disabled={busy}
+      problem={problem}
+      onFiles={onFiles}
+    >
+      {service.photo ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="-ml-2"
+          disabled={busy}
+          onClick={() => setConfirming(true)}
+        >
+          Remove photo
+        </Button>
       ) : null}
-      <div className="flex flex-wrap items-center gap-2">
-        <FilePicker label={service.photo ? 'Replace photo' : 'Add photo'} disabled={busy} onFiles={onFiles} />
-        {service.photo ? (
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setConfirming(true)}>
-            Remove photo
-          </Button>
-        ) : null}
-      </div>
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -88,6 +88,6 @@ export function ServicePhotoField({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PhotoTile>
   )
 }
