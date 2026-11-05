@@ -10,7 +10,14 @@ import User from '#models/user'
 import ApiError from '#exceptions/api_error'
 import { newId } from '#helpers/ids'
 import { toSessionUser } from '#services/accounts'
-import { slugify, starterHours } from '#shared/domain'
+import { allCategories } from '#services/profile'
+import {
+  interestsMessages,
+  normaliseInterestIds,
+  slugify,
+  starterHours,
+  type CustomerInterests,
+} from '#shared/domain'
 import {
   forgotPasswordValidator,
   signInValidator,
@@ -59,6 +66,13 @@ export default class AuthController {
       )
     }
 
+    let interests: CustomerInterests | null = null
+    if (input.accountType === 'customer' && input.interests?.length) {
+      const categoryIds = normaliseInterestIds(input.interests, await allCategories())
+      if (!categoryIds) throw new ApiError(interestsMessages.notOnList, 422)
+      interests = { categoryIds, answeredAt: new Date().toISOString() }
+    }
+
     const user = await db.transaction(async (trx) => {
       const now = new Date().toISOString()
       const created = await User.create(
@@ -68,6 +82,7 @@ export default class AuthController {
           email: input.email,
           password: input.password,
           phone: input.phone || null,
+          interests,
           roles: input.accountType === 'business' ? ['customer', 'merchant_owner'] : ['customer'],
           emailVerifiedAt: null,
           suspendedAt: null,

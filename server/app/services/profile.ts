@@ -83,7 +83,7 @@ export async function requestAccountDeletion(user: User) {
   return toDeletionRequestData(request)
 }
 
-async function allCategories() {
+export async function allCategories() {
   const categories = await Category.all()
   return categories.map(toCategoryData)
 }

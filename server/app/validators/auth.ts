@@ -33,6 +33,7 @@ export const signUpValidator = vine.create({
       })
     )
     .minLength(1),
+  interests: vine.array(vine.string()).maxLength(12).optional(),
 })
 
 export const verifyEmailValidator = vine.create({
