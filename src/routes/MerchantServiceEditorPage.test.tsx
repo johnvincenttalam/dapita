@@ -151,7 +151,11 @@ describe('MerchantServiceEditorPage', () => {
       const user = userEvent.setup()
       withoutPhoto('svc_hot_shave')
       renderAt('/business/services/svc_hot_shave')
-      await user.upload(await screen.findByLabelText('Add photo'), png())
+      const input = await screen.findByLabelText('Add photo')
+      const tile = screen.getByText('Add photo').closest('label')
+      expect(tile).not.toBeNull()
+      expect(tile).toHaveProperty('htmlFor', input.id)
+      await user.upload(input, png())
       await waitFor(async () =>
         expect(await publicPhoto('svc_hot_shave')).toEqual({ url: 'data:image/webp;base64,AA' }),
       )
@@ -206,7 +210,7 @@ describe('MerchantServiceEditorPage', () => {
       const router = renderAt('/business/services/new')
       await fillNewService(user, 'Buzz Cut')
       await user.upload(screen.getByLabelText('Add photo'), png())
-      expect(screen.getByRole('img', { name: 'Photo to upload' })).toHaveAttribute('src', 'blob:preview')
+      expect(screen.getByRole('img', { name: 'Photo to upload', hidden: true })).toHaveAttribute('src', 'blob:preview')
       expect(screen.getByLabelText('Replace photo')).toBeInTheDocument()
       await user.click(screen.getByRole('button', { name: 'Add service' }))
       expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()

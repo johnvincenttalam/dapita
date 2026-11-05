@@ -1,9 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Button } from '@/components/ui/button'
-import { FilePicker } from '@/features/merchant/components/FilePicker'
+import { PhotoTile } from '@/features/merchant/components/PhotoTile'
 import { photoFileProblem } from '@/lib/photos'
 
 /** A photo for a service that doesn't exist yet. It is held here and uploaded once the service is saved. */
@@ -35,37 +34,28 @@ export function PendingPhotoField({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative aspect-square w-40 overflow-hidden rounded-2xl bg-muted">
-        <ImageWithFallback
-          src={file ? preview : undefined}
-          sizes="160px"
-          alt="Photo to upload"
-          icon={icon}
-          className="size-full"
-        />
-      </div>
-      {problem ? (
-        <p role="alert" className="text-sm text-destructive">
-          {problem}
-        </p>
+    <PhotoTile
+      src={file ? preview : undefined}
+      alt="Photo to upload"
+      icon={icon}
+      hasPhoto={Boolean(file)}
+      problem={problem}
+      onFiles={onFiles}
+    >
+      {file ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="-ml-2"
+          onClick={() => {
+            setProblem(undefined)
+            onChange(undefined)
+          }}
+        >
+          Remove photo
+        </Button>
       ) : null}
-      <div className="flex flex-wrap items-center gap-2">
-        <FilePicker label={file ? 'Replace photo' : 'Add photo'} onFiles={onFiles} />
-        {file ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setProblem(undefined)
-              onChange(undefined)
-            }}
-          >
-            Remove photo
-          </Button>
-        ) : null}
-      </div>
-    </div>
+    </PhotoTile>
   )
 }
