@@ -90,7 +90,9 @@ export default function ServicePage() {
             <div className="min-w-0 space-y-8">
               <div className="flex flex-col gap-5 rounded-3xl card-surface p-5 sm:flex-row sm:items-center">
                 <ImageWithFallback
-                  src={service.photoUrl}
+                  src={service.photo?.url}
+                  srcSet={service.photo?.srcSet}
+                  sizes="(min-width: 640px) 128px, 100vw"
                   alt=""
                   icon={categoryIconFor(category)}
                   className="aspect-video w-full rounded-2xl sm:aspect-square sm:size-32"

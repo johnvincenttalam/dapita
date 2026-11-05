@@ -101,7 +101,7 @@ function findService(db: MockDb, businessId: ID, serviceId: ID) {
 }
 
 /** The stored shape: optional text is omitted rather than kept as empty strings. */
-function fromInput(input: ServiceInput): Omit<Service, 'id' | 'businessId' | 'sortOrder' | 'photoUrl'> {
+function fromInput(input: ServiceInput): Omit<Service, 'id' | 'businessId' | 'sortOrder' | 'photo'> {
   return {
     name: input.name,
     categoryId: input.categoryId,

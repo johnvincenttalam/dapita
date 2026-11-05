@@ -1,5 +1,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { bool, json } from '#models/columns'
+import type { StoredServicePhoto } from '#helpers/photos'
 import type { ID, ServicePrice } from '#shared/domain'
 
 export default class Service extends BaseModel {
@@ -32,8 +33,8 @@ export default class Service extends BaseModel {
   @column()
   declare bufferMinutes: number
 
-  @column()
-  declare photoUrl: string | null
+  @column(json)
+  declare photo: StoredServicePhoto | null
 
   @column(bool)
   declare featured: boolean

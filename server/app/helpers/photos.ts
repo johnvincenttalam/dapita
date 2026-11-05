@@ -1,5 +1,5 @@
 import env from '#start/env'
-import { photoRules, type BusinessPhoto } from '#shared/domain'
+import { photoRules, type BusinessPhoto, type ServicePhoto } from '#shared/domain'
 
 /**
  * A photo as the `photos` column keeps it. Uploaded photos store only where their
@@ -23,10 +23,24 @@ export function isUploaded(photo: StoredPhoto): photo is UploadedPhoto {
 export function toPublicPhoto(photo: StoredPhoto): BusinessPhoto {
   if (!isUploaded(photo)) return photo
   const { storageKey, ...rest } = photo
+  return { ...rest, ...publicUrls(storageKey) }
+}
+
+/** A service's photo as stored: seeded `{ url }`, or an uploaded file's storage key. */
+export type StoredServicePhoto = ServicePhoto | { storageKey: string }
+
+export function isUploadedServicePhoto(photo: StoredServicePhoto): photo is { storageKey: string } {
+  return 'storageKey' in photo
+}
+
+export function toPublicServicePhoto(photo: StoredServicePhoto): ServicePhoto {
+  return isUploadedServicePhoto(photo) ? publicUrls(photo.storageKey) : photo
+}
+
+function publicUrls(storageKey: string): { url: string; srcSet: string } {
   const base = (env.get('UPLOADS_PUBLIC_URL') ?? '/api/uploads').replace(/\/+$/, '')
   const urlAt = (width: number) => `${base}/${storageKey}-${width}.webp`
   return {
-    ...rest,
     url: urlAt(1280),
     srcSet: photoRules.widths.map((width) => `${urlAt(width)} ${width}w`).join(', '),
   }

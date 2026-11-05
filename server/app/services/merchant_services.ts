@@ -131,7 +131,7 @@ export function createService(businessId: ID, input: unknown) {
         id: newId('svc'),
         businessId,
         sortOrder: (menu.at(-1)?.sortOrder ?? -1) + 1,
-        photoUrl: null,
+        photo: null,
         ...fromInput(valid),
       },
       { client: trx }

@@ -498,7 +498,7 @@ export function createSeedServices(): Service[] {
       active: true,
       sortOrder: index + 1,
       ...(servicesWithPhotos.has(id) && {
-        photoUrl: `${import.meta.env.BASE_URL}images/services/service-${id}.webp`,
+        photo: { url: `${import.meta.env.BASE_URL}images/services/service-${id}.webp` },
       }),
       ...extra,
     })),

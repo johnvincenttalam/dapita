@@ -4,6 +4,7 @@ import Category from '#models/category'
 import Service from '#models/service'
 import StaffMember from '#models/staff_member'
 import ApiError from '#exceptions/api_error'
+import { toPublicServicePhoto } from '#helpers/photos'
 import {
   getOpenStatus,
   type Service as ServiceData,
@@ -45,7 +46,7 @@ export function toServiceData(service: Service): ServiceData {
     price: service.price,
     durationMinutes: service.durationMinutes,
     bufferMinutes: service.bufferMinutes,
-    photoUrl: service.photoUrl ?? undefined,
+    photo: service.photo ? toPublicServicePhoto(service.photo) : undefined,
     featured: service.featured,
     active: service.active,
     sortOrder: service.sortOrder,

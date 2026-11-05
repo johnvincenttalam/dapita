@@ -17,7 +17,14 @@ interface ServiceRowProps {
 export function ServiceRow({ service, shopSlug, icon }: ServiceRowProps) {
   return (
     <article className="flex items-center gap-3 py-3">
-      <ImageWithFallback src={service.photoUrl} alt="" icon={icon} className="size-16 shrink-0 rounded-xl" />
+      <ImageWithFallback
+        src={service.photo?.url}
+        srcSet={service.photo?.srcSet}
+        sizes="64px"
+        alt=""
+        icon={icon}
+        className="size-16 shrink-0 rounded-xl"
+      />
       <div className="min-w-0 flex-1">
         <h3 className="font-semibold text-pretty">
           <Link

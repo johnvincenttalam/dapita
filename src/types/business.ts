@@ -90,6 +90,12 @@ export type ServicePrice =
   | { type: 'range'; amount: number; maxAmount: number }
   | { type: 'quote' }
 
+export interface ServicePhoto {
+  url: string
+  /** Smaller copies for rows and the booking header, as an `srcset`. Absent for seeded photos. */
+  srcSet?: string
+}
+
 export interface Service {
   id: ID
   businessId: ID
@@ -103,7 +109,7 @@ export interface Service {
   durationMinutes: number
   /** Clean-up time after the service, used by live-calendar conflict checks (P1). */
   bufferMinutes: number
-  photoUrl?: string
+  photo?: ServicePhoto
   /** Highlighted by the merchant in "Popular services". Not derived from bookings. */
   featured: boolean
   active: boolean

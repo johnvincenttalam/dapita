@@ -190,4 +190,28 @@ test.group('Merchant: service menu', (group) => {
       .loginAs(otherOwner)
     elsewhere.assertStatus(404)
   })
+
+  test('keeps a seeded photo through an edit and sends it as `photo`', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await userByEmail(ownerEmail)
+    const menu = await client.get(servicesPath).loginAs(owner)
+    const haircut = menu
+      .body()
+      .services.find((item: { id: string }) => item.id === 'svc_mens_haircut')
+    assert.deepEqual(haircut.photo, { url: '/images/services/service-svc_mens_haircut.webp' })
+    assert.notProperty(haircut, 'photoUrl')
+
+    const edited = await client
+      .put(`${servicesPath}/svc_mens_haircut`)
+      .json({ ...service, name: 'Classic Cut', categoryId: haircut.categoryId })
+      .loginAs(owner)
+    edited.assertStatus(200)
+    assert.deepEqual(edited.body().photo, haircut.photo)
+
+    const shop = await client.get('/api/shops/the-good-cut-barbershop/services')
+    const listed = shop.body().find((item: { id: string }) => item.id === 'svc_mens_haircut')
+    assert.deepEqual(listed.photo, haircut.photo)
+  })
 })

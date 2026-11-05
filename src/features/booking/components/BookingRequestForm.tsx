@@ -134,7 +134,9 @@ export function BookingRequestForm({ shop, service, staff, category }: BookingRe
 
         <div className="flex items-center gap-4 rounded-2xl card-surface p-3">
           <ImageWithFallback
-            src={service.photoUrl}
+            src={service.photo?.url}
+            srcSet={service.photo?.srcSet}
+            sizes="64px"
             alt=""
             icon={categoryIconFor(category)}
             className="size-16 shrink-0 rounded-xl"
