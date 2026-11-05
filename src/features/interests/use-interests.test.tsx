@@ -5,13 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
 import { accountKeys } from '@/features/account/api/queries'
-import { sessionKeys } from '@/features/auth/api/queries'
+import { sessionKeys, useSession } from '@/features/auth/api/queries'
 import { resetInterestsSync, useInterests } from '@/features/interests/use-interests'
 import { ApiError } from '@/lib/api-client'
 import { createQueryClient } from '@/lib/query-client'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import { profileService } from '@/services/profile.service'
 import type { CustomerInterests } from '@/types/account'
+import type { ID } from '@/types/common'
 import { createTestQueryClient, createTestWrapper } from '@/test/render'
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
@@ -37,8 +38,9 @@ function renderInterests(queryClient = createTestQueryClient()) {
 /** Lets queued promise chains run to the end. */
 const flush = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)))
 
-function cachedIds(queryClient: QueryClient) {
-  return queryClient.getQueryData<CustomerInterests>(accountKeys.interests())?.categoryIds
+/** A user's answer in the cache; the signed-in customer's by default. */
+function cachedIds(queryClient: QueryClient, userId: ID | null = mockUsers.customer.id) {
+  return queryClient.getQueryData<CustomerInterests>(accountKeys.interests(userId))?.categoryIds
 }
 
 const realUpdate = profileService.updateMyInterests
@@ -65,12 +67,14 @@ function signOut(queryClient: QueryClient) {
 describe('useInterests', () => {
   it('a signed-out viewer reads unanswered and cannot save', async () => {
     const update = vi.spyOn(profileService, 'updateMyInterests')
-    const { result } = renderInterests()
+    const { result, queryClient } = renderInterests()
     await waitFor(() => expect(result.current.isPending).toBe(false))
     expect(result.current.interests).toEqual({ categoryIds: [] })
     expect(result.current.answered).toBe(false)
     act(() => result.current.setCategoryIds(['cat_barber']))
+    await flush()
     expect(update).not.toHaveBeenCalled()
+    expect(cachedIds(queryClient, null)).toBeUndefined()
   })
 
   it('a signed-in customer reads and writes the account', async () => {
@@ -100,6 +104,36 @@ describe('useInterests', () => {
 
     await waitFor(() => expect(result.current.answered).toBe(false))
     expect(result.current.interests.categoryIds).toEqual([])
+  })
+
+  it('signing in as someone else shows their answer, not the previous account', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.merchant.id)
+    await profileService.updateMyInterests(['cat_barber'])
+    signIn()
+    await profileService.updateMyInterests(['cat_salon'])
+    // Every render, with whose session it was.
+    const seen: Array<{ userId?: ID; categoryIds: ID[] }> = []
+    const queryClient = createTestQueryClient()
+    const { result } = renderHook(
+      () => {
+        const state = useInterests()
+        seen.push({ userId: useSession().user?.id, categoryIds: state.interests.categoryIds })
+        return state
+      },
+      { wrapper: createTestWrapper(queryClient) },
+    )
+    await waitFor(() => expect(result.current.interests.categoryIds).toEqual(['cat_salon']))
+
+    act(() => {
+      localStorage.setItem(MOCK_SESSION_KEY, mockUsers.merchant.id)
+      queryClient.setQueryData(sessionKeys.current, mockUsers.merchant)
+    })
+
+    await waitFor(() => expect(result.current.interests.categoryIds).toEqual(['cat_barber']))
+    expect(result.current.answered).toBe(true)
+    const merchantRenders = seen.filter((render) => render.userId === mockUsers.merchant.id)
+    expect(merchantRenders.length).toBeGreaterThan(0)
+    expect(merchantRenders.map((render) => render.categoryIds)).not.toContainEqual(['cat_salon'])
   })
 
   it('drops saves that were waiting when the customer signs out', async () => {

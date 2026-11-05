@@ -57,13 +57,13 @@ type WriteOutcome = { status: 'saved' } | { status: 'superseded' } | { status: '
 /** Shows the pick at once, then saves it after any request already in flight. */
 function writeToAccount(
   queryClient: QueryClient,
-  save: (categoryIds: ID[]) => Promise<CustomerInterests>,
+  save: (variables: { userId: ID; categoryIds: ID[] }) => Promise<CustomerInterests>,
   userId: ID,
   categoryIds: ID[],
 ): Promise<WriteOutcome> {
   const state = syncFor(userId)
   const seq = ++state.seq
-  const key = accountKeys.interests()
+  const key = accountKeys.interests(userId)
   const current = queryClient.getQueryData<CustomerInterests>(key)
   if (state.latest === undefined && state.confirmed === undefined) state.confirmed = current
   state.latest = { categoryIds, answeredAt: current?.answeredAt ?? new Date().toISOString() }
@@ -75,7 +75,7 @@ function writeToAccount(
   const step = state.chain.then(async (): Promise<WriteOutcome> => {
     if (!isLatest()) return { status: 'superseded' } // Replaced before it was sent.
     try {
-      const saved = await save(categoryIds)
+      const saved = await save({ userId, categoryIds })
       if (userStillHere()) state.confirmed = saved
       if (isLatest()) return { status: 'saved' }
       // Superseded while in flight, and the mutation wrote this older answer to the cache.
@@ -98,7 +98,7 @@ export function useInterests(): InterestsState {
   const queryClient = useQueryClient()
   const { user, isPending: isSessionPending } = useSession()
   const userId = user?.id ?? null
-  const account = useMyInterestsQuery(userId !== null)
+  const account = useMyInterestsQuery(userId)
   const { mutateAsync: saveToAccount } = useUpdateInterestsMutation()
 
   // Signing out or switching user drops the previous user's queued picks.
