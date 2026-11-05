@@ -10,12 +10,14 @@ import { FormField } from '@/components/forms/FormField'
 import { ChoiceGroup } from '@/components/shared/ChoiceGroup'
 import { Panel } from '@/components/shared/Panel'
 import { Button } from '@/components/ui/button'
+import { categoryIconFor } from '@/config/category-icons'
 import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useSaveServiceMutation } from '@/features/merchant/api/service-queries'
+import { ServicePhotoField } from '@/features/merchant/components/ServicePhotoField'
 import { commonDurations, type ServiceSuggestion } from '@/features/merchant/setup-suggestions'
 import { getErrorMessage } from '@/lib/api-client'
 import { formatDuration, formatPrice } from '@/lib/format'
@@ -287,9 +289,20 @@ export function ServiceForm({
             </p>
           </FieldGroup>
         </Panel>
+      </fieldset>
 
-        {simple ? null : (
-          <Panel title="On your shop page">
+      {simple ? null : (
+        <Panel title="On your shop page">
+          {service ? (
+            <ServicePhotoField
+              businessId={businessId}
+              service={service}
+              icon={categoryIconFor(categories.find((c) => c.id === service.categoryId))}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">You can add a photo after saving.</p>
+          )}
+          <fieldset disabled={form.formState.isSubmitting} className="contents">
             <FieldGroup>
               <FormField
                 control={form.control}
@@ -324,9 +337,9 @@ export function ServiceForm({
                 )}
               />
             </FieldGroup>
-          </Panel>
-        )}
-      </fieldset>
+          </fieldset>
+        </Panel>
+      )}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {onCancel ? (

@@ -262,6 +262,8 @@ describe('MerchantOnboardingPage', () => {
     expect(price).toHaveFocus()
     // The optional extras stay out of the way during setup.
     expect(screen.queryByRole('switch', { name: 'Mark as popular' })).not.toBeInTheDocument()
+    expect(screen.queryByText('You can add a photo after saving.')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Add photo')).not.toBeInTheDocument()
     await user.type(price, '300')
     await user.click(screen.getByRole('button', { name: 'Add service' }))
 
