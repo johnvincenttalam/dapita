@@ -16,7 +16,8 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { categoryIconFor } from '@/config/category-icons'
-import { useSaveServiceMutation } from '@/features/merchant/api/service-queries'
+import { useSaveServiceMutation, useSetServicePhotoMutation } from '@/features/merchant/api/service-queries'
+import { PendingPhotoField } from '@/features/merchant/components/PendingPhotoField'
 import { ServicePhotoField } from '@/features/merchant/components/ServicePhotoField'
 import { commonDurations, type ServiceSuggestion } from '@/features/merchant/setup-suggestions'
 import { getErrorMessage } from '@/lib/api-client'
@@ -64,6 +65,8 @@ interface ServiceFormProps {
   simple?: boolean
   /** Stay on the page after saving (onboarding) instead of going back to the services list. */
   onSaved?: (service: Service) => void
+  /** Why the photo didn’t upload when this service was just created, shown under its photo. */
+  photoProblem?: string
   onCancel?: () => void
 }
 
@@ -75,11 +78,15 @@ export function ServiceForm({
   suggestion,
   simple = false,
   onSaved,
+  photoProblem,
   onCancel,
 }: ServiceFormProps) {
   const navigate = useNavigate()
   // The form shows the server's answer inline, so no toast as well.
   const save = useSaveServiceMutation(businessId, { showErrorToast: false })
+  const setPhoto = useSetServicePhotoMutation(businessId)
+  // A photo picked for a new service waits here (never in the form) until the service exists.
+  const [pendingPhoto, setPendingPhoto] = useState<File>()
   const form = useForm<ServiceFormInput, unknown, ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
     mode: 'onTouched',
@@ -96,9 +103,9 @@ export function ServiceForm({
     if (suggestion && suggestion.categoryId) form.setFocus('amount')
   }, [form, suggestion])
   const [moreOpen, setMoreOpen] = useState(() => !simple || Boolean(service?.description || service?.requirements))
-  const [priceType, amount, maxAmount, durationMinutes] = useWatch({
+  const [priceType, amount, maxAmount, durationMinutes, categoryId] = useWatch({
     control: form.control,
-    name: ['priceType', 'amount', 'maxAmount', 'durationMinutes'],
+    name: ['priceType', 'amount', 'maxAmount', 'durationMinutes', 'categoryId'],
   })
   const price = previewPrice({ priceType, amount, maxAmount })
   const durationValid = Number.isInteger(durationMinutes) && durationMinutes >= 5 && durationMinutes <= 480
@@ -113,6 +120,17 @@ export function ServiceForm({
       // Onboarding shows the new service in its list, which says enough.
       if (onSaved) onSaved(saved)
       else {
+        if (!service && pendingPhoto) {
+          try {
+            await setPhoto.mutateAsync({ serviceId: saved.id, file: pendingPhoto })
+          } catch (error) {
+            toast.error(`${saved.name} is on your menu, but the photo didn’t upload.`)
+            void navigate(`/business/services/${encodeURIComponent(saved.id)}`, {
+              state: { photoProblem: getErrorMessage(error) },
+            })
+            return
+          }
+        }
         toast.success(service ? `Changes to ${saved.name} saved.` : `${saved.name} is on your menu.`)
         void navigate('/business/services')
       }
@@ -298,9 +316,14 @@ export function ServiceForm({
               businessId={businessId}
               service={service}
               icon={categoryIconFor(categories.find((c) => c.id === service.categoryId))}
+              initialProblem={photoProblem}
             />
           ) : (
-            <p className="text-sm text-muted-foreground">You can add a photo after saving.</p>
+            <PendingPhotoField
+              file={pendingPhoto}
+              onChange={setPendingPhoto}
+              icon={categoryIconFor(categories.find((c) => c.id === categoryId))}
+            />
           )}
           <fieldset disabled={form.formState.isSubmitting} className="contents">
             <FieldGroup>

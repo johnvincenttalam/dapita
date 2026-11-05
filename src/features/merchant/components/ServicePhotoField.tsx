@@ -24,14 +24,17 @@ export function ServicePhotoField({
   businessId,
   service,
   icon,
+  initialProblem,
 }: {
   businessId: string
   service: Service
   icon: LucideIcon
+  /** A problem from a failed upload on the page before, shown until the next pick. */
+  initialProblem?: string
 }) {
   const setPhoto = useSetServicePhotoMutation(businessId)
   const removePhoto = useRemoveServicePhotoMutation(businessId)
-  const [problem, setProblem] = useState<string>()
+  const [problem, setProblem] = useState(initialProblem)
   const [confirming, setConfirming] = useState(false)
   const busy = setPhoto.isPending || removePhoto.isPending
 
