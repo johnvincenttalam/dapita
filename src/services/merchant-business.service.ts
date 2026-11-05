@@ -1,9 +1,8 @@
 import { toDateKey } from '@/lib/datetime'
-import { ApiError, apiClient } from '@/lib/api-client'
+import { ApiError, apiClient, fileForm } from '@/lib/api-client'
 import { listingChecklist } from '@/lib/listing-checklist'
 import { env } from '@/lib/env'
-import { photoAlt, photoFileProblem } from '@/lib/photos'
-import { resizeImageToDataUrl } from '@/lib/resize-image'
+import { photoAlt } from '@/lib/photos'
 import { photoMessages, photoRules } from '@/config/photos'
 import {
   businessProfileSchema,
@@ -16,6 +15,7 @@ import {
 } from '@/schemas/business'
 import { readMockDb, updateMockDb, type MockDb } from '@/services/mock/db'
 import { getMockSessionUser } from '@/services/mock/users'
+import { checkPhotoFile, resizedPhoto } from '@/services/mock/photos'
 import { createMockId, delay } from '@/services/mock/utils'
 import type { Business, WeeklyHours } from '@/types/business'
 import type { Area, ServiceCategory } from '@/types/catalog'
@@ -51,12 +51,6 @@ export interface MerchantBusinessService {
 
 // Endpoints from docs/implementation-plan.md §7.3.
 const businessPath = (businessId: ID) => `/merchant/businesses/${encodeURIComponent(businessId)}`
-
-function fileForm(file: File) {
-  const form = new FormData()
-  form.append('file', file)
-  return form
-}
 
 const httpMerchantBusinessService: MerchantBusinessService = {
   getBusiness: (businessId) => apiClient.get<BusinessProfile>(businessPath(businessId)),
@@ -112,21 +106,6 @@ const listingCategories = (db: MockDb) =>
   db.categories
     .filter((category) => !category.parentId && category.status === 'active')
     .sort((a, b) => a.sortOrder - b.sortOrder)
-
-function checkPhotoFile(file: File | undefined): asserts file is File {
-  if (!file) throw new ApiError(photoMessages.noFile, 422)
-  const problem = photoFileProblem(file)
-  if (problem) throw new ApiError(problem, 422)
-}
-
-/** The resized photo, or `notAPhoto` when the browser can't decode it (a text file named `menu.jpg`), like the server. */
-async function resizedPhoto(file: File) {
-  try {
-    return await resizeImageToDataUrl(file)
-  } catch {
-    throw new ApiError(photoMessages.notAPhoto, 422)
-  }
-}
 
 const galleryOf = (business: Business) => business.photos.filter((photo) => photo.kind === 'gallery')
 

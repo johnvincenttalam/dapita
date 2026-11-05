@@ -1,7 +1,9 @@
-import { ApiError, apiClient } from '@/lib/api-client'
+import { photoMessages } from '@/config/photos'
+import { ApiError, apiClient, fileForm } from '@/lib/api-client'
 import { env } from '@/lib/env'
 import { serviceSchema, type ServiceInput } from '@/schemas/service'
 import { readMockDb, updateMockDb, type MockDb } from '@/services/mock/db'
+import { checkPhotoFile, resizedPhoto } from '@/services/mock/photos'
 import { getMockSessionUser } from '@/services/mock/users'
 import { createMockId, delay } from '@/services/mock/utils'
 import type { Service } from '@/types/business'
@@ -26,6 +28,9 @@ export interface MerchantServicesService {
   moveService: (businessId: ID, serviceId: ID, direction: MoveDirection) => Promise<Service[]>
   /** Only for services nobody has booked; booked ones are hidden instead, so booking history stays intact. */
   deleteService: (businessId: ID, serviceId: ID) => Promise<void>
+  /** Sets or replaces the service's photo. Uploads straight away; nothing waits for the form. */
+  setServicePhoto: (businessId: ID, serviceId: ID, file: File) => Promise<Service>
+  removeServicePhoto: (businessId: ID, serviceId: ID) => Promise<Service>
 }
 
 // Endpoints from docs/implementation-plan.md §7.3.
@@ -39,6 +44,10 @@ const httpMerchantServicesService: MerchantServicesService = {
   moveService: (businessId, serviceId, direction) =>
     apiClient.post<Service[]>(`${servicePath(businessId, serviceId)}/move`, { direction }),
   deleteService: (businessId, serviceId) => apiClient.delete<void>(servicePath(businessId, serviceId)),
+  setServicePhoto: (businessId, serviceId, file) =>
+    apiClient.put<Service>(`${servicePath(businessId, serviceId)}/photo`, fileForm(file)),
+  removeServicePhoto: (businessId, serviceId) =>
+    apiClient.delete<Service>(`${servicePath(businessId, serviceId)}/photo`),
 }
 
 // ─── MOCK ────────────────────────────────────────────────────────────────────
@@ -180,6 +189,29 @@ const mockMerchantServicesService: MerchantServicesService = {
       db.staff.forEach((member) => {
         member.serviceIds = member.serviceIds.filter((id) => id !== serviceId)
       })
+    })
+  },
+
+  async setServicePhoto(businessId, serviceId, file) {
+    await delay(600)
+    requireMember(businessId)
+    checkPhotoFile(file)
+    const url = await resizedPhoto(file)
+    return updateMockDb((db) => {
+      const service = findService(db, businessId, serviceId)
+      service.photo = { url }
+      return structuredClone(service)
+    })
+  },
+
+  async removeServicePhoto(businessId, serviceId) {
+    await delay(400)
+    requireMember(businessId)
+    return updateMockDb((db) => {
+      const service = findService(db, businessId, serviceId)
+      if (!service.photo) throw new ApiError(photoMessages.notFound, 404)
+      delete service.photo
+      return structuredClone(service)
     })
   },
 }
