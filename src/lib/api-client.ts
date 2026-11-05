@@ -72,7 +72,6 @@ async function request<T>(path: string, { body, query, headers, ...init }: Reque
   return payload as T
 }
 
-/** Thin typed wrapper around fetch. Swap for axios/ky if your project needs more. */
 /** A multipart body with the file under `file`, which is where the photo endpoints read it. */
 export function fileForm(file: File) {
   const form = new FormData()
@@ -80,6 +79,7 @@ export function fileForm(file: File) {
   return form
 }
 
+/** Thin typed wrapper around fetch. Swap for axios/ky if your project needs more. */
 export const apiClient = {
   get: <T>(path: string, options?: RequestOptions) => request<T>(path, { ...options, method: 'GET' }),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>

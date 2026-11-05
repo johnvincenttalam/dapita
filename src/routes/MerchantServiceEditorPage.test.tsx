@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
 import { AppProviders } from '@/app/providers'
+import { ApiError } from '@/lib/api-client'
 import { createQueryClient } from '@/lib/query-client'
 import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
+import { merchantServicesService } from '@/services/merchant-services.service'
 import { shopsService } from '@/services/shops.service'
 import MerchantServiceEditorPage from '@/routes/MerchantServiceEditorPage'
 
@@ -157,13 +159,28 @@ describe('MerchantServiceEditorPage', () => {
       expect(await publicPhoto('svc_mens_haircut')).toEqual(before)
     })
 
-    it('removes a photo after confirming', async () => {
+    it('shows a server-rejected upload once, not as an alert and a toast', async () => {
       const user = userEvent.setup()
+      vi.spyOn(merchantServicesService, 'setServicePhoto').mockRejectedValueOnce(
+        new ApiError('Photos can be up to 10 MB.', 422),
+      )
       renderAt('/business/services/svc_mens_haircut')
+      await user.upload(await screen.findByLabelText('Replace photo'), png())
+      expect(await screen.findByRole('alert')).toHaveTextContent('Photos can be up to 10 MB.')
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(screen.queryAllByText('Photos can be up to 10 MB.')).toHaveLength(1)
+    })
+
+    it('removes a photo after confirming', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      renderAt('/business/services/svc_mens_haircut')
+      await user.upload(await screen.findByLabelText('Replace photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toBeInTheDocument()
       await user.click(await screen.findByRole('button', { name: 'Remove photo' }))
       await user.click(screen.getByRole('button', { name: 'Remove' }))
       await waitFor(async () => expect(await publicPhoto('svc_mens_haircut')).toBeUndefined())
       expect(await screen.findByLabelText('Add photo')).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
 
     it('saving the form leaves the photo alone', async () => {

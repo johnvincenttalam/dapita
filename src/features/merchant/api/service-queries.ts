@@ -77,6 +77,7 @@ export function useDeleteServiceMutation(businessId: string) {
 export function useSetServicePhotoMutation(businessId: string) {
   const queryClient = useQueryClient()
   return useMutation({
+    meta: { showErrorToast: false },
     mutationFn: ({ serviceId, file }: { serviceId: string; file: File }) =>
       merchantServicesService.setServicePhoto(businessId, serviceId, file),
     onSuccess: (service) => replaceMenuService(queryClient, businessId, service),

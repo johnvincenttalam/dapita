@@ -77,7 +77,14 @@ export function ServicePhotoField({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => removePhoto.mutate(service.id)}>Remove</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                setProblem(undefined)
+                removePhoto.mutate(service.id)
+              }}
+            >
+              Remove
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
