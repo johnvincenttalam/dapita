@@ -19,7 +19,6 @@ The shop photos feature (`docs/superpowers/specs/2026-10-30-shop-photos-design.m
 ## Non-goals
 
 - A gallery per service. One photo only.
-- Photos on the **Add service** page. The photo spot appears once the service exists.
 - Photos in the setup wizard's quick "add a service" form (`ServiceForm` with `simple`). The wizard is for getting the list up fast; photos come later from the Services page.
 - Requiring photos anywhere. A service without one keeps the category icon fallback, the listing checklist doesn't mention service photos, and admin moderation ignores them.
 - Cropping or editing in the browser, and no server-side cropping to a square either. Copies are resized by width only, exactly like shop photos, and the customer spots crop with CSS as they do today.
@@ -36,7 +35,7 @@ The shop photos feature (`docs/superpowers/specs/2026-10-30-shop-photos-design.m
 
 1. **Flow:** the merchant taps a service on their Services page, which opens the existing edit page, adds a photo there, done.
 2. **Upload right away.** Picking a file uploads it immediately. Nothing waits for the form's Save button.
-3. **New services:** because the upload needs a service id, the Add service page gets no photo spot. It shows one line instead: "You can add a photo after saving." _(Our call, following from 2.)_
+3. **New services:** the Add service page has the same photo spot. Picking a file there holds it with a local preview, and it uploads the moment the service is created on Save, so adding a service with a photo is one trip. _(Revised 2026-11-05 after seeing the first build, which showed "You can add a photo after saving." and sent the merchant back through the list for every new service.)_
 4. **Optional everywhere.** Nothing nags about missing photos.
 5. **Everything else below is our call**, made during the conversation and accepted without changes.
 
@@ -44,7 +43,7 @@ The shop photos feature (`docs/superpowers/specs/2026-10-30-shop-photos-design.m
 
 ### Edit service page (merchant)
 
-`src/features/merchant/components/ServiceForm.tsx`, rendered by `MerchantServiceEditorPage` at `/business/services/:serviceId`. The photo spot sits at the **top of the "On your shop page" panel**, since that panel is already about how the service looks to customers. It renders only when `service` is set and `simple` is false. On the Add service page (`/business/services/new`, `service` undefined, `simple` false) the same place shows the line "You can add a photo after saving." and nothing else.
+`src/features/merchant/components/ServiceForm.tsx`, rendered by `MerchantServiceEditorPage` at `/business/services/:serviceId`. The photo spot sits at the **top of the "On your shop page" panel**, since that panel is already about how the service looks to customers. It renders whenever `simple` is false. With an existing service it uploads on pick, as below. On the Add service page (`/business/services/new`, `service` undefined) it shows the same tile, but picking a file only holds it: the tile previews the file locally, the label switches to **Replace photo**, and a **Remove photo** button clears it with no dialog (nothing has been uploaded). Browser-side refusals from `photoFileProblem` show under the tile as on the edit page. On Save, the service is created first, then the held photo uploads to it right away, then the usual toast and return to the list. If that upload fails after the service was created, the toast reads "<name> is on your menu, but the photo didn’t upload." and the page goes to the new service's edit page with the failure message under the tile, so the merchant can retry without losing the service.
 
 - **Empty:** a square tile showing the category icon on the usual fallback, with an **Add photo** button that opens the file picker (`accept` from `photoRules.acceptedTypes`). Picking a file uploads it straight away. While uploading, the tile shows a busy state and the button is disabled. On success the tile shows the photo.
 - **Filled:** the photo in a square tile, with **Replace** and **Remove** buttons. Replace opens the picker and uploads; the old photo stays visible until the new one lands, then swaps. Remove asks once in the project's `alert-dialog` ("Remove this photo?"), then deletes on the server. No undo.
