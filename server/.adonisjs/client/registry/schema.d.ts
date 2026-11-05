@@ -696,6 +696,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_services_controller').default['destroy']>>>
     }
   }
+  'merchant_service_photos.update': {
+    methods: ["PUT"]
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId/photo'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; serviceId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['update']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['update']>>>
+    }
+  }
+  'merchant_service_photos.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId/photo'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { businessId: ParamValue; serviceId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/merchant_service_photos_controller').default['destroy']>>>
+    }
+  }
   'merchant_bookings.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/merchant/businesses/:businessId/bookings'

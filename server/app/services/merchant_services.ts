@@ -7,8 +7,10 @@ import Service from '#models/service'
 import StaffMember from '#models/staff_member'
 import ApiError from '#exceptions/api_error'
 import { newId } from '#helpers/ids'
+import { isUploadedServicePhoto } from '#helpers/photos'
 import { validateWith } from '#helpers/validate'
 import { toCategoryData } from '#services/catalog'
+import { deleteUploaded } from '#services/photo_storage'
 import { toServiceData } from '#services/shops'
 import { serviceSchema, type ID } from '#shared/domain'
 
@@ -23,13 +25,13 @@ export type MoveDirection = 'up' | 'down'
 
 type ServiceInput = ReturnType<typeof serviceSchema.parse>
 
-const serviceNotFound = () => new ApiError('We couldn’t find that service.', 404)
+export const serviceNotFound = () => new ApiError('We couldn’t find that service.', 404)
 
 /**
  * Locks the listing for the change, so two edits can't both pass the duplicate-name
  * check or take the same place in the menu.
  */
-function withMenu<T>(
+export function withMenu<T>(
   businessId: ID,
   run: (business: Business, trx: TransactionClientContract) => Promise<T>
 ) {
@@ -131,7 +133,7 @@ export function createService(businessId: ID, input: unknown) {
         id: newId('svc'),
         businessId,
         sortOrder: (menu.at(-1)?.sortOrder ?? -1) + 1,
-        photoUrl: null,
+        photo: null,
         ...fromInput(valid),
       },
       { client: trx }
@@ -171,8 +173,8 @@ export function moveService(businessId: ID, serviceId: ID, direction: MoveDirect
 }
 
 /** Only for services nobody has booked; booked ones are hidden instead. */
-export function deleteService(businessId: ID, serviceId: ID) {
-  return withMenu(businessId, async (_business, trx) => {
+export async function deleteService(businessId: ID, serviceId: ID) {
+  const dropped = await withMenu(businessId, async (_business, trx) => {
     const service = await Service.query({ client: trx })
       .where({ id: serviceId, businessId })
       .first()
@@ -191,5 +193,7 @@ export function deleteService(businessId: ID, serviceId: ID) {
       await member.save()
     }
     await service.delete()
+    return service.photo
   })
+  if (dropped && isUploadedServicePhoto(dropped)) await deleteUploaded([dropped.storageKey])
 }

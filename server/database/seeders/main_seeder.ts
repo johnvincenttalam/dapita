@@ -146,7 +146,7 @@ export default class MainSeeder extends BaseSeeder {
         ...service,
         description: service.description ?? null,
         requirements: service.requirements ?? null,
-        photoUrl: service.photoUrl ?? null,
+        photo: service.photo ?? null,
       }))
     )
     await StaffMember.createMany(

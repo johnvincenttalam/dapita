@@ -57,6 +57,8 @@ export type ScannedRoutes = {
     'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_services.move': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_service_photos.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_service_photos.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'merchant_bookings.index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'conversations.business_index': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -196,6 +198,7 @@ export type ScannedRoutes = {
     'merchant_photos.set_cover': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_photos.reorder': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_services.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_service_photos.update': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
     'admin.featured': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.update_category': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -204,6 +207,7 @@ export type ScannedRoutes = {
     'merchant_businesses.delete_closure': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'closureId': ParamValue} }
     'merchant_photos.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'photoId': ParamValue} }
     'merchant_services.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
+    'merchant_service_photos.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'businessId': ParamValue,'serviceId': ParamValue} }
   }
   OPTIONS: {
   }

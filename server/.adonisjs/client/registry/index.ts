@@ -324,6 +324,18 @@ const routes = {
     tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"services"],[1,"serviceId"]],
     types: placeholder as Registry['merchant_services.destroy']['types'],
   },
+  'merchant_service_photos.update': {
+    methods: ["PUT"],
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId/photo',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"services"],[1,"serviceId"],[0,"photo"]],
+    types: placeholder as Registry['merchant_service_photos.update']['types'],
+  },
+  'merchant_service_photos.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/merchant/businesses/:businessId/services/:serviceId/photo',
+    tokens: [[0,"api"],[0,"merchant"],[0,"businesses"],[1,"businessId"],[0,"services"],[1,"serviceId"],[0,"photo"]],
+    types: placeholder as Registry['merchant_service_photos.destroy']['types'],
+  },
   'merchant_bookings.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/merchant/businesses/:businessId/bookings',

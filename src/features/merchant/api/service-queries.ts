@@ -4,6 +4,7 @@ import { discoveryKeys } from '@/features/discovery/api/queries'
 import { shopKeys } from '@/features/shops/api/queries'
 import type { ServiceInput } from '@/schemas/service'
 import { merchantServicesService, type MoveDirection, type ServiceMenu } from '@/services/merchant-services.service'
+import type { Service } from '@/types/business'
 
 export const merchantServiceKeys = {
   all: ['merchant-services'] as const,
@@ -25,6 +26,16 @@ function invalidateMenu(queryClient: QueryClient, businessId: string) {
     queryClient.invalidateQueries({ queryKey: shopKeys.all }),
     queryClient.invalidateQueries({ queryKey: discoveryKeys.all }),
   ])
+}
+
+/** Swaps the returned service into the cached menu, so the new photo shows before the refetch lands. */
+function replaceMenuService(queryClient: QueryClient, businessId: string, service: Service) {
+  queryClient.setQueryData<ServiceMenu>(merchantServiceKeys.menu(businessId), (menu) =>
+    menu
+      ? { ...menu, services: menu.services.map((existing) => (existing.id === service.id ? service : existing)) }
+      : menu,
+  )
+  return invalidateMenu(queryClient, businessId)
 }
 
 /** Creates a service, or updates it when `serviceId` is given. A form that shows its own error turns the toast off. */
@@ -59,5 +70,25 @@ export function useDeleteServiceMutation(businessId: string) {
   return useMutation({
     mutationFn: (serviceId: string) => merchantServicesService.deleteService(businessId, serviceId),
     onSuccess: () => invalidateMenu(queryClient, businessId),
+  })
+}
+
+/** Uploads straight away. No error toast: the photo field shows its own error. */
+export function useSetServicePhotoMutation(businessId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    meta: { showErrorToast: false },
+    mutationFn: ({ serviceId, file }: { serviceId: string; file: File }) =>
+      merchantServicesService.setServicePhoto(businessId, serviceId, file),
+    onSuccess: (service) => replaceMenuService(queryClient, businessId, service),
+  })
+}
+
+export function useRemoveServicePhotoMutation(businessId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    meta: { showErrorToast: true },
+    mutationFn: (serviceId: string) => merchantServicesService.removeServicePhoto(businessId, serviceId),
+    onSuccess: (service) => replaceMenuService(queryClient, businessId, service),
   })
 }

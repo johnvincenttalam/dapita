@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { photoMessages, photoRules } from '@/config/photos'
 import type * as MockUtils from '@/services/mock/utils'
 import type { ServiceInput } from '@/schemas/service'
 import { bookingsService } from '@/services/bookings.service'
@@ -10,6 +11,10 @@ import { shopsService } from '@/services/shops.service'
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
   delay: () => Promise.resolve(),
+}))
+
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: () => Promise.resolve('data:image/webp;base64,AA'),
 }))
 
 const BIZ = 'biz_good_cut'
@@ -140,5 +145,50 @@ describe('merchant services (mock service)', () => {
     await expect(merchantServicesService.updateService(BIZ, 'svc_gg_cut', input())).rejects.toMatchObject({
       status: 404,
     })
+  })
+})
+
+describe('photos', () => {
+  it('sets, keeps through an edit, and removes a service photo', async () => {
+    const png = new File(['x'], 'a.png', { type: 'image/png' })
+    const set = await merchantServicesService.setServicePhoto(BIZ, 'svc_hot_shave', png)
+    expect(set.photo).toEqual({ url: 'data:image/webp;base64,AA' })
+
+    const edited = await merchantServicesService.updateService(
+      BIZ,
+      'svc_hot_shave',
+      input({
+        name: 'Towel Shave',
+        categoryId: 'sub_beard',
+        price: { type: 'fixed', amount: 200 },
+        durationMinutes: 30,
+      }),
+    )
+    expect(edited.photo).toEqual(set.photo)
+
+    const removed = await merchantServicesService.removeServicePhoto(BIZ, 'svc_hot_shave')
+    expect(removed.photo).toBeUndefined()
+    await expect(merchantServicesService.removeServicePhoto(BIZ, 'svc_hot_shave')).rejects.toMatchObject({
+      status: 404,
+      message: photoMessages.notFound,
+    })
+  })
+
+  it('refuses files that aren’t photos or are too large', async () => {
+    await expect(
+      merchantServicesService.setServicePhoto(BIZ, 'svc_hot_shave', new File(['x'], 'a.gif', { type: 'image/gif' })),
+    ).rejects.toMatchObject({ status: 422, message: photoMessages.notAPhoto })
+    const big = new File([new Uint8Array(photoRules.maxBytes + 1)], 'big.png', { type: 'image/png' })
+    await expect(merchantServicesService.setServicePhoto(BIZ, 'svc_hot_shave', big)).rejects.toMatchObject({
+      status: 422,
+      message: photoMessages.tooLarge,
+    })
+  })
+
+  it('only members can change a photo', async () => {
+    signInAs('customer')
+    await expect(
+      merchantServicesService.setServicePhoto(BIZ, 'svc_hot_shave', new File(['x'], 'a.png', { type: 'image/png' })),
+    ).rejects.toMatchObject({ status: 403 })
   })
 })

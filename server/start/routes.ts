@@ -20,6 +20,8 @@ const BookingsController = () => import('#controllers/bookings_controller')
 const MerchantBookingsController = () => import('#controllers/merchant_bookings_controller')
 const MerchantBusinessesController = () => import('#controllers/merchant_businesses_controller')
 const MerchantPhotosController = () => import('#controllers/merchant_photos_controller')
+const MerchantServicePhotosController = () =>
+  import('#controllers/merchant_service_photos_controller')
 const MerchantServicesController = () => import('#controllers/merchant_services_controller')
 const ConversationsController = () => import('#controllers/conversations_controller')
 const ProfileController = () => import('#controllers/profile_controller')
@@ -137,6 +139,14 @@ router
             ])
             router.delete('businesses/:businessId/services/:serviceId', [
               MerchantServicesController,
+              'destroy',
+            ])
+            router.put('businesses/:businessId/services/:serviceId/photo', [
+              MerchantServicePhotosController,
+              'update',
+            ])
+            router.delete('businesses/:businessId/services/:serviceId/photo', [
+              MerchantServicePhotosController,
               'destroy',
             ])
 

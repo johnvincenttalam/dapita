@@ -5,10 +5,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
 import { AppProviders } from '@/app/providers'
+import { ApiError } from '@/lib/api-client'
 import { createQueryClient } from '@/lib/query-client'
+import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
+import { merchantServicesService } from '@/services/merchant-services.service'
 import { shopsService } from '@/services/shops.service'
 import MerchantServiceEditorPage from '@/routes/MerchantServiceEditorPage'
+
+vi.mock('@/lib/resize-image', () => ({
+  resizeImageToDataUrl: () => Promise.resolve('data:image/webp;base64,AA'),
+}))
 
 vi.mock('@/services/mock/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof MockUtils>()),
@@ -37,6 +44,12 @@ const preview = () =>
   screen.getByText((_, element) => element?.tagName === 'P' && /^Customers see:/.test(element.textContent ?? ''))
 
 const publicServices = () => shopsService.getShopServices('the-good-cut-barbershop')
+const png = () => new File(['x'], 'a.png', { type: 'image/png' })
+const publicPhoto = async (id: string) => (await publicServices()).find((s) => s.id === id)?.photo
+const withoutPhoto = (id: string) =>
+  updateMockDb((db) => {
+    delete db.services.find((s) => s.id === id)!.photo
+  })
 
 beforeEach(() => {
   localStorage.clear()
@@ -122,5 +135,67 @@ describe('MerchantServiceEditorPage', () => {
     renderAt('/business/services/svc_nope')
     expect(await screen.findByText('We couldn’t find that service.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'All services' })).toHaveAttribute('href', '/business/services')
+  })
+
+  describe('photo', () => {
+    it('uploads a photo as soon as it is picked, without saving the form', async () => {
+      const user = userEvent.setup()
+      withoutPhoto('svc_hot_shave')
+      renderAt('/business/services/svc_hot_shave')
+      await user.upload(await screen.findByLabelText('Add photo'), png())
+      await waitFor(async () =>
+        expect(await publicPhoto('svc_hot_shave')).toEqual({ url: 'data:image/webp;base64,AA' }),
+      )
+      expect(await screen.findByLabelText('Replace photo')).toBeInTheDocument()
+      expect(screen.queryByText('Changes to Hot Towel Shave saved.')).not.toBeInTheDocument()
+    })
+
+    it('shows why a file was refused and keeps the current photo', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      renderAt('/business/services/svc_mens_haircut')
+      const before = await publicPhoto('svc_mens_haircut')
+      await user.upload(await screen.findByLabelText('Replace photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toHaveTextContent('That file isn’t a photo. Use JPG, PNG or WebP.')
+      expect(await publicPhoto('svc_mens_haircut')).toEqual(before)
+    })
+
+    it('shows a server-rejected upload once, not as an alert and a toast', async () => {
+      const user = userEvent.setup()
+      vi.spyOn(merchantServicesService, 'setServicePhoto').mockRejectedValueOnce(
+        new ApiError('Photos can be up to 10 MB.', 422),
+      )
+      renderAt('/business/services/svc_mens_haircut')
+      await user.upload(await screen.findByLabelText('Replace photo'), png())
+      expect(await screen.findByRole('alert')).toHaveTextContent('Photos can be up to 10 MB.')
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(screen.queryAllByText('Photos can be up to 10 MB.')).toHaveLength(1)
+    })
+
+    it('removes a photo after confirming', async () => {
+      const user = userEvent.setup({ applyAccept: false })
+      renderAt('/business/services/svc_mens_haircut')
+      await user.upload(await screen.findByLabelText('Replace photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toBeInTheDocument()
+      await user.click(await screen.findByRole('button', { name: 'Remove photo' }))
+      await user.click(screen.getByRole('button', { name: 'Remove' }))
+      await waitFor(async () => expect(await publicPhoto('svc_mens_haircut')).toBeUndefined())
+      expect(await screen.findByLabelText('Add photo')).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('saving the form leaves the photo alone', async () => {
+      const user = userEvent.setup()
+      renderAt('/business/services/svc_mens_haircut')
+      const before = await publicPhoto('svc_mens_haircut')
+      await user.click(await screen.findByRole('button', { name: 'Save changes' }))
+      expect(await screen.findByText('Changes to Men’s Haircut saved.')).toBeInTheDocument()
+      expect(await publicPhoto('svc_mens_haircut')).toEqual(before)
+    })
+
+    it('has no photo spot before the service exists', async () => {
+      renderAt('/business/services/new')
+      expect(await screen.findByText('You can add a photo after saving.')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Add photo')).not.toBeInTheDocument()
+    })
   })
 })

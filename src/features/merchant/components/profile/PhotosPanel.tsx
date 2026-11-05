@@ -1,5 +1,5 @@
-import { ArrowLeftIcon, ArrowRightIcon, ImagePlusIcon, Loader2Icon, XIcon } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { ArrowLeftIcon, ArrowRightIcon, Loader2Icon, XIcon } from 'lucide-react'
+import { useEffect, useId, useRef, useState, type DragEvent } from 'react'
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback'
 import { Panel } from '@/components/shared/Panel'
@@ -21,14 +21,10 @@ import {
   useReorderGalleryMutation,
   useSetCoverPhotoMutation,
 } from '@/features/merchant/api/business-queries'
+import { FilePicker, UploadingOverlay } from '@/features/merchant/components/FilePicker'
 import { getErrorMessage } from '@/lib/api-client'
 import { hasCover, photoFileProblem } from '@/lib/photos'
 import type { Business, BusinessPhoto } from '@/types/business'
-
-const accept = photoRules.acceptedTypes.join(',')
-
-const pickerClass =
-  'inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50'
 
 /** A file waiting to upload, uploading, or turned away. */
 interface QueuedFile {
@@ -36,52 +32,6 @@ interface QueuedFile {
   file: File
   state: 'queued' | 'uploading' | 'failed'
   message?: string
-}
-
-/** A visually hidden file input with a visible label that stays reachable by keyboard. */
-function FilePicker({
-  label,
-  multiple,
-  disabled,
-  onFiles,
-}: {
-  label: string
-  multiple?: boolean
-  disabled?: boolean
-  onFiles: (files: File[]) => void
-}) {
-  const id = useId()
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-    event.target.value = ''
-    if (files.length > 0) onFiles(files)
-  }
-  return (
-    <div>
-      <input
-        id={id}
-        type="file"
-        accept={accept}
-        multiple={multiple}
-        disabled={disabled}
-        onChange={handleChange}
-        className="peer sr-only"
-      />
-      <label htmlFor={id} className={pickerClass}>
-        <ImagePlusIcon aria-hidden="true" className="size-4" />
-        {label}
-      </label>
-    </div>
-  )
-}
-
-function UploadingOverlay() {
-  return (
-    <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/70 text-sm">
-      <Loader2Icon aria-hidden="true" className="size-5 animate-spin" />
-      Uploading…
-    </span>
-  )
 }
 
 function CoverPanel({ business }: { business: Business }) {
