@@ -41,6 +41,8 @@ export function useUpdateInterestsMutation() {
   return useMutation({
     mutationFn: (categoryIds: ID[]) => profileService.updateMyInterests(categoryIds),
     onSuccess: (interests) => queryClient.setQueryData<CustomerInterests>(accountKeys.interests(), interests),
+    // useInterests says when the latest pick fails; stale and background failures stay quiet.
+    meta: { showErrorToast: false },
   })
 }
 
