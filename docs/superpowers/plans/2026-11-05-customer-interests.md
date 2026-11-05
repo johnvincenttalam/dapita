@@ -34,6 +34,7 @@
 ### Task 1: Shared type, schema, pure helpers and the mock service
 
 **Files:**
+
 - Modify: `src/types/account.ts` (add `CustomerInterests`)
 - Modify: `src/schemas/account.ts` (add `interestsSchema`)
 - Create: `src/lib/interests.ts`
@@ -44,11 +45,16 @@
 - Modify: `server/app/shared/domain.ts` (re-exports)
 
 **Interfaces:**
+
 - Consumes: `ServiceCategory` (`src/types/catalog.ts`), `ID`, `ISODateTime`, `readMockDb().categories`, `readMockAccounts`/`updateMockAccounts`, `getMockSessionUser`, `ApiError`.
 - Produces:
+
   ```ts
   // src/types/account.ts
-  export interface CustomerInterests { categoryIds: ID[]; answeredAt?: ISODateTime }
+  export interface CustomerInterests {
+    categoryIds: ID[]
+    answeredAt?: ISODateTime
+  }
 
   // src/schemas/account.ts
   export const interestsSchema = z.object({ categoryIds: z.array(z.string()).max(12, 'Choose fewer categories') })
@@ -61,9 +67,16 @@
   /** Deduped and in catalog order; null when any id isn't a live top-level category. */
   export function normaliseInterestIds(ids: readonly ID[], categories: readonly ServiceCategory[]): ID[] | null
   /** Drops ids that are no longer live, keeps answeredAt. */
-  export function dropRetiredInterests(interests: CustomerInterests, categories: readonly ServiceCategory[]): CustomerInterests
+  export function dropRetiredInterests(
+    interests: CustomerInterests,
+    categories: readonly ServiceCategory[],
+  ): CustomerInterests
   /** Stable partition: items with any picked category first, each group in its input order. */
-  export function preferredFirst<T>(items: readonly T[], interests: ReadonlySet<ID>, categoryIdsOf: (item: T) => readonly ID[]): T[]
+  export function preferredFirst<T>(
+    items: readonly T[],
+    interests: ReadonlySet<ID>,
+    categoryIdsOf: (item: T) => readonly ID[],
+  ): T[]
   /** 'Barber first' | 'Salon and Nails first' | 'Salon, Spa & Massage and Nails first' | 'Showing everything' */
   export function interestsSummary(names: readonly string[]): string
   /** '/explore?category=<slug>' when exactly one live pick, else '/explore'. */
@@ -73,25 +86,42 @@
   getMyInterests: () => Promise<CustomerInterests>
   updateMyInterests: (categoryIds: ID[]) => Promise<CustomerInterests>
   ```
+
   HTTP: `apiClient.get<CustomerInterests>('/me/interests')`, `apiClient.put<CustomerInterests>('/me/interests', { categoryIds })`.
 
 - [ ] **Step 1: Write the failing helper tests** in `src/lib/interests.test.ts`, using `seedCategories` from `@/services/mock/seed/catalog` (ids `cat_barber`, `cat_salon`, `cat_spa`, `cat_nails` live; `cat_gowns` is `coming_soon`; `sub_styling` is a subcategory):
 
 ```ts
 it('lists live top-level categories in sort order', () => {
-  expect(liveInterestCategories(seedCategories).map((c) => c.id)).toEqual(['cat_barber', 'cat_salon', 'cat_spa', 'cat_nails'])
+  expect(liveInterestCategories(seedCategories).map((c) => c.id)).toEqual([
+    'cat_barber',
+    'cat_salon',
+    'cat_spa',
+    'cat_nails',
+  ])
 })
 it('normalises to catalog order without duplicates', () => {
-  expect(normaliseInterestIds(['cat_nails', 'cat_barber', 'cat_nails'], seedCategories)).toEqual(['cat_barber', 'cat_nails'])
+  expect(normaliseInterestIds(['cat_nails', 'cat_barber', 'cat_nails'], seedCategories)).toEqual([
+    'cat_barber',
+    'cat_nails',
+  ])
 })
 it.each([['sub_styling'], ['cat_gowns'], ['nope']])('refuses %s', (id) => {
   expect(normaliseInterestIds([id], seedCategories)).toBeNull()
 })
 it('drops retired ids and keeps answeredAt', () => {
-  expect(dropRetiredInterests({ categoryIds: ['cat_barber', 'gone'], answeredAt: 'T' }, seedCategories)).toEqual({ categoryIds: ['cat_barber'], answeredAt: 'T' })
+  expect(dropRetiredInterests({ categoryIds: ['cat_barber', 'gone'], answeredAt: 'T' }, seedCategories)).toEqual({
+    categoryIds: ['cat_barber'],
+    answeredAt: 'T',
+  })
 })
 it('puts preferred items first and keeps both orders', () => {
-  const items = [{ id: 'a', c: ['x'] }, { id: 'b', c: ['y', 'z'] }, { id: 'c', c: ['x'] }, { id: 'd', c: ['y'] }]
+  const items = [
+    { id: 'a', c: ['x'] },
+    { id: 'b', c: ['y', 'z'] },
+    { id: 'c', c: ['x'] },
+    { id: 'd', c: ['y'] },
+  ]
   expect(preferredFirst(items, new Set(['y']), (i) => i.c).map((i) => i.id)).toEqual(['b', 'd', 'a', 'c'])
   expect(preferredFirst(items, new Set(), (i) => i.c)).toEqual(items)
   expect(items.map((i) => i.id)).toEqual(['a', 'b', 'c', 'd'])
@@ -126,11 +156,16 @@ it('accepts an empty answer', async () => {
   expect((await profileService.updateMyInterests([])).answeredAt).toBeTruthy()
 })
 it('refuses an id that is not on the list', async () => {
-  await expect(profileService.updateMyInterests(['sub_styling'])).rejects.toMatchObject({ status: 422, message: 'Choose from the categories on the list.' })
+  await expect(profileService.updateMyInterests(['sub_styling'])).rejects.toMatchObject({
+    status: 422,
+    message: 'Choose from the categories on the list.',
+  })
 })
 it('drops a retired id on read', async () => {
   await profileService.updateMyInterests(['cat_barber', 'cat_nails'])
-  updateMockDb((db) => { db.categories.find((c) => c.id === 'cat_nails')!.status = 'hidden' })
+  updateMockDb((db) => {
+    db.categories.find((c) => c.id === 'cat_nails')!.status = 'hidden'
+  })
   expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_barber'])
 })
 it('needs a session', async () => {
@@ -163,6 +198,7 @@ git commit -m "Add the customer interests type, helpers and mock service"
 ### Task 2: Server resource `GET`/`PUT /api/me/interests`
 
 **Files:**
+
 - Create: `server/database/migrations/1761900000012_add_interests_to_users.ts`
 - Modify: `server/app/models/user.ts` (column)
 - Modify: `server/app/services/profile.ts` (two functions)
@@ -172,8 +208,10 @@ git commit -m "Add the customer interests type, helpers and mock service"
 - Regenerate and commit `server/.adonisjs` if the route change alters it (it did for earlier features).
 
 **Interfaces:**
+
 - Consumes: `interestsSchema`, `normaliseInterestIds`, `dropRetiredInterests`, `interestsMessages`, `CustomerInterests` from `#shared/domain`; `validateWith`, `formBody` from `#helpers/validate`; `json` from `#models/columns`; `toCategoryData` from `#services/catalog`; `Category` model; `ApiError`.
 - Produces:
+
   ```ts
   // server/app/models/user.ts
   @column(json) declare interests: CustomerInterests | null
@@ -183,6 +221,7 @@ git commit -m "Add the customer interests type, helpers and mock service"
   // ProfileController: interests(ctx), updateInterests(ctx)
   // routes: router.get('me/interests', [ProfileController, 'interests']); router.put('me/interests', [ProfileController, 'updateInterests'])
   ```
+
   Categories for validation and the read-time drop come from `Category.all()` mapped with `toCategoryData` (not `listPublicCategories`, which omits hidden ones and would let a hidden id slip through as "unknown" rather than "retired"; both are refused either way, but the drop-on-read needs the full list).
 
 - [ ] **Step 1: Write the failing functional tests** in `server/tests/functional/me_interests.spec.ts`, following `favorites.spec.ts` (`withGlobalTransaction`, `userByEmail(customerEmail)`, `.loginAs(user)`; `Category` from `#models/category` for the retire step):
@@ -227,14 +266,17 @@ git commit -m "Store what a customer is here for behind GET and PUT /api/me/inte
 ### Task 3: Browser store, account queries and the `useInterests` hook
 
 **Files:**
+
 - Create: `src/features/interests/interests-store.ts`
 - Modify: `src/features/account/api/queries.ts` (key, query, mutation)
 - Create: `src/features/interests/use-interests.ts`
 - Test: `src/features/interests/use-interests.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `profileService.getMyInterests/updateMyInterests` (Task 1), `useSession()` from `@/features/auth/api/queries` (`{ user, isPending }`), `accountKeys`, `sessionKeys`, `CustomerInterests`, `ID`.
 - Produces:
+
   ```ts
   // interests-store.ts
   export const INTERESTS_STORAGE_KEY = 'dapita-interests'
@@ -260,6 +302,7 @@ git commit -m "Store what a customer is here for behind GET and PUT /api/me/inte
   }
   export function useInterests(): InterestsState
   ```
+
   Behaviour pinned by the tests below: signed out reads and writes the browser store synchronously; signed in writes the account optimistically (`setQueryData` at once, request after), requests go out one at a time, and a response (success or error) that belongs to anything but the most recent request is ignored, so a late failure never rolls back a later pick; on the latest request's failure the cache reverts to the server's last known value. Handoff: once per signed-in session (a ref keyed by `user.id`), when the account query has settled unanswered and the browser store is answered, call the mutation with the browser's ids and clear the store on success; when both are answered, clear the store without a request.
 
 - [ ] **Step 1: Write the failing tests** in `src/features/interests/use-interests.test.tsx` with `renderHook` wrapped in the test providers (see how `src/test/render.tsx` builds its `QueryClientProvider`; export a small `wrapper` from there if one isn't already exported). Mock `delay` as the other tests do. Sign in by setting `MOCK_SESSION_KEY` to `mockUsers.customer.id` before rendering.
@@ -307,6 +350,7 @@ git commit -m "Keep a customer's interests in the browser or on the account behi
 ### Task 4: The home card, highlighted tiles and preferred-first rows
 
 **Files:**
+
 - Create: `src/features/interests/components/InterestChips.tsx`
 - Create: `src/features/interests/components/InterestsCard.tsx`
 - Modify: `src/features/discovery/components/CategoryGrid.tsx` (`highlighted`, `moreTo`)
@@ -315,11 +359,21 @@ git commit -m "Keep a customer's interests in the browser or on the account behi
 - Test: `src/routes/HomePage.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useInterests()` (Task 3), `liveInterestCategories`, `preferredFirst`, `interestsSummary`, `exploreHrefFor` (Task 1), `useCategoriesQuery`, `categoryIcons`, `Button`, `Skeleton`, `Panel` or the `card-surface` class.
 - Produces:
+
   ```tsx
-  export function InterestChips({ categories, selected, onToggle, disabled }: {
-    categories: ServiceCategory[]; selected: ReadonlySet<ID>; onToggle: (id: ID) => void; disabled?: boolean
+  export function InterestChips({
+    categories,
+    selected,
+    onToggle,
+    disabled,
+  }: {
+    categories: ServiceCategory[]
+    selected: ReadonlySet<ID>
+    onToggle: (id: ID) => void
+    disabled?: boolean
   })
   // one <Button type="button" shape="pill" size="sm" aria-pressed={on} variant={on ? 'default' : 'outline'}> per category, icon + name
 
@@ -333,9 +387,20 @@ git commit -m "Keep a customer's interests in the browser or on the account behi
   // names = live categories whose id is picked, in catalog order.
 
   // CategoryGrid
-  export function CategoryGrid({ categories, highlighted, moreTo = '/explore', className }: { categories: ServiceCategory[]; highlighted?: ReadonlySet<ID>; moreTo?: string; className?: string })
+  export function CategoryGrid({
+    categories,
+    highlighted,
+    moreTo = '/explore',
+    className,
+  }: {
+    categories: ServiceCategory[]
+    highlighted?: ReadonlySet<ID>
+    moreTo?: string
+    className?: string
+  })
   // a highlighted tile's circle gets `ring-2 ring-primary` and its label gains <span className="sr-only"> (your pick)</span>
   ```
+
   `RecommendedRow`: `const { interests } = useInterests()`, `const picked = new Set(interests.categoryIds)`, `const ranked = preferredFirst(rankNearby(recommendations.data, position), picked, (e) => e.shop.categoryIds)`. `HomePage`: `<InterestsCard />` directly after `<HomeHero />`; featured items `preferredFirst(featured.data, picked, (s) => s.categoryIds)`; "See all" `to={exploreHrefFor(interests.categoryIds, categories.data ?? [])}` and `moreTo` the same; `highlighted={picked}`.
 
 - [ ] **Step 1: Write the failing tests** in `src/routes/HomePage.test.tsx` under `describe('What are you here for?')`. The mock featured order with no picks is alphabetical after the featured/verified sort, so "The Good Cut Barbershop" is not first until Barber is picked. Guest unless stated.
@@ -392,6 +457,7 @@ it('recommended near you also leads with the pick', async () => {
   expect(within(row).getAllByRole('listitem')[0]).toHaveTextContent('Barbershop')
 })
 ```
+
 If `HorizontalScroller` items are not `listitem`s, assert on the first `link` inside the list instead, and say so in the report.
 
 - [ ] **Step 2: Run to verify they fail**
@@ -418,6 +484,7 @@ git commit -m "Ask what a customer is here for on home and put those shops first
 ### Task 5: Profile panel, docs and the e2e step
 
 **Files:**
+
 - Create: `src/features/interests/components/InterestsPanel.tsx`
 - Modify: `src/routes/ProfilePage.tsx` (third `Panel`)
 - Test: `src/routes/ProfilePage.test.tsx` (create; render with `MOCK_SESSION_KEY` set as `FavoritesPage.test.tsx` does)
@@ -425,6 +492,7 @@ git commit -m "Ask what a customer is here for on home and put those shops first
 - Modify: `e2e/app.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `useInterests`, `InterestChips`, `interestsSummary`, `liveInterestCategories`, `useCategoriesQuery`, `Panel`.
 - Produces: `export function InterestsPanel()` rendering `<Panel title="What you're here for" description="We show these shops first on home.">` with the chips always open and `<p role="status">{interestsSummary(names)}</p>`; while interests or categories load, a `Skeleton`.
 

@@ -126,9 +126,9 @@ Both sides also check that every id is a live top-level category (no `parentId`,
 
 ## API (authenticated, under `/api/me`)
 
-| Method | Path         | Body              | Returns             | Notes                                                           |
-| ------ | ------------ | ----------------- | ------------------- | --------------------------------------------------------------- |
-| `GET`  | `/interests` | none              | `CustomerInterests` | `{ categoryIds: [] }` with no `answeredAt` when never answered |
+| Method | Path         | Body              | Returns             | Notes                                                            |
+| ------ | ------------ | ----------------- | ------------------- | ---------------------------------------------------------------- |
+| `GET`  | `/interests` | none              | `CustomerInterests` | `{ categoryIds: [] }` with no `answeredAt` when never answered   |
 | `PUT`  | `/interests` | `{ categoryIds }` | `CustomerInterests` | Sets `answeredAt` to now. `[]` is a valid answer (dismiss/clear) |
 
 Frontend: `ProfileService` (`src/services/profile.service.ts`) gains `getMyInterests()` and `updateMyInterests(categoryIds)`; `src/features/account/api/queries.ts` gains `useMyInterestsQuery()` (enabled only with a session) and `useUpdateInterestsMutation()` which writes the result into the cache on success. The mutation is optimistic on the chips (the chip flips at once) and rolls back on error. Quick successive taps are serialised so the latest full set is what lands, and a rollback never undoes a later pick. _(Our call, after the builder check.)_
