@@ -6,12 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as MockUtils from '@/services/mock/utils'
 import { accountKeys } from '@/features/account/api/queries'
 import { sessionKeys } from '@/features/auth/api/queries'
-import { INTERESTS_STORAGE_KEY, useLocalInterests } from '@/features/interests/interests-store'
-import { resetInterestsSync, useInterests, type InterestsState } from '@/features/interests/use-interests'
+import { resetInterestsSync, useInterests } from '@/features/interests/use-interests'
 import { ApiError } from '@/lib/api-client'
 import { createQueryClient } from '@/lib/query-client'
-import { catalogService } from '@/services/catalog.service'
-import { updateMockDb } from '@/services/mock/db'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
 import { profileService } from '@/services/profile.service'
 import type { CustomerInterests } from '@/types/account'
@@ -24,7 +21,6 @@ vi.mock('@/services/mock/utils', async (importOriginal) => ({
 
 beforeEach(() => {
   localStorage.clear()
-  useLocalInterests.getState().clear()
   resetInterestsSync()
 })
 
@@ -32,25 +28,10 @@ function signIn() {
   localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
 }
 
-/** Pass the app's own client to get its global toasts. `renders` records every render. */
+/** Pass the app's own client to get its global toasts. */
 function renderInterests(queryClient = createTestQueryClient()) {
-  const renders: InterestsState[] = []
-  const hook = renderHook(
-    () => {
-      const state = useInterests()
-      renders.push(state)
-      return state
-    },
-    { wrapper: createTestWrapper(queryClient) },
-  )
-  return { queryClient, renders, ...hook }
-}
-
-/** Every render from the first one that finished loading. */
-function rendersAfterLoad(renders: InterestsState[]) {
-  const loaded = renders.findIndex((state) => !state.isPending)
-  expect(loaded).toBeGreaterThanOrEqual(0)
-  return renders.slice(loaded)
+  const hook = renderHook(() => useInterests(), { wrapper: createTestWrapper(queryClient) })
+  return { queryClient, ...hook }
 }
 
 /** Lets queued promise chains run to the end. */
@@ -74,11 +55,6 @@ function holdSaves() {
   return { update, settle: (call: number, error?: Error) => gates[call]!(error) }
 }
 
-function storedInterests(): CustomerInterests {
-  const stored = JSON.parse(localStorage.getItem(INTERESTS_STORAGE_KEY)!) as { state: { interests: CustomerInterests } }
-  return stored.state.interests
-}
-
 function signOut(queryClient: QueryClient) {
   act(() => {
     localStorage.removeItem(MOCK_SESSION_KEY)
@@ -87,35 +63,14 @@ function signOut(queryClient: QueryClient) {
 }
 
 describe('useInterests', () => {
-  it('a guest starts unanswered and saves to the browser', async () => {
+  it('a signed-out viewer reads unanswered and cannot save', async () => {
+    const update = vi.spyOn(profileService, 'updateMyInterests')
     const { result } = renderInterests()
     await waitFor(() => expect(result.current.isPending).toBe(false))
+    expect(result.current.interests).toEqual({ categoryIds: [] })
     expect(result.current.answered).toBe(false)
-    expect(result.current.interests.categoryIds).toEqual([])
-
     act(() => result.current.setCategoryIds(['cat_barber']))
-
-    expect(result.current.interests.categoryIds).toEqual(['cat_barber'])
-    expect(result.current.answered).toBe(true)
-    expect(storedInterests().categoryIds).toEqual(['cat_barber'])
-  })
-
-  it('junk in storage counts as unanswered', async () => {
-    localStorage.setItem(INTERESTS_STORAGE_KEY, '{nope')
-    await useLocalInterests.persist.rehydrate()
-    expect(useLocalInterests.getState().interests).toEqual({ categoryIds: [] })
-
-    useLocalInterests.getState().set(['cat_barber'])
-    localStorage.setItem(
-      INTERESTS_STORAGE_KEY,
-      JSON.stringify({ state: { interests: { categoryIds: 'cat_barber' } }, version: 0 }),
-    )
-    await useLocalInterests.persist.rehydrate()
-
-    const { result } = renderInterests()
-    await waitFor(() => expect(result.current.isPending).toBe(false))
-    expect(result.current.answered).toBe(false)
-    expect(result.current.interests.categoryIds).toEqual([])
+    expect(update).not.toHaveBeenCalled()
   })
 
   it('a signed-in customer reads and writes the account', async () => {
@@ -133,128 +88,6 @@ describe('useInterests', () => {
     await waitFor(() => expect(result.current.interests.categoryIds).toEqual(['cat_nails']))
     expect(result.current.answered).toBe(true)
     await waitFor(async () => expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_nails']))
-    expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined()
-  })
-
-  it('copies a guest answer onto a fresh account once and clears the browser copy', async () => {
-    useLocalInterests.getState().set(['cat_barber'])
-    signIn()
-    const update = vi.spyOn(profileService, 'updateMyInterests')
-
-    const { result, renders } = renderInterests()
-
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    expect(result.current.interests.categoryIds).toEqual(['cat_barber'])
-    expect(result.current.answered).toBe(true)
-    // Not one frame asks the question again while the answer moves to the account.
-    expect(rendersAfterLoad(renders).every((state) => state.answered)).toBe(true)
-    expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_barber'])
-    expect(storedInterests().answeredAt).toBeUndefined()
-    expect(update).toHaveBeenCalledTimes(1)
-    expect(update).toHaveBeenCalledWith(['cat_barber'])
-  })
-
-  it('copies a guest answer once when two parts of the page use the hook', async () => {
-    useLocalInterests.getState().set(['cat_barber'])
-    signIn()
-    const update = vi.spyOn(profileService, 'updateMyInterests')
-    const queryClient = createTestQueryClient()
-
-    const { result } = renderHook(() => [useInterests(), useInterests()] as const, {
-      wrapper: createTestWrapper(queryClient),
-    })
-
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
-    await flush()
-    expect(update).toHaveBeenCalledTimes(1)
-    expect(result.current[0].interests.categoryIds).toEqual(['cat_barber'])
-    expect(result.current[1].interests.categoryIds).toEqual(['cat_barber'])
-  })
-
-  it('a failed copy stays quiet, keeps the guest answer and does not ask again', async () => {
-    useLocalInterests.getState().set(['cat_barber'])
-    signIn()
-    const update = vi
-      .spyOn(profileService, 'updateMyInterests')
-      .mockRejectedValueOnce(new ApiError('Could not save.', 500))
-    const toastError = vi.spyOn(toast, 'error')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    const { result, renders, queryClient } = renderInterests(createQueryClient())
-
-    await waitFor(() => expect(warn).toHaveBeenCalledTimes(1))
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
-    await flush()
-    expect(update).toHaveBeenCalledTimes(1)
-    expect(toastError).not.toHaveBeenCalled()
-    expect(result.current.interests.categoryIds).toEqual(['cat_barber'])
-    expect(rendersAfterLoad(renders).every((state) => state.answered)).toBe(true)
-    // Left in the browser for the next visit; the account is still unanswered.
-    expect(useLocalInterests.getState().interests.categoryIds).toEqual(['cat_barber'])
-    expect((await profileService.getMyInterests()).answeredAt).toBeUndefined()
-  })
-
-  it('copies only the live picks when a guest pick was retired', async () => {
-    useLocalInterests.getState().set(['cat_barber', 'cat_nails'])
-    updateMockDb((db) => {
-      db.categories.find((category) => category.id === 'cat_nails')!.status = 'hidden'
-    })
-    signIn()
-    const update = vi.spyOn(profileService, 'updateMyInterests')
-    const toastError = vi.spyOn(toast, 'error')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    const { result, renders, queryClient } = renderInterests(createQueryClient())
-
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
-    await flush()
-    expect(update).toHaveBeenCalledTimes(1)
-    expect(update).toHaveBeenCalledWith(['cat_barber'])
-    expect(result.current.interests.categoryIds).toEqual(['cat_barber'])
-    // Once the catalog is known, the answer shown while it moves is the one that lands.
-    const loaded = rendersAfterLoad(renders)
-    expect(loaded.every((state) => state.answered)).toBe(true)
-    const firstFiltered = loaded.findIndex((state) => state.interests.categoryIds.join() === 'cat_barber')
-    expect(loaded.slice(firstFiltered).every((state) => state.interests.categoryIds.join() === 'cat_barber')).toBe(true)
-    expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_barber'])
-    expect(toastError).not.toHaveBeenCalled()
-    expect(warn).not.toHaveBeenCalled()
-  })
-
-  it('a copy refused because the categories are gone clears the guest answer', async () => {
-    useLocalInterests.getState().set(['sub_styling'])
-    signIn()
-    // Without the catalog the raw ids are sent, and the server refuses them.
-    vi.spyOn(catalogService, 'getCategories').mockRejectedValue(new ApiError('Not found.', 404))
-    const update = vi.spyOn(profileService, 'updateMyInterests')
-    const toastError = vi.spyOn(toast, 'error')
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    const { result, queryClient } = renderInterests(createQueryClient())
-
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0))
-    await waitFor(() => expect(result.current.answered).toBe(false))
-    expect(result.current.interests.categoryIds).toEqual([])
-    expect(update).toHaveBeenCalledWith(['sub_styling'])
-    expect(toastError).not.toHaveBeenCalled()
-    expect(warn).toHaveBeenCalledTimes(1)
-  })
-
-  it('keeps the account answer when both are answered', async () => {
-    signIn()
-    await profileService.updateMyInterests(['cat_salon'])
-    useLocalInterests.getState().set(['cat_barber'])
-    const update = vi.spyOn(profileService, 'updateMyInterests')
-
-    const { result } = renderInterests()
-
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    expect(result.current.interests.categoryIds).toEqual(['cat_salon'])
-    expect(result.current.answered).toBe(true)
-    expect(update).not.toHaveBeenCalled()
   })
 
   it('sign-out leaves a fresh guest', async () => {
@@ -266,24 +99,6 @@ describe('useInterests', () => {
     signOut(queryClient)
 
     await waitFor(() => expect(result.current.answered).toBe(false))
-    expect(result.current.interests.categoryIds).toEqual([])
-  })
-
-  it('sign-out clears a guest answer that never reached the account', async () => {
-    useLocalInterests.getState().set(['cat_barber'])
-    signIn()
-    vi.spyOn(profileService, 'updateMyInterests').mockRejectedValueOnce(new ApiError('Could not save.', 500))
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const { result, queryClient } = renderInterests(createQueryClient())
-    await waitFor(() => expect(warn).toHaveBeenCalledTimes(1))
-    expect(useLocalInterests.getState().interests.categoryIds).toEqual(['cat_barber'])
-
-    signOut(queryClient)
-
-    // The next guest on this browser starts fresh.
-    await waitFor(() => expect(useLocalInterests.getState().interests.answeredAt).toBeUndefined())
-    expect(storedInterests()).toEqual({ categoryIds: [] })
-    expect(result.current.answered).toBe(false)
     expect(result.current.interests.categoryIds).toEqual([])
   })
 
@@ -376,16 +191,15 @@ describe('useInterests', () => {
     expect(toastError).toHaveBeenCalledWith('Could not save.')
   })
 
-  it('keeps setCategoryIds and dismiss stable across renders', async () => {
+  it('keeps setCategoryIds stable across renders', async () => {
     signIn()
     const { result, rerender } = renderInterests()
     await waitFor(() => expect(result.current.isPending).toBe(false))
-    const { setCategoryIds, dismiss } = result.current
+    const { setCategoryIds } = result.current
 
     rerender()
 
     expect(result.current.setCategoryIds).toBe(setCategoryIds)
-    expect(result.current.dismiss).toBe(dismiss)
   })
 
   it('reports an error instead of asking when the account answer cannot load', async () => {

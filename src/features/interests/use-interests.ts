@@ -1,38 +1,31 @@
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { accountKeys, useMyInterestsQuery, useUpdateInterestsMutation } from '@/features/account/api/queries'
 import { sessionKeys, useSession } from '@/features/auth/api/queries'
-import { useCategoriesQuery } from '@/features/discovery/api/queries'
-import { useLocalInterests } from '@/features/interests/interests-store'
-import { ApiError, getErrorMessage } from '@/lib/api-client'
-import { dropRetiredInterests } from '@/lib/interests'
+import { getErrorMessage } from '@/lib/api-client'
 import type { CustomerInterests } from '@/types/account'
 import type { Session } from '@/types/auth'
 import type { ID } from '@/types/common'
 
 export interface InterestsState {
   interests: CustomerInterests
-  /** True once picked or dismissed, wherever it is stored. */
+  /** True once the account has an answer, even an empty one. */
   answered: boolean
   /** True while the session or the account's answer is still loading. */
   isPending: boolean
   /** True when a signed-in customer's answer could not be loaded; the UI shows nothing. */
   isError: boolean
+  /** Saves to the account; does nothing for a guest. */
   setCategoryIds: (categoryIds: ID[]) => void
-  /** Saves an empty answer; resolves to how the save ended ('failed' has already been toasted). */
-  dismiss: () => Promise<SaveOutcome>
 }
-
-/** 'superseded': a later pick or a sign-out replaced this one before it was confirmed. */
-export type SaveOutcome = 'saved' | 'superseded' | 'failed'
 
 const UNANSWERED: CustomerInterests = { categoryIds: [] }
 
 /**
  * Account writes for one signed-in user, shared by every mounted useInterests so the page
- * sends one request at a time and copies a guest answer once. Replaced when the user changes.
+ * sends one request at a time. Replaced when the user changes.
  */
 interface AccountSync {
   userId: ID | null
@@ -44,21 +37,19 @@ interface AccountSync {
   latest?: CustomerInterests
   /** What the server last confirmed; a failed pick goes back to it. */
   confirmed?: CustomerInterests
-  /** Set once the guest answer has been looked at for this sign-in. */
-  handedOff: boolean
 }
 
-let sync: AccountSync = { userId: null, seq: 0, chain: Promise.resolve(), handedOff: false }
+let sync: AccountSync = { userId: null, seq: 0, chain: Promise.resolve() }
 
 /** The writes for `userId`. A different user drops the old user's queued and in-flight picks. */
 function syncFor(userId: ID | null): AccountSync {
-  if (sync.userId !== userId) sync = { userId, seq: sync.seq + 1, chain: sync.chain, handedOff: false }
+  if (sync.userId !== userId) sync = { userId, seq: sync.seq + 1, chain: sync.chain }
   return sync
 }
 
-/** Forgets every queued write and the handoff guard. For tests. */
+/** Forgets every queued write. For tests. */
 export function resetInterestsSync() {
-  sync = { userId: null, seq: 0, chain: Promise.resolve(), handedOff: false }
+  sync = { userId: null, seq: 0, chain: Promise.resolve() }
 }
 
 type WriteOutcome = { status: 'saved' } | { status: 'superseded' } | { status: 'failed'; error: unknown }
@@ -102,91 +93,35 @@ function writeToAccount(
   return step
 }
 
-/**
- * What the viewer is here for. Guests keep it in this browser; signed-in customers keep it
- * on their account, and a guest answer is copied there once when they sign in.
- */
+/** What the viewer is here for. Signed-in customers keep it on their account; a guest has none. */
 export function useInterests(): InterestsState {
   const queryClient = useQueryClient()
   const { user, isPending: isSessionPending } = useSession()
   const userId = user?.id ?? null
   const account = useMyInterestsQuery(userId !== null)
   const { mutateAsync: saveToAccount } = useUpdateInterestsMutation()
-  const local = useLocalInterests((state) => state.interests)
-  const categories = useCategoriesQuery()
 
-  // Signing out or switching user drops the previous user's queued picks. Signing out also
-  // forgets a guest answer that never reached the account, so the next guest starts fresh.
+  // Signing out or switching user drops the previous user's queued picks.
   useEffect(() => {
-    const signedOut = sync.userId !== null && userId === null
     syncFor(userId)
-    if (signedOut) useLocalInterests.getState().clear()
   }, [userId])
 
-  // Once per sign-in, after the account answer and the catalog have loaded: keep a guest answer.
-  // Never shown to the user.
-  useEffect(() => {
-    if (!userId || account.isPending || account.isError || categories.isPending) return
-    const state = syncFor(userId)
-    if (state.handedOff) return
-    state.handedOff = true
-    const { interests: stored, clear } = useLocalInterests.getState()
-    if (!stored.answeredAt) return
-    if (account.data.answeredAt) {
-      clear() // The account's own answer wins.
-      return
-    }
-    // A pick retired since it was made would get the whole answer refused, so it is left out.
-    // Without the catalog the ids go as they are, and the server decides.
-    const browser = categories.isSuccess ? dropRetiredInterests(stored, categories.data) : stored
-    void writeToAccount(queryClient, saveToAccount, userId, browser.categoryIds).then((outcome) => {
-      if (outcome.status === 'saved') clear()
-      if (outcome.status !== 'failed') return
-      console.warn('Could not copy the guest interests to the account.', outcome.error)
-      // Ids that are no longer on the list will never save; anything else is tried again next visit.
-      if (outcome.error instanceof ApiError && outcome.error.status === 422) clear()
-    })
-  }, [
-    userId,
-    account.isPending,
-    account.isError,
-    account.data,
-    categories.isPending,
-    categories.isSuccess,
-    categories.data,
-    queryClient,
-    saveToAccount,
-  ])
-
-  const save = useCallback(
-    async (categoryIds: ID[]): Promise<SaveOutcome> => {
-      if (!userId) {
-        useLocalInterests.getState().set(categoryIds)
-        return 'saved'
-      }
-      const outcome = await writeToAccount(queryClient, saveToAccount, userId, categoryIds)
-      if (outcome.status === 'failed') toast.error(getErrorMessage(outcome.error))
-      return outcome.status
+  const setCategoryIds = useCallback(
+    (categoryIds: ID[]) => {
+      if (!userId) return
+      void writeToAccount(queryClient, saveToAccount, userId, categoryIds).then((outcome) => {
+        if (outcome.status === 'failed') toast.error(getErrorMessage(outcome.error))
+      })
     },
     [userId, queryClient, saveToAccount],
   )
-  const setCategoryIds = useCallback((categoryIds: ID[]) => void save(categoryIds), [save])
-  const dismiss = useCallback(() => save([]), [save])
 
-  // Until a guest answer has reached the account (or if copying it failed), it is the answer,
-  // without the picks the copy leaves out.
-  const keepsGuestAnswer = account.isSuccess && !account.data.answeredAt && Boolean(local.answeredAt)
-  const guestAnswer = useMemo(
-    () => (categories.isSuccess ? dropRetiredInterests(local, categories.data) : local),
-    [local, categories.isSuccess, categories.data],
-  )
-  const interests = !userId ? local : keepsGuestAnswer ? guestAnswer : (account.data ?? UNANSWERED)
+  const interests = userId ? (account.data ?? UNANSWERED) : UNANSWERED
   return {
     interests,
     answered: Boolean(interests.answeredAt),
     isPending: isSessionPending || (userId !== null && account.isPending),
     isError: userId !== null && account.isError,
     setCategoryIds,
-    dismiss,
   }
 }
