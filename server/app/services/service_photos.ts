@@ -4,10 +4,10 @@ import ApiError from '#exceptions/api_error'
 import { newId } from '#helpers/ids'
 import { isUploadedServicePhoto, type StoredServicePhoto } from '#helpers/photos'
 import { serviceNotFound, withMenu } from '#services/merchant_services'
-import { toWebpCopies } from '#services/photo_images'
-import { deleteUploaded, putFile } from '#services/photo_storage'
+import { storeWebpCopies } from '#services/photo_upload'
+import { deleteUploaded } from '#services/photo_storage'
 import { toServiceData } from '#services/shops'
-import { photoMessages, photoRules, type ID, type Service as ServiceData } from '#shared/domain'
+import { photoMessages, type ID, type Service as ServiceData } from '#shared/domain'
 
 /**
  * A service's photo. Files are written before the row changes and deleted again
@@ -18,18 +18,8 @@ import { photoMessages, photoRules, type ID, type Service as ServiceData } from 
 
 /** Checks the file and writes its WebP copies under a fresh key. */
 async function store(serviceId: ID, file: MultipartFile | null) {
-  if (!file?.tmpPath) throw new ApiError(photoMessages.noFile, 422)
-  if (file.size > photoRules.maxBytes) throw new ApiError(photoMessages.tooLarge, 422)
-  const copies = await toWebpCopies(file.tmpPath)
   const storageKey = `services/${serviceId}/${newId('ph')}`
-  try {
-    await Promise.all(
-      photoRules.widths.map((width) => putFile(`${storageKey}-${width}.webp`, copies[width]))
-    )
-  } catch (error) {
-    await deleteUploaded([storageKey])
-    throw error
-  }
+  await storeWebpCopies(storageKey, file)
   return storageKey
 }
 
@@ -40,8 +30,10 @@ async function changePhoto(
   edit: (service: Service) => StoredServicePhoto | null
 ) {
   let replaced: StoredServicePhoto | null = null
-  const data = await withMenu(businessId, async () => {
-    const service = await Service.query().where({ id: serviceId, businessId }).first()
+  const data = await withMenu(businessId, async (_business, trx) => {
+    const service = await Service.query({ client: trx })
+      .where({ id: serviceId, businessId })
+      .first()
     if (!service) throw serviceNotFound()
     replaced = service.photo
     service.photo = edit(service)

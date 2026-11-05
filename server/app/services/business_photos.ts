@@ -4,8 +4,8 @@ import ApiError from '#exceptions/api_error'
 import { newId } from '#helpers/ids'
 import { isUploaded, type StoredPhoto } from '#helpers/photos'
 import { change } from '#services/businesses'
-import { toWebpCopies } from '#services/photo_images'
-import { deleteUploaded, putFile } from '#services/photo_storage'
+import { storeWebpCopies } from '#services/photo_upload'
+import { deleteUploaded } from '#services/photo_storage'
 import { photoAlt, photoMessages, photoRules, type ID } from '#shared/domain'
 
 /**
@@ -19,19 +19,9 @@ type Upload = { id: ID; storageKey: string }
 
 /** Checks the file and writes its WebP copies under a fresh key. */
 async function store(businessId: ID, file: MultipartFile | null): Promise<Upload> {
-  if (!file?.tmpPath) throw new ApiError(photoMessages.noFile, 422)
-  if (file.size > photoRules.maxBytes) throw new ApiError(photoMessages.tooLarge, 422)
-  const copies = await toWebpCopies(file.tmpPath)
   const id = newId('ph')
   const storageKey = `businesses/${businessId}/${id}`
-  try {
-    await Promise.all(
-      photoRules.widths.map((width) => putFile(`${storageKey}-${width}.webp`, copies[width]))
-    )
-  } catch (error) {
-    await deleteUploaded([storageKey])
-    throw error
-  }
+  await storeWebpCopies(storageKey, file)
   return { id, storageKey }
 }
 
