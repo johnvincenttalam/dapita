@@ -13,6 +13,7 @@ export const controllers = {
   MerchantBookings: () => import('#controllers/merchant_bookings_controller'),
   MerchantBusinesses: () => import('#controllers/merchant_businesses_controller'),
   MerchantPhotos: () => import('#controllers/merchant_photos_controller'),
+  MerchantServicePhotos: () => import('#controllers/merchant_service_photos_controller'),
   MerchantServices: () => import('#controllers/merchant_services_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Recommendations: () => import('#controllers/recommendations_controller'),

@@ -82,6 +82,10 @@ export interface ApiDefinition {
     move: typeof routes['merchant_services.move']
     destroy: typeof routes['merchant_services.destroy']
   }
+  merchantServicePhotos: {
+    update: typeof routes['merchant_service_photos.update']
+    destroy: typeof routes['merchant_service_photos.destroy']
+  }
   merchantBookings: {
     index: typeof routes['merchant_bookings.index']
     show: typeof routes['merchant_bookings.show']
