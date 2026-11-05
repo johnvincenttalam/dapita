@@ -30,6 +30,19 @@ export function dropRetiredInterests(
   return kept.length === interests.categoryIds.length ? interests : { ...interests, categoryIds: kept }
 }
 
+/** `picked` with `id` flipped, as live ids in catalog order (retired ids fall away). */
+export function toggleInterest(picked: readonly ID[], id: ID, live: readonly ServiceCategory[]): ID[] {
+  const next = new Set(picked)
+  if (!next.delete(id)) next.add(id)
+  return live.filter((category) => next.has(category.id)).map((category) => category.id)
+}
+
+/** The names of the live picks, in catalog order. `live` comes from liveInterestCategories. */
+export function interestNames(categoryIds: readonly ID[], live: readonly ServiceCategory[]): string[] {
+  const picked = new Set(categoryIds)
+  return live.filter((category) => picked.has(category.id)).map((category) => category.name)
+}
+
 /** Stable partition: items with any picked category first, each group in its input order. */
 export function preferredFirst<T>(
   items: readonly T[],

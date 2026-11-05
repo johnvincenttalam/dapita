@@ -6,7 +6,8 @@ import { useSession } from '@/features/auth/api/queries'
 import { useCategoriesQuery } from '@/features/discovery/api/queries'
 import { InterestChips } from '@/features/interests/components/InterestChips'
 import { useInterests } from '@/features/interests/use-interests'
-import { interestsSummary, liveInterestCategories } from '@/lib/interests'
+import { interestNames, interestsSummary, liveInterestCategories, toggleInterest } from '@/lib/interests'
+import { hasAnyRole, roleGroups } from '@/lib/roles'
 import { cn } from '@/lib/utils'
 import type { ID } from '@/types/common'
 
@@ -19,8 +20,9 @@ export function InterestsCard({ className }: { className?: string }) {
   const { interests, answered, isPending, isError, setCategoryIds, dismiss } = useInterests()
   const categories = useCategoriesQuery()
   // Decided once, from the answer as the page found it, so picking a chip doesn't close the card.
+  // Not from a failed load: a later retry may find the customer has already answered.
   const [open, setOpen] = useState<boolean>()
-  if (open === undefined && !isPending) setOpen(!answered)
+  if (open === undefined && !isPending && !isError) setOpen(!answered)
 
   const headingRef = useRef<HTMLHeadingElement>(null)
   const changeRef = useRef<HTMLButtonElement>(null)
@@ -33,19 +35,27 @@ export function InterestsCard({ className }: { className?: string }) {
   }, [open])
 
   if (open === undefined || isError || categories.isError) return null
-  if (!open && interests.categoryIds.length === 0) return null
   if (categories.isPending) {
+    if (!open && interests.categoryIds.length === 0) return null
     return <Skeleton aria-hidden="true" className={cn(open ? 'h-56 rounded-3xl md:h-48' : 'h-5 w-48', className)} />
   }
 
   const live = liveInterestCategories(categories.data)
   const picked = new Set(interests.categoryIds)
-  const summary = interestsSummary(live.filter((category) => picked.has(category.id)).map((category) => category.name))
+  const names = interestNames(interests.categoryIds, live)
+  // Closed with nothing live picked (none, or only retired categories): nothing to say.
+  if (!open && names.length === 0) return null
+  const summary = interestsSummary(names)
+  // The profile page is for customers; anyone else changes it here.
+  const changeHint = hasAnyRole(user, roleGroups.customer)
+    ? 'Change this any time from your profile.'
+    : 'Change this any time from this page.'
 
-  const toggle = (id: ID) => {
-    const next = new Set(picked)
-    if (!next.delete(id)) next.add(id)
-    setCategoryIds(live.filter((category) => next.has(category.id)).map((category) => category.id))
+  const toggle = (id: ID) => setCategoryIds(toggleInterest(interests.categoryIds, id, live))
+  const notNow = async () => {
+    // Closes at once; a failed save has reverted the answer, so the question comes back.
+    setOpen(false)
+    if ((await dismiss()) === 'failed') setOpen(true)
   }
   const toggleOpen = (next: boolean) => {
     moveFocus.current = true
@@ -81,7 +91,7 @@ export function InterestsCard({ className }: { className?: string }) {
         <div role="status" className="min-w-0 flex-1 text-sm text-muted-foreground">
           {answered ? (
             <p>
-              {summary}. {user ? 'Change this any time from your profile.' : 'Change this any time from this page.'}
+              {summary}. {changeHint}
             </p>
           ) : null}
         </div>
@@ -90,14 +100,7 @@ export function InterestsCard({ className }: { className?: string }) {
             Done
           </Button>
         ) : (
-          <Button
-            variant="link"
-            className="px-0 text-muted-foreground"
-            onClick={() => {
-              dismiss()
-              setOpen(false)
-            }}
-          >
+          <Button variant="link" className="px-0 text-muted-foreground" onClick={() => void notNow()}>
             Not now
           </Button>
         )}

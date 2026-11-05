@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react'
+import { toast } from 'sonner'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
@@ -161,6 +162,50 @@ describe('What are you here for?', () => {
     vi.spyOn(profileService, 'getMyInterests').mockRejectedValue(new ApiError('Server down', 500))
     renderRoute('/')
     expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+  })
+
+  it('does not ask an answered customer again when their answer loads late', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    await profileService.updateMyInterests(['cat_salon'])
+    vi.spyOn(profileService, 'getMyInterests').mockRejectedValueOnce(new ApiError('Server down', 500))
+    const { user } = renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    // Choosing an area mounts another reader of the answer, which loads it again.
+    await chooseBajada(user)
+    expect(await screen.findByText(/Salon first/)).toHaveTextContent('Salon first · Change')
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+  })
+
+  it('keeps the card open when Not now could not be saved', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    vi.spyOn(profileService, 'updateMyInterests').mockRejectedValueOnce(new ApiError('Could not save.', 500))
+    const toastError = vi.spyOn(toast, 'error')
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Not now' }))
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not save.'))
+    expect(await screen.findByRole('heading', { name: 'What are you here for?' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Not now' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument(),
+    )
+    await waitFor(async () => expect((await profileService.getMyInterests()).answeredAt).toBeDefined())
+  })
+
+  it('points a signed-in user without a profile page back to this page', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.admin.id)
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Nails', pressed: false }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Nails first. Change this any time from this page.')
+  })
+
+  it('shows nothing for a guest whose only pick was retired', async () => {
+    useLocalInterests.getState().set(['cat_gowns'])
+    renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Browse by category' })).toBeInTheDocument()
+    expect(screen.queryByText(/Showing everything/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
   })
 

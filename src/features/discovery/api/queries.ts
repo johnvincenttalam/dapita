@@ -14,7 +14,7 @@ export const discoveryKeys = {
 
 export const categoriesQueryOptions = queryOptions({
   queryKey: discoveryKeys.categories(),
-  queryFn: catalogService.getCategories,
+  queryFn: () => catalogService.getCategories(),
   staleTime: Infinity,
 })
 

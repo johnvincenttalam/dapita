@@ -22,7 +22,7 @@ export function InterestChips({ categories, selected, onToggle, disabled }: Inte
             key={category.id}
             type="button"
             shape="pill"
-            size="sm"
+            size="lg"
             variant={on ? 'default' : 'outline'}
             aria-pressed={on}
             disabled={disabled}
