@@ -306,6 +306,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>>
     }
   }
+  'profile.interests': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/me/interests'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['interests']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['interests']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['interests']>>>
+    }
+  }
+  'profile.update_interests': {
+    methods: ["PUT"]
+    pattern: '/api/me/interests'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['updateInterests']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['updateInterests']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['updateInterests']>>>
+    }
+  }
   'profile.consents': {
     methods: ["GET","HEAD"]
     pattern: '/api/me/consents'

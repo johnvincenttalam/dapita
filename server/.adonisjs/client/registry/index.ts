@@ -144,6 +144,18 @@ const routes = {
     tokens: [[0,"api"],[0,"me"],[0,"profile"]],
     types: placeholder as Registry['profile.update']['types'],
   },
+  'profile.interests': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/me/interests',
+    tokens: [[0,"api"],[0,"me"],[0,"interests"]],
+    types: placeholder as Registry['profile.interests']['types'],
+  },
+  'profile.update_interests': {
+    methods: ["PUT"],
+    pattern: '/api/me/interests',
+    tokens: [[0,"api"],[0,"me"],[0,"interests"]],
+    types: placeholder as Registry['profile.update_interests']['types'],
+  },
   'profile.consents': {
     methods: ["GET","HEAD"],
     pattern: '/api/me/consents',

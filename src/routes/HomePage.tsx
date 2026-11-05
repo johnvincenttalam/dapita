@@ -12,16 +12,20 @@ import { useCategoriesQuery, useFeaturedShopsQuery } from '@/features/discovery/
 import { CategoryGrid, CategoryGridSkeleton } from '@/features/discovery/components/CategoryGrid'
 import { HomeHero } from '@/features/discovery/components/HomeHero'
 import { ShopCard, ShopCardSkeleton } from '@/features/discovery/components/ShopCard'
+import { InterestsCard } from '@/features/interests/components/InterestsCard'
+import { useInterests } from '@/features/interests/use-interests'
 import { LocationControl } from '@/features/recommendations/components/LocationControl'
 import { LocationPrompt } from '@/features/recommendations/components/LocationPrompt'
 import { RecommendedRow } from '@/features/recommendations/components/RecommendedRow'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useUserLocation } from '@/hooks/use-user-location'
 import { distanceKm } from '@/lib/geo'
+import { exploreHrefFor, preferredFirst } from '@/lib/interests'
 
 /**
  * Customer home (design screen 3): search, banner, category shortcuts and featured shops (CUS-01).
  * Location first: until the visitor says where they are it asks, then suggestions near them lead.
+ * Shops in the categories the visitor is here for lead each row.
  */
 export default function HomePage() {
   useDocumentTitle()
@@ -29,12 +33,17 @@ export default function HomePage() {
   const featured = useFeaturedShopsQuery()
   const categoryById = useMemo(() => new Map(categories.data?.map((c) => [c.id, c])), [categories.data])
   const { position } = useUserLocation()
+  const { interests } = useInterests()
+  const picked = useMemo(() => new Set(interests.categoryIds), [interests.categoryIds])
+  const exploreHref = exploreHrefFor(interests.categoryIds, categories.data ?? [])
 
   return (
     <Container className="space-y-8 py-page md:space-y-12">
       <SiteSearchForm className="md:hidden" inputClassName="h-11 shadow-xs" />
 
       <HomeHero />
+
+      <InterestsCard />
 
       {position ? (
         <div className="space-y-3">
@@ -59,7 +68,7 @@ export default function HomePage() {
             isRetrying={categories.isRefetching}
           />
         ) : (
-          <CategoryGrid categories={categories.data} />
+          <CategoryGrid categories={categories.data} highlighted={picked} moreTo={exploreHref} />
         )}
       </section>
 
@@ -70,7 +79,7 @@ export default function HomePage() {
           className="flex-row items-end justify-between"
           actions={
             <Button asChild variant="link" className="px-0">
-              <Link to="/explore">See all</Link>
+              <Link to={exploreHref}>See all</Link>
             </Button>
           }
         />
@@ -90,7 +99,7 @@ export default function HomePage() {
         ) : (
           <HorizontalScroller
             label="Featured shops"
-            items={featured.data}
+            items={preferredFirst(featured.data, picked, (shop) => shop.categoryIds)}
             getKey={(shop) => shop.id}
             renderItem={(shop) => (
               <ShopCard

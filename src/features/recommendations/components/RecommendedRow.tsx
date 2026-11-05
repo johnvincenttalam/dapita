@@ -5,7 +5,9 @@ import { SectionHeader } from '@/components/shared/SectionHeader'
 import { ErrorState } from '@/components/feedback/ErrorState'
 import { useCategoriesQuery } from '@/features/discovery/api/queries'
 import { ShopCard, ShopCardSkeleton } from '@/features/discovery/components/ShopCard'
+import { useInterests } from '@/features/interests/use-interests'
 import { useRecommendationsQuery } from '@/features/recommendations/api/queries'
+import { preferredFirst } from '@/lib/interests'
 import { rankNearby, recommendationTag } from '@/lib/recommendations'
 import type { Coordinates } from '@/types/common'
 
@@ -24,6 +26,7 @@ interface RecommendedRowProps {
 export function RecommendedRow({ title, headingId, position, prominent = false, actions }: RecommendedRowProps) {
   const recommendations = useRecommendationsQuery()
   const categories = useCategoriesQuery()
+  const { interests } = useInterests()
 
   let content
   if (recommendations.isPending) {
@@ -46,7 +49,9 @@ export function RecommendedRow({ title, headingId, position, prominent = false, 
       />
     )
   } else {
-    const ranked = rankNearby(recommendations.data, position)
+    // The visitor's picks lead; within each group the nearest and best still come first.
+    const picked = new Set(interests.categoryIds)
+    const ranked = preferredFirst(rankNearby(recommendations.data, position), picked, (entry) => entry.shop.categoryIds)
     if (!ranked.length) return null
     const categoryById = new Map(categories.data?.map((category) => [category.id, category]))
     content = (

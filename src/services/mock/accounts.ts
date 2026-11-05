@@ -1,4 +1,4 @@
-import type { ConsentRecord, DeletionRequest } from '@/types/account'
+import type { ConsentRecord, CustomerInterests, DeletionRequest } from '@/types/account'
 import type { AccountAction } from '@/types/admin'
 import type { SessionUser } from '@/types/auth'
 import type { ID, ISODateTime } from '@/types/common'
@@ -23,6 +23,7 @@ export interface MockAccountState {
   createdAt?: ISODateTime
   consents?: ConsentRecord[]
   deletionRequest?: DeletionRequest
+  interests?: CustomerInterests
   /** Set while an admin has suspended the account; sign-in and sessions are refused. */
   suspendedAt?: ISODateTime
   suspendedReason?: string

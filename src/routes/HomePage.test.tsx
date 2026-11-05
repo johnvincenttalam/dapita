@@ -1,9 +1,14 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
+import { toast } from 'sonner'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
+import { useLocalInterests } from '@/features/interests/interests-store'
+import { resetInterestsSync } from '@/features/interests/use-interests'
 import { useUserLocation } from '@/hooks/use-user-location'
 import { ApiError } from '@/lib/api-client'
+import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
+import { profileService } from '@/services/profile.service'
 import { recommendationsService } from '@/services/recommendations.service'
 import { renderRoute } from '@/test/render'
 
@@ -22,6 +27,8 @@ async function chooseBajada(user: ReturnType<typeof renderRoute>['user']) {
 beforeEach(() => {
   localStorage.clear()
   useUserLocation.getState().clear()
+  useLocalInterests.getState().clear()
+  resetInterestsSync()
 })
 
 afterEach(() => {
@@ -80,5 +87,136 @@ describe('Home page, location first', () => {
     expect(await screen.findByText('We couldn’t load suggestions')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
     expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+  })
+})
+
+describe('What are you here for?', () => {
+  it('asks a first-time visitor and puts their pick first', async () => {
+    const { user } = renderRoute('/')
+    expect(await screen.findByRole('heading', { name: 'What are you here for?' })).toBeInTheDocument()
+    const featured = await screen.findByRole('list', { name: 'Featured shops' })
+    expect(within(featured).getAllByRole('listitem')[0]).not.toHaveTextContent('The Good Cut Barbershop')
+    await user.click(screen.getByRole('button', { name: 'Barber', pressed: false }))
+    expect(screen.getByRole('button', { name: 'Barber', pressed: true })).toBeInTheDocument()
+    expect(await screen.findByRole('status')).toHaveTextContent('Barber first. Change this any time from this page.')
+    await waitFor(() =>
+      expect(within(featured).getAllByRole('listitem')[0]).toHaveTextContent('The Good Cut Barbershop'),
+    )
+    // Scoped to the grid: the footer also links "Barbers".
+    const grid = screen.getByRole('region', { name: 'Browse by category' })
+    expect(within(grid).getByRole('link', { name: /^Barber/ })).toHaveAccessibleName('Barber (your pick)')
+    expect(screen.getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/explore?category=barber')
+    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute('href', '/explore?category=barber')
+  })
+
+  it('two picks read as a pair and link Explore to everything', async () => {
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Salon', pressed: false }))
+    await user.click(screen.getByRole('button', { name: 'Nails', pressed: false }))
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Salon and Nails first. Change this any time from this page.',
+    )
+    expect(screen.getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/explore')
+    expect(screen.getByRole('link', { name: 'More' })).toHaveAttribute('href', '/explore')
+  })
+
+  it('Not now hides the card and changes nothing', async () => {
+    const { user, unmount } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Not now' }))
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
+    const featured = await screen.findByRole('list', { name: 'Featured shops' })
+    expect(within(featured).getAllByRole('listitem')[0]).not.toHaveTextContent('The Good Cut Barbershop')
+
+    unmount()
+    renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
+  })
+
+  it('a return visit shows the line, and Change reopens the chips', async () => {
+    useLocalInterests.getState().set(['cat_barber'])
+    const { user } = renderRoute('/')
+    expect(await screen.findByText(/Barber first/)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Change' }))
+    expect(screen.getByRole('button', { name: 'Barber', pressed: true })).toBeInTheDocument()
+    // Focus follows the swap instead of falling back to the page.
+    expect(screen.getByRole('heading', { name: 'What are you here for?' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Change' })).toHaveFocus()
+  })
+
+  it('a signed-in customer saves to the account', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Nails', pressed: false }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Nails first. Change this any time from your profile.')
+    await waitFor(async () => expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_nails']))
+  })
+
+  it('shows nothing when the account answer cannot load', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    vi.spyOn(profileService, 'getMyInterests').mockRejectedValue(new ApiError('Server down', 500))
+    renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+  })
+
+  it('does not ask an answered customer again when their answer loads late', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    await profileService.updateMyInterests(['cat_salon'])
+    vi.spyOn(profileService, 'getMyInterests').mockRejectedValueOnce(new ApiError('Server down', 500))
+    const { user } = renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    // Choosing an area mounts another reader of the answer, which loads it again.
+    await chooseBajada(user)
+    expect(await screen.findByText(/Salon first/)).toHaveTextContent('Salon first · Change')
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+  })
+
+  it('keeps the card open when Not now could not be saved', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.customer.id)
+    vi.spyOn(profileService, 'updateMyInterests').mockRejectedValueOnce(new ApiError('Could not save.', 500))
+    const toastError = vi.spyOn(toast, 'error')
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Not now' }))
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not save.'))
+    expect(await screen.findByRole('heading', { name: 'What are you here for?' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Not now' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument(),
+    )
+    await waitFor(async () => expect((await profileService.getMyInterests()).answeredAt).toBeDefined())
+  })
+
+  it('points a signed-in user without a profile page back to this page', async () => {
+    localStorage.setItem(MOCK_SESSION_KEY, mockUsers.admin.id)
+    const { user } = renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Nails', pressed: false }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Nails first. Change this any time from this page.')
+  })
+
+  it('shows nothing for a guest whose only pick was retired', async () => {
+    useLocalInterests.getState().set(['cat_gowns'])
+    renderRoute('/')
+    expect(await screen.findByRole('list', { name: 'Featured shops' })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Browse by category' })).toBeInTheDocument()
+    expect(screen.queryByText(/Showing everything/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'What are you here for?' })).not.toBeInTheDocument()
+  })
+
+  it('recommended near you also leads with the pick', async () => {
+    useLocalInterests.getState().set(['cat_barber'])
+    const { user } = renderRoute('/')
+    await chooseBajada(user)
+    const row = await screen.findByRole('list', { name: 'Recommended near you' })
+    const items = within(row).getAllByRole('listitem')
+    expect(items[0]).toHaveTextContent('Barbershop')
+    // The nearest barbershop is already first with no pick; the second one only moves up for the pick.
+    expect(items[1]).toHaveTextContent('Fade Factory Barbers')
   })
 })

@@ -11,6 +11,7 @@ import { useMyProfileQuery } from '@/features/account/api/queries'
 import { ProfileForm } from '@/features/account/components/ProfileForm'
 import { useSignOutMutation } from '@/features/auth/api/queries'
 import { verifyHref } from '@/features/auth/links'
+import { InterestsPanel } from '@/features/interests/components/InterestsPanel'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { formatFullDate } from '@/lib/format'
 
@@ -42,6 +43,8 @@ export default function ProfilePage() {
           <Panel title="Your details">
             <ProfileForm key={profile.data.id} profile={profile.data} />
           </Panel>
+
+          <InterestsPanel />
 
           <Panel title="Sign-in">
             <dl className="space-y-1">

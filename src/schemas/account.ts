@@ -49,3 +49,10 @@ export const myProfileSchema = z.object({
 
 export type MyProfileInput = z.input<typeof myProfileSchema>
 export type MyProfileValues = z.output<typeof myProfileSchema>
+
+/** The categories a customer is here for. Whether each id is a live category is checked against the catalog. */
+export const interestsSchema = z.object({
+  categoryIds: z.array(z.string()).max(12, 'Choose fewer categories'),
+})
+
+export type InterestsInput = z.infer<typeof interestsSchema>
