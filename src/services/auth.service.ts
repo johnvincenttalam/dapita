@@ -1,6 +1,7 @@
 import { legalDocuments } from '@/config/legal'
 import { ApiError, apiClient } from '@/lib/api-client'
 import { env } from '@/lib/env'
+import { interestsMessages, normaliseInterestIds } from '@/lib/interests'
 import { mockPasswordFingerprint, updateMockAccounts } from '@/services/mock/accounts'
 import { readMockDb, updateMockDb } from '@/services/mock/db'
 import { createDraftBusiness } from '@/services/mock/draft-business'
@@ -14,8 +15,9 @@ import {
   MOCK_SESSION_KEY,
 } from '@/services/mock/users'
 import type { SignInInput } from '@/schemas/auth'
-import type { ConsentPurpose } from '@/types/account'
+import type { ConsentPurpose, CustomerInterests } from '@/types/account'
 import type { AccountType, Session, SessionUser } from '@/types/auth'
+import type { ID } from '@/types/common'
 
 /** What the sign-up forms send. Consents carry the document versions the user accepted. */
 export interface SignUpRequest {
@@ -26,6 +28,8 @@ export interface SignUpRequest {
   password: string
   /** Business owners only: the business they will list (MER-01). */
   businessName?: string
+  /** Customers only: live top-level category ids they are here for. */
+  interests?: ID[]
   consents: { purpose: ConsentPurpose; version: string }[]
 }
 
@@ -118,6 +122,12 @@ const mockAuthService: AuthService = {
           : [],
       emailVerified: false,
     }
+    let interests: CustomerInterests | undefined
+    if (input.accountType === 'customer' && input.interests?.length) {
+      const categoryIds = normaliseInterestIds(input.interests, readMockDb().categories)
+      if (!categoryIds) throw new ApiError(interestsMessages.notOnList, 422)
+      interests = { categoryIds, answeredAt: now }
+    }
     updateMockAccounts((store) => {
       store.accounts.push({ user, passwordFingerprint: mockPasswordFingerprint(input.password) })
       store.state[id] = {
@@ -129,6 +139,7 @@ const mockAuthService: AuthService = {
           version: consent.version,
           grantedAt: now,
         })),
+        ...(interests && { interests }),
       }
     })
     const membership = user.memberships[0]

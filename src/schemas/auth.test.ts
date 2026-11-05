@@ -70,6 +70,15 @@ describe('sign-up schemas', () => {
     expect(result.error?.issues[0]?.message).toBe('Accept the terms to create an account')
   })
 
+  it('interests are optional and capped', () => {
+    expect(customerSignUpSchema.parse(customer).interests).toEqual([])
+    const tooMany = customerSignUpSchema.safeParse({
+      ...customer,
+      interests: Array.from({ length: 13 }, (_, i) => `cat_${i}`),
+    })
+    expect(tooMany.error?.issues[0]?.message).toBe('Choose fewer categories')
+  })
+
   it('requires a business name and mobile number for business owners', () => {
     const result = businessSignUpSchema.safeParse({ ...customer, businessName: ' ' })
     expect(result.error?.issues.map((issue) => issue.path[0])).toEqual(['businessName', 'phone'])
