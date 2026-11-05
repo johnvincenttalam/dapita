@@ -60,7 +60,15 @@ test.describe('discovery', () => {
   // Doc §18.1 #1: a guest can search and open a shop.
   test('a guest browses a category, opens a shop and is asked to sign in to book', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('link', { name: 'Barber', exact: true }).click()
+    await page.getByRole('button', { name: 'Barber', exact: true }).click()
+    await expect(page.getByRole('status')).toContainText('Barber first')
+    await expect(page.getByRole('list', { name: 'Featured shops' }).getByRole('listitem').first()).toContainText(
+      'The Good Cut Barbershop',
+    )
+    await page.reload()
+    await expect(page.getByText(/Barber first/)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'What are you here for?' })).toHaveCount(0)
+    await page.getByRole('link', { name: 'Barber (your pick)', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Barber' })).toBeVisible()
     await expectNoHorizontalOverflow(page)
 
