@@ -10,7 +10,7 @@ import User from '#models/user'
 import ApiError from '#exceptions/api_error'
 import { newId } from '#helpers/ids'
 import { toSessionUser } from '#services/accounts'
-import { allCategories } from '#services/profile'
+import { listCategoryData } from '#services/catalog'
 import {
   interestsMessages,
   normaliseInterestIds,
@@ -68,7 +68,7 @@ export default class AuthController {
 
     let interests: CustomerInterests | null = null
     if (input.accountType === 'customer' && input.interests?.length) {
-      const categoryIds = normaliseInterestIds(input.interests, await allCategories())
+      const categoryIds = normaliseInterestIds(input.interests, await listCategoryData())
       if (!categoryIds) throw new ApiError(interestsMessages.notOnList, 422)
       interests = { categoryIds, answeredAt: new Date().toISOString() }
     }

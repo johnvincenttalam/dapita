@@ -25,6 +25,12 @@ export async function listPublicCategories() {
   return categories.map(toCategoryData)
 }
 
+/** Every category, hidden ones included, for checking ids against the catalog. */
+export async function listCategoryData() {
+  const categories = await Category.all()
+  return categories.map(toCategoryData)
+}
+
 export async function listAreas() {
   const areas = await Area.query().orderBy('name', 'asc')
   return areas.map(toAreaData)
