@@ -216,15 +216,40 @@ describe('MerchantServiceEditorPage', () => {
     })
 
     it('lets the merchant drop a held photo before saving', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ applyAccept: false })
       renderAt('/business/services/new')
       await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), new File(['x'], 'a.gif', { type: 'image/gif' }))
+      expect(await screen.findByRole('alert')).toBeInTheDocument()
       await user.upload(screen.getByLabelText('Add photo'), png())
       await user.click(screen.getByRole('button', { name: 'Remove photo' }))
       expect(screen.getByLabelText('Add photo')).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
       await user.click(screen.getByRole('button', { name: 'Add service' }))
       expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
       expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toBeUndefined()
+    })
+
+    it('locks the held photo while the service is being saved', async () => {
+      const user = userEvent.setup()
+      const create = merchantServicesService.createService.bind(merchantServicesService)
+      let release!: () => void
+      const gate = new Promise<void>((resolve) => (release = resolve))
+      vi.spyOn(merchantServicesService, 'createService').mockImplementationOnce(async (...args) => {
+        await gate
+        return create(...args)
+      })
+      renderAt('/business/services/new')
+      await fillNewService(user, 'Buzz Cut')
+      await user.upload(screen.getByLabelText('Add photo'), png())
+      await user.click(screen.getByRole('button', { name: 'Add service' }))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Remove photo' })).toBeDisabled())
+      expect(screen.getByLabelText('Replace photo')).toBeDisabled()
+      release()
+      expect(await screen.findByText('Buzz Cut is on your menu.')).toBeInTheDocument()
+      expect((await publicServices()).find((s) => s.name === 'Buzz Cut')!.photo).toEqual({
+        url: 'data:image/webp;base64,AA',
+      })
     })
 
     it('refuses a non-photo on the Add page without holding it', async () => {

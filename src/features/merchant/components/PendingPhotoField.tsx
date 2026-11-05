@@ -53,7 +53,15 @@ export function PendingPhotoField({
       <div className="flex flex-wrap items-center gap-2">
         <FilePicker label={file ? 'Replace photo' : 'Add photo'} onFiles={onFiles} />
         {file ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => onChange(undefined)}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setProblem(undefined)
+              onChange(undefined)
+            }}
+          >
             Remove photo
           </Button>
         ) : null}

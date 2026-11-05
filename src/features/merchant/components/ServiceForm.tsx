@@ -126,6 +126,7 @@ export function ServiceForm({
           } catch (error) {
             toast.error(`${saved.name} is on your menu, but the photo didn’t upload.`)
             void navigate(`/business/services/${encodeURIComponent(saved.id)}`, {
+              replace: true,
               state: { photoProblem: getErrorMessage(error) },
             })
             return
@@ -319,11 +320,13 @@ export function ServiceForm({
               initialProblem={photoProblem}
             />
           ) : (
-            <PendingPhotoField
-              file={pendingPhoto}
-              onChange={setPendingPhoto}
-              icon={categoryIconFor(categories.find((c) => c.id === categoryId))}
-            />
+            <fieldset disabled={form.formState.isSubmitting} className="contents">
+              <PendingPhotoField
+                file={pendingPhoto}
+                onChange={setPendingPhoto}
+                icon={categoryIconFor(categories.find((c) => c.id === categoryId))}
+              />
+            </fieldset>
           )}
           <fieldset disabled={form.formState.isSubmitting} className="contents">
             <FieldGroup>
