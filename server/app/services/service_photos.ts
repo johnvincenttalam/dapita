@@ -53,14 +53,15 @@ export async function setServicePhoto(
   file: MultipartFile | null
 ): Promise<ServiceData> {
   const storageKey = await store(serviceId, file)
+  let result: Awaited<ReturnType<typeof changePhoto>>
   try {
-    const { data, replaced } = await changePhoto(businessId, serviceId, () => ({ storageKey }))
-    await dropFiles(replaced)
-    return data
+    result = await changePhoto(businessId, serviceId, () => ({ storageKey }))
   } catch (error) {
     await deleteUploaded([storageKey])
     throw error
   }
+  await dropFiles(result.replaced)
+  return result.data
 }
 
 export async function removeServicePhoto(businessId: ID, serviceId: ID): Promise<ServiceData> {

@@ -65,6 +65,14 @@ test.group('Merchant: service photos', (group) => {
     assert.deepEqual(listed.photo, body.photo)
     assert.notInclude(JSON.stringify(listed), 'storageKey')
 
+    const menu = await client.get(servicesPath).loginAs(owner)
+    menu.assertStatus(200)
+    const inMenu = (menu.body() as { services: ServiceData[] }).services.find(
+      (s) => s.id === 'svc_mens_haircut'
+    )!
+    assert.deepEqual(inMenu.photo, body.photo)
+    assert.notInclude(JSON.stringify(menu.body()), 'storageKey')
+
     const image = await client.get(body.photo!.url)
     image.assertStatus(200)
     assert.include(image.header('content-type'), 'image/webp')
@@ -72,8 +80,13 @@ test.group('Merchant: service photos', (group) => {
 
   test('replacing an uploaded photo deletes the old copies', async ({ client, assert }) => {
     const owner = await userByEmail(ownerEmail)
-    await client.put(photoPath('svc_mens_haircut')).file('file', fixture()).loginAs(owner)
+    const uploaded = await client
+      .put(photoPath('svc_mens_haircut'))
+      .file('file', fixture())
+      .loginAs(owner)
+    uploaded.assertStatus(200)
     const first = await serviceFiles('svc_mens_haircut')
+    assert.lengthOf(first, 3)
     const second = await client
       .put(photoPath('svc_mens_haircut'))
       .file('file', fixture())
