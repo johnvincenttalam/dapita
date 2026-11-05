@@ -54,7 +54,7 @@ export function PhotoTile({
         />
         <label
           htmlFor={id}
-          className="relative block size-24 shrink-0 cursor-pointer overflow-hidden rounded-2xl bg-muted transition-shadow peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 hover:ring-2 hover:ring-ring/40"
+          className="relative block size-24 shrink-0 cursor-pointer overflow-hidden rounded-2xl bg-muted transition-shadow peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 not-peer-disabled:hover:ring-2 not-peer-disabled:hover:ring-ring/40"
         >
           <span aria-hidden="true">
             <ImageWithFallback src={src} srcSet={srcSet} sizes="96px" alt={alt} icon={icon} className="size-full" />
