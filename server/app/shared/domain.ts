@@ -20,6 +20,7 @@ export {
   transition,
 } from '@/lib/booking-status'
 export { addMinutes, toDateKey } from '@/lib/datetime'
+export { dropRetiredInterests, interestsMessages, normaliseInterestIds } from '@/lib/interests'
 export { listingChecklist } from '@/lib/listing-checklist'
 export {
   availableModerationActions,
@@ -32,7 +33,7 @@ export { getOpenStatus, isPreferredStartTime } from '@/lib/opening-hours'
 export { hasCover, photoAlt, photoFileProblem } from '@/lib/photos'
 export { recommendationRules, recommendShops } from '@/lib/recommendations'
 export { hasAnyRole } from '@/lib/roles'
-export { myProfileSchema } from '@/schemas/account'
+export { interestsSchema, myProfileSchema } from '@/schemas/account'
 export {
   businessProfileSchema,
   closureSchema,

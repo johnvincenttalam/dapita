@@ -34,6 +34,13 @@ export interface MyProfile {
   deletionRequest?: DeletionRequest
 }
 
+/** The categories a customer says they are here for. Empty until answered, or when they chose none. */
+export interface CustomerInterests {
+  categoryIds: ID[]
+  /** Set once the customer has answered, including with no categories. */
+  answeredAt?: ISODateTime
+}
+
 /** A shop a customer saved to come back to (CUS-07). One per customer and shop. */
 export interface Favorite {
   userId: ID
