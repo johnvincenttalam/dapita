@@ -38,6 +38,8 @@ export interface ApiDefinition {
   profile: {
     show: typeof routes['profile.show']
     update: typeof routes['profile.update']
+    interests: typeof routes['profile.interests']
+    updateInterests: typeof routes['profile.update_interests']
     consents: typeof routes['profile.consents']
     requestDeletion: typeof routes['profile.request_deletion']
   }

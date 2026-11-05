@@ -5,7 +5,7 @@ import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import BusinessMembership from '#models/business_membership'
 import { iso, json } from '#models/columns'
-import type { ID, ISODateTime, UserRole } from '#shared/domain'
+import type { CustomerInterests, ID, ISODateTime, UserRole } from '#shared/domain'
 
 export default class User extends compose(BaseModel, withAuthFinder(hash)) {
   static selfAssignPrimaryKey = true
@@ -27,6 +27,10 @@ export default class User extends compose(BaseModel, withAuthFinder(hash)) {
 
   @column(json)
   declare roles: UserRole[]
+
+  /** What the customer is here for; null until they answer. */
+  @column(json)
+  declare interests: CustomerInterests | null
 
   @column(iso)
   declare emailVerifiedAt: ISODateTime | null

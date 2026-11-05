@@ -27,6 +27,8 @@ export type ScannedRoutes = {
     'bookings.decline_alternative': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'profile.update': { paramsTuple?: []; params?: {} }
+    'profile.interests': { paramsTuple?: []; params?: {} }
+    'profile.update_interests': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
     'profile.request_deletion': { paramsTuple?: []; params?: {} }
     'favorites.index': { paramsTuple?: []; params?: {} }
@@ -101,6 +103,7 @@ export type ScannedRoutes = {
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.interests': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
     'favorites.index': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
@@ -133,6 +136,7 @@ export type ScannedRoutes = {
     'bookings.index': { paramsTuple?: []; params?: {} }
     'bookings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
+    'profile.interests': { paramsTuple?: []; params?: {} }
     'profile.consents': { paramsTuple?: []; params?: {} }
     'favorites.index': { paramsTuple?: []; params?: {} }
     'conversations.index': { paramsTuple?: []; params?: {} }
@@ -190,6 +194,7 @@ export type ScannedRoutes = {
   }
   PUT: {
     'profile.update': { paramsTuple?: []; params?: {} }
+    'profile.update_interests': { paramsTuple?: []; params?: {} }
     'favorites.store': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }
     'merchant_businesses.update_hours': { paramsTuple: [ParamValue]; params: {'businessId': ParamValue} }

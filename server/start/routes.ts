@@ -70,6 +70,8 @@ router
 
         router.get('me/profile', [ProfileController, 'show'])
         router.put('me/profile', [ProfileController, 'update'])
+        router.get('me/interests', [ProfileController, 'interests'])
+        router.put('me/interests', [ProfileController, 'updateInterests'])
         router.get('me/consents', [ProfileController, 'consents'])
         router.post('me/deletion-request', [ProfileController, 'requestDeletion'])
 

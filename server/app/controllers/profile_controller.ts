@@ -1,9 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { formBody } from '#helpers/validate'
 import {
+  getMyInterests,
   getMyProfile,
   listMyConsents,
   requestAccountDeletion,
+  updateMyInterests,
   updateMyProfile,
 } from '#services/profile'
 
@@ -15,6 +17,14 @@ export default class ProfileController {
 
   async update({ auth, request }: HttpContext) {
     return updateMyProfile(auth.getUserOrFail(), formBody(request))
+  }
+
+  async interests({ auth }: HttpContext) {
+    return getMyInterests(auth.getUserOrFail())
+  }
+
+  async updateInterests({ auth, request }: HttpContext) {
+    return updateMyInterests(auth.getUserOrFail(), formBody(request))
   }
 
   async consents({ auth }: HttpContext) {

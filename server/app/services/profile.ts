@@ -1,12 +1,20 @@
 import db from '@adonisjs/lucid/services/db'
+import ApiError from '#exceptions/api_error'
+import Category from '#models/category'
 import Consent from '#models/consent'
 import DeletionRequest from '#models/deletion_request'
 import User from '#models/user'
 import { newId } from '#helpers/ids'
 import { validateWith } from '#helpers/validate'
+import { toCategoryData } from '#services/catalog'
 import {
+  dropRetiredInterests,
+  interestsMessages,
+  interestsSchema,
   myProfileSchema,
+  normaliseInterestIds,
   type ConsentRecord,
+  type CustomerInterests,
   type DeletionRequest as DeletionRequestData,
   type MyProfile,
 } from '#shared/domain'
@@ -73,4 +81,26 @@ export async function requestAccountDeletion(user: User) {
     )
   })
   return toDeletionRequestData(request)
+}
+
+async function allCategories() {
+  const categories = await Category.all()
+  return categories.map(toCategoryData)
+}
+
+/** What the customer is here for, without any category that has since been retired. */
+export async function getMyInterests(user: User): Promise<CustomerInterests> {
+  if (!user.interests) return { categoryIds: [] }
+  return dropRetiredInterests(user.interests, await allCategories())
+}
+
+/** Replaces the answer; an empty list records that they dismissed the question. */
+export async function updateMyInterests(user: User, input: unknown): Promise<CustomerInterests> {
+  const valid = validateWith(interestsSchema, input)
+  const categoryIds = normaliseInterestIds(valid.categoryIds, await allCategories())
+  if (!categoryIds) throw new ApiError(interestsMessages.notOnList, 422)
+  const now = new Date().toISOString()
+  user.merge({ interests: { categoryIds, answeredAt: now }, updatedAt: now })
+  await user.save()
+  return getMyInterests(user)
 }
