@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type * as MockUtils from '@/services/mock/utils'
@@ -125,5 +125,55 @@ describe('AssistantWidget', () => {
   it('is absent on the booking page', () => {
     renderWidget(fakeEngine({ text: 'x', shops: [], suggestions: [] }), '/shops/x/book')
     expect(screen.queryByRole('button', { name: 'Open Dapita Assistant' })).not.toBeInTheDocument()
+  })
+
+  describe('navigating from inside the panel', () => {
+    const answer: AssistantReply = {
+      text: 'Found one.',
+      shops: [{ shop: shop('glow', 'Glow Salon'), service: haircut }],
+      exploreHref: '/explore?area=matina',
+      suggestions: [],
+    }
+
+    async function openAndGo(linkName: string, expectedPath: string) {
+      const engine = fakeEngine(answer)
+      const router = createMemoryRouter(
+        [
+          {
+            element: (
+              <>
+                <AssistantWidget engine={engine} />
+                <Outlet />
+              </>
+            ),
+            children: [{ path: '*', element: <p>Page</p> }],
+          },
+        ],
+        { initialEntries: ['/'] },
+      )
+      const { user } = renderWithProviders(<RouterProvider router={router} />)
+      await user.click(screen.getByRole('button', { name: 'Open Dapita Assistant' }))
+      await user.type(await screen.findByRole('textbox', { name: 'Message' }), 'salon{Enter}')
+      await user.click(await screen.findByRole('link', { name: linkName }))
+      expect(router.state.location.pathname + router.state.location.search).toBe(expectedPath)
+      return router
+    }
+
+    it.each([
+      ['Glow Salon', '/shops/glow'],
+      ['See these on Explore', '/explore?area=matina'],
+    ])('closes the panel after following %s', async (name, path) => {
+      await openAndGo(name, path)
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+      expect(useAssistantStore.getState().open).toBe(false)
+    })
+
+    it('does not reopen after a booking link leads to the booking page and back', async () => {
+      const router = await openAndGo('Send booking request', bookingHref('glow', 'svc_cut'))
+      expect(useAssistantStore.getState().open).toBe(false)
+      await router.navigate('/')
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(await screen.findByRole('button', { name: 'Open Dapita Assistant' })).toBeInTheDocument()
+    })
   })
 })

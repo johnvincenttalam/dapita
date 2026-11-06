@@ -1,5 +1,6 @@
 import { MessageCircleIcon } from 'lucide-react'
-import { useMatch } from 'react-router'
+import { useEffect, useRef } from 'react'
+import { useLocation, useMatch } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -13,6 +14,16 @@ import { useAssistant } from '@/features/assistant/use-assistant'
  */
 export function AssistantWidget({ engine }: { engine?: AssistantEngine }) {
   const assistant = useAssistant(engine)
+  const { key } = useLocation()
+  const { open, setOpen } = assistant
+  const lastKey = useRef(key)
+  // Links inside the panel navigate, but a modal Sheet doesn't close on route change: close it
+  // so the destination isn't hidden, and so it doesn't reopen after the booking page.
+  useEffect(() => {
+    if (lastKey.current === key) return
+    lastKey.current = key
+    if (open) setOpen(false)
+  }, [key, open, setOpen])
   const onBookingPage = useMatch('/shops/:shopSlug/book') !== null
 
   if (onBookingPage) return null
