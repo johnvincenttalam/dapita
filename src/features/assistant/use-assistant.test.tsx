@@ -15,8 +15,11 @@ vi.mock('@/features/interests/use-interests', () => ({
 const greeting: AssistantReply = { text: 'Hello!', shops: [], suggestions: ['Salons open now'] }
 const answer: AssistantReply = { text: 'Here you go', shops: [], suggestions: [] }
 
-function mockUser(id: string | null) {
-  vi.mocked(useSession).mockReturnValue({ user: id ? { id } : null } as unknown as ReturnType<typeof useSession>)
+function mockUser(id: string | null, isPending = false) {
+  vi.mocked(useSession).mockReturnValue({
+    user: id ? { id } : null,
+    isPending,
+  } as unknown as ReturnType<typeof useSession>)
 }
 
 function fakeEngine(reply: () => Promise<AssistantReply> = () => Promise.resolve(answer)) {
@@ -104,6 +107,30 @@ describe('useAssistant', () => {
     const engine = fakeEngine()
     const { rerender } = renderHook(() => useAssistant(engine))
 
+    mockUser('u1')
+    rerender()
+    expect(useAssistantStore.getState().messages).toHaveLength(1)
+
+    mockUser(null)
+    rerender()
+    expect(useAssistantStore.getState().messages).toEqual([])
+  })
+
+  it('keeps persisted messages while the session loads and then resolves to a user', () => {
+    mockUser(null, true)
+    useAssistantStore.setState({ messages: [{ id: 'a', role: 'user', text: 'hi' }] })
+    const { rerender } = renderHook(() => useAssistant(fakeEngine()))
+
+    mockUser('u1')
+    rerender()
+
+    expect(useAssistantStore.getState().messages).toHaveLength(1)
+  })
+
+  it('clears on sign-out after the session resolved to a user', () => {
+    mockUser(null, true)
+    useAssistantStore.setState({ messages: [{ id: 'a', role: 'user', text: 'hi' }] })
+    const { rerender } = renderHook(() => useAssistant(fakeEngine()))
     mockUser('u1')
     rerender()
     expect(useAssistantStore.getState().messages).toHaveLength(1)

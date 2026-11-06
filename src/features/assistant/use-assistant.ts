@@ -32,7 +32,7 @@ const FAILURE_REPLY: AssistantReply = {
 /** `engine` is injectable for tests; defaults to the app-wide rule engine. */
 export function useAssistant(engine?: AssistantEngine) {
   const { open, messages, busy, setOpen, append, setBusy, clear } = useAssistantStore()
-  const { user } = useSession()
+  const { user, isPending } = useSession()
   const { interests } = useInterests()
   const activeEngine = engine ?? getSharedEngine()
 
@@ -46,13 +46,16 @@ export function useAssistant(engine?: AssistantEngine) {
   const greeting = useRef(false)
 
   const userId = user?.id ?? null
-  const previousUserId = useRef(userId)
+  // undefined until the session first resolves: a reload must not read "loading" as a user change.
+  const previousUserId = useRef<ID | null | undefined>(undefined)
   useEffect(() => {
-    if (previousUserId.current === userId) return
+    if (isPending) return
+    const previous = previousUserId.current
     previousUserId.current = userId
+    if (previous === undefined || previous === userId) return
     epoch.current += 1
     clear()
-  }, [userId, clear])
+  }, [userId, isPending, clear])
 
   useEffect(() => {
     if (!open || messages.length > 0 || greeting.current) return
