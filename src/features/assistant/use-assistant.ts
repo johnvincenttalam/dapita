@@ -6,6 +6,7 @@ import { useAssistantStore } from '@/features/assistant/store'
 import { useInterests } from '@/features/interests/use-interests'
 import { useUserLocation } from '@/hooks/use-user-location'
 import { createRandomId } from '@/lib/ids'
+import type { AssistantReply } from '@/types/assistant'
 import type { ID } from '@/types/common'
 
 /** The default deps cache the catalog per instance, so the app shares one engine. */
@@ -20,6 +21,12 @@ function getSharedEngine() {
     }),
   )
   return sharedEngine
+}
+
+const FAILURE_REPLY: AssistantReply = {
+  text: 'Sorry, something went wrong on my end. Please try again in a moment.',
+  shops: [],
+  suggestions: [],
 }
 
 /** `engine` is injectable for tests; defaults to the app-wide rule engine. */
@@ -51,11 +58,17 @@ export function useAssistant(engine?: AssistantEngine) {
     if (!open || messages.length > 0 || greeting.current) return
     greeting.current = true
     const started = epoch.current
-    void Promise.resolve(activeEngine.greeting()).then((reply) => {
+    void (async () => {
+      let reply: AssistantReply
+      try {
+        reply = await activeEngine.greeting()
+      } catch {
+        reply = FAILURE_REPLY
+      }
       greeting.current = false
       if (started !== epoch.current || useAssistantStore.getState().messages.length > 0) return
       append({ id: createRandomId(), role: 'assistant', reply })
-    })
+    })()
   }, [open, messages.length, activeEngine, append])
 
   const send = useCallback(
@@ -65,11 +78,17 @@ export function useAssistant(engine?: AssistantEngine) {
       const started = epoch.current
       append({ id: createRandomId(), role: 'user', text: trimmed })
       setBusy(true)
-      void activeEngine.reply(trimmed).then((reply) => {
+      void (async () => {
+        let reply: AssistantReply
+        try {
+          reply = await activeEngine.reply(trimmed)
+        } catch {
+          reply = FAILURE_REPLY
+        }
         if (started !== epoch.current) return
         append({ id: createRandomId(), role: 'assistant', reply })
         setBusy(false)
-      })
+      })()
     },
     [activeEngine, append, setBusy],
   )

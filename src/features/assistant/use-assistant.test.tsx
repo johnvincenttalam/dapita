@@ -130,4 +130,38 @@ describe('useAssistant', () => {
     expect(result.current.messages).toEqual([])
     expect(result.current.busy).toBe(false)
   })
+
+  it('recovers with an honest reply when the engine rejects', async () => {
+    const engine = fakeEngine(() => Promise.reject(new Error('boom')))
+    const { result } = renderHook(() => useAssistant(engine))
+
+    await act(() => {
+      result.current.send('find a salon')
+      return Promise.resolve()
+    })
+
+    expect(result.current.busy).toBe(false)
+    expect(result.current.messages).toHaveLength(2)
+    const last = result.current.messages.at(-1)
+    expect(last?.role).toBe('assistant')
+    expect(last && 'reply' in last ? last.reply.text : '').toContain('something went wrong')
+  })
+
+  it('stays quiet when a rejection lands after the conversation was cleared', async () => {
+    mockUser('u1')
+    let reject!: (error: Error) => void
+    const engine = fakeEngine(() => new Promise((_, r) => (reject = r)))
+    const { result, rerender } = renderHook(() => useAssistant(engine))
+
+    act(() => result.current.send('find a salon'))
+    mockUser('u2')
+    rerender()
+    await act(() => {
+      reject(new Error('boom'))
+      return Promise.resolve()
+    })
+
+    expect(result.current.messages).toEqual([])
+    expect(result.current.busy).toBe(false)
+  })
 })
