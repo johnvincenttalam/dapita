@@ -22,7 +22,8 @@ test('a guest finds a barber, asks about hours, and follows a shop card', async 
   await expect(card).toBeVisible()
   await expect(panel.getByRole('link', { name: 'See these on Explore' })).toBeVisible()
   // Ratings come from real reviews only; the assistant must not invent one.
-  await expect(panel.getByRole('article')).not.toContainText('average rating')
+  await expect(card).toContainText('No reviews yet')
+  await expect(card).not.toContainText(/\d\.\d|★|average rating/i)
 
   await message.fill('what time does The Good Cut close')
   await panel.getByRole('button', { name: 'Send message' }).click()
