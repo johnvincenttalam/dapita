@@ -6,6 +6,7 @@ import { Footer } from '@/components/layouts/Footer'
 import { Navbar } from '@/components/layouts/Navbar'
 import { SkipLink } from '@/components/layouts/SkipLink'
 import { customerTabs, type NavGroup } from '@/config/navigation'
+import { AssistantWidget } from '@/features/assistant/components/AssistantWidget'
 
 const commandNav: NavGroup[] = [{ label: 'Marketplace', items: customerTabs }]
 
@@ -24,6 +25,7 @@ export function PublicLayout() {
       <Footer />
       <BottomTabBar />
       <AppCommandMenu nav={commandNav} />
+      <AssistantWidget />
       <ScrollRestoration />
     </div>
   )
