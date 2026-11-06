@@ -1,5 +1,9 @@
 import type { Area, ServiceCategory } from '@/types/catalog'
-import type { ShopSummary } from '@/types/business'
+import type { Service, ServicePrice, ShopDetails, ShopSummary } from '@/types/business'
+import type { AssistantReply, AssistantShopResult } from '@/types/assistant'
+import { toDateKey, weekdayOf } from '@/lib/datetime'
+import { formatPeso } from '@/lib/format'
+import { describeOpenStatus, getOpenStatus, hasOpeningHours, weeklySchedule } from '@/lib/opening-hours'
 
 export interface AssistantContext {
   categories: readonly ServiceCategory[]
@@ -214,5 +218,152 @@ export function parseMessage(message: string, context: AssistantContext): Assist
     priceMax,
     nearMe,
     keywords: shop ? [normalize(shop.shop.name), ...keywordsFrom(state.text)] : keywordsFrom(state.text),
+  }
+}
+
+const maxShownShops = 3
+const maxListedServices = 5
+const estimateNote = 'an estimate until the shop confirms'
+
+/** /explore URL carrying the intent's filters, using Explore's own URL keys. Near me adds nothing: location stays on the device. */
+export function exploreHrefForIntent(intent: FindIntent): string {
+  const params = new URLSearchParams()
+  if (intent.keywords.length > 0) params.set('q', intent.keywords.join(' '))
+  if (intent.categorySlug) params.set('category', intent.categorySlug)
+  if (intent.areaSlug) params.set('area', intent.areaSlug)
+  if (intent.priceMax) params.set('price', String(intent.priceMax))
+  if (intent.openNow) params.set('open', '1')
+  const query = params.toString()
+  return query ? `/explore?${query}` : '/explore'
+}
+
+const words = (slug: string) => slug.replace(/-/g, ' ')
+const titleCase = (text: string) => text.replace(/(^|\s)[a-z]/g, (match) => match.toUpperCase())
+
+/** The area's real name when a result carries it, otherwise its slug made readable. */
+function areaLabel(slug: string, results: readonly AssistantShopResult[]) {
+  return results.find((result) => result.shop.area.slug === slug)?.shop.area.name ?? titleCase(words(slug))
+}
+
+/** Price as spoken: only fixed prices are exact; from/range are estimates; quote is never a number. */
+function describePrice(price: ServicePrice) {
+  switch (price.type) {
+    case 'fixed':
+      return formatPeso(price.amount)
+    case 'from':
+      return `from ${formatPeso(price.amount)}, ${estimateNote}`
+    case 'range':
+      return `${formatPeso(price.amount)} to ${formatPeso(price.maxAmount)}, ${estimateNote}`
+    case 'quote':
+      return 'price on consultation'
+  }
+}
+
+export function composeFindReply(intent: FindIntent, results: AssistantShopResult[], total: number): AssistantReply {
+  const shops = results.slice(0, maxShownShops)
+  const noun = intent.categorySlug ? `${words(intent.categorySlug)} ` : ''
+  const area = intent.areaSlug ? ` in ${areaLabel(intent.areaSlug, results)}` : ''
+  const price = intent.priceMax ? ` under ${formatPeso(intent.priceMax)}` : ''
+  const keywords = intent.keywords.length > 0 ? ` matching "${intent.keywords.join(' ')}"` : ''
+  const scope = `${area}${price}${keywords}${intent.openNow ? ', open right now' : ''}`
+
+  if (total === 0) {
+    const asked = `${noun}shops${scope}`
+    const loosen = []
+    if (intent.openNow) loosen.push('dropping "open now"')
+    if (intent.priceMax) loosen.push('raising the price limit')
+    if (intent.areaSlug) loosen.push('searching all of Davao City')
+    const advice = loosen.length > 0 ? `Try ${loosen.join(' or ')}.` : 'Try a different category or fewer keywords.'
+    const suggestions = []
+    if (intent.openNow) suggestions.push(`${noun}shops${area}${price}`.trim())
+    if (intent.areaSlug) suggestions.push(`${noun}shops`.trim())
+    return { text: `I couldn't find any ${asked}. ${advice}`, shops: [], suggestions }
+  }
+
+  const count = `${total} ${noun}${total === 1 ? 'shop' : 'shops'}${scope}`
+  const more = total > shops.length ? ` Showing ${shops.length} of them.` : ''
+  const first = shops[0]
+  const priced = first?.service
+    ? ` ${first.shop.name} offers ${first.service.name}: ${describePrice(first.service.price)}.`
+    : ''
+  return {
+    text: `I found ${count}.${more}${priced}`,
+    shops,
+    exploreHref: exploreHrefForIntent(intent),
+    suggestions: [],
+  }
+}
+
+function summaryOf(shop: ShopDetails): ShopSummary {
+  return {
+    id: shop.id,
+    slug: shop.slug,
+    name: shop.name,
+    categoryIds: shop.categoryIds,
+    area: shop.area,
+    address: shop.address,
+    coordinates: shop.coordinates,
+    coverPhoto: shop.photos.find((photo) => photo.kind === 'cover'),
+    rating: shop.rating,
+    verified: shop.verified,
+    featured: shop.featured,
+    bookingMethod: shop.bookingMethod,
+    hours: shop.hours,
+    closures: shop.closures,
+    priceFrom: shop.priceFrom,
+    serviceCount: shop.serviceCount,
+  }
+}
+
+function describeHours(shop: ShopDetails, now: Date) {
+  if (!hasOpeningHours(shop.hours)) return `Opening hours not provided for ${shop.name}.`
+  const status = describeOpenStatus(getOpenStatus(shop.hours, shop.closures, now), now)
+  const today = weeklySchedule(shop.hours).find((row) => row.weekday === weekdayOf(toDateKey(now)))
+  const hours = today && today.ranges.length > 0 ? today.ranges.join(', ') : 'closed'
+  return `${shop.name} is ${status.label.toLowerCase()} right now${status.detail ? ` (${status.detail})` : ''}. Today, ${today?.name}: ${hours}.`
+}
+
+function describePrices(shop: ShopDetails, services: Service[]) {
+  const listed = services.filter((service) => service.active).slice(0, maxListedServices)
+  if (listed.length === 0) return `${shop.name} has no services listed yet, so I have no prices to share.`
+  const lines = listed.map((service) => `${service.name}: ${describePrice(service.price)}`)
+  const estimates = listed.some((service) => service.price.type === 'from' || service.price.type === 'range')
+  return `Prices at ${shop.name}: ${lines.join('; ')}.${estimates ? ' Prices marked as estimates are confirmed by the shop.' : ''}`
+}
+
+function describePolicies(shop: ShopDetails) {
+  const { cancellation, noShow, deposit } = shop.policies
+  const line = (label: string, text?: string) => `${label}: ${text?.trim().replace(/\.$/, '') || 'not provided'}.`
+  return `${shop.name} policies. ${line('Cancellation', cancellation)} ${line('No-show', noShow)} ${line('Deposit', deposit)}`
+}
+
+export function composeShopAnswer(
+  topic: ShopTopic,
+  shop: ShopDetails,
+  services: Service[],
+  now: Date = new Date(),
+): AssistantReply {
+  const text =
+    topic === 'hours'
+      ? describeHours(shop, now)
+      : topic === 'prices'
+        ? describePrices(shop, services)
+        : describePolicies(shop)
+  return { text, shops: [{ shop: summaryOf(shop) }], suggestions: [] }
+}
+
+export function composeUnknownReply(suggestions: string[]): AssistantReply {
+  return {
+    text: "I'm not sure what you're looking for. I can find shops by service, area, price or whether they're open, and answer questions about a shop's hours, prices or policies.",
+    shops: [],
+    suggestions,
+  }
+}
+
+export function composeGreeting(suggestions: string[]): AssistantReply {
+  return {
+    text: "Hi! Tell me what you need and where, and I can find shops in Davao City. You can also ask about a shop's hours, prices or policies.",
+    shops: [],
+    suggestions,
   }
 }
