@@ -137,7 +137,7 @@ conversation UI.
   shops, this prefetch is the piece a server-backed engine replaces —
   note it in a comment, don't engineer for it now.
 - **Service-level honesty for price/category claims:** the existing
-  `priceMax` search filter matches a shop's cheapest service of *any*
+  `priceMax` search filter matches a shop's cheapest service of _any_
   category, so "haircut under 500" could surface a shop whose haircut is
   ₱800 but whose nail service is ₱200. The assistant must not inherit
   that: before claiming a price or offering a "Book" link, fetch the

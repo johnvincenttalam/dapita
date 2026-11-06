@@ -30,7 +30,7 @@ Failure modes the spec implies; each has its pinning test in the task noted:
 1. Empty or whitespace-only input submitted → nothing sent, no crash (Task 4).
 2. "near me" with no stored location → the assistant asks to share a location or pick an area; it never claims "0 results" or crashes (Task 3).
 3. A shop question naming an unknown shop → honest "I couldn't find that shop", offering search instead (Task 3).
-4. The price-filter trap: a shop whose only sub-cap service is in a *different* category must not be presented for "«category» under ₱N" (Task 3).
+4. The price-filter trap: a shop whose only sub-cap service is in a _different_ category must not be presented for "«category» under ₱N" (Task 3).
 5. Corrupt or unavailable `sessionStorage` → the store falls back to a fresh in-memory conversation instead of throwing (Task 4).
 
 ---
@@ -38,11 +38,13 @@ Failure modes the spec implies; each has its pinning test in the task noted:
 ### Task 1: Types and the pure message parser
 
 **Files:**
+
 - Create: `src/types/assistant.ts`
 - Create: `src/lib/assistant.ts`
 - Test: `src/lib/assistant.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ServiceCategory`, `Area` from `@/types/catalog`; `ShopSummary`, `Service`, `ShopDetails` from `@/types/business`; `ID` from `@/types/common`.
 - Produces (used by every later task):
 
@@ -65,8 +67,7 @@ export interface AssistantReply {
 }
 
 export type AssistantMessage =
-  | { id: ID; role: 'user'; text: string }
-  | { id: ID; role: 'assistant'; reply: AssistantReply }
+  { id: ID; role: 'user'; text: string } | { id: ID; role: 'assistant'; reply: AssistantReply }
 ```
 
 ```ts
@@ -154,10 +155,12 @@ git commit -m "Parse what a customer asks the assistant for"
 ### Task 2: Pure reply composition
 
 **Files:**
+
 - Modify: `src/lib/assistant.ts`
 - Test: `src/lib/assistant.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1's types; `getOpenStatus`, `describeOpenStatus`, `weeklySchedule` from `@/lib/opening-hours`; `formatPeso` from `@/lib/format`.
 - Produces (Task 3 calls these):
 
@@ -165,11 +168,7 @@ git commit -m "Parse what a customer asks the assistant for"
 /** /explore URL (path + query) carrying the intent's filters, using Explore's own URL keys. */
 export function exploreHrefForIntent(intent: FindIntent): string
 
-export function composeFindReply(
-  intent: FindIntent,
-  results: AssistantShopResult[],
-  total: number,
-): AssistantReply
+export function composeFindReply(intent: FindIntent, results: AssistantShopResult[], total: number): AssistantReply
 
 export function composeShopAnswer(
   topic: 'hours' | 'prices' | 'policies',
@@ -182,7 +181,7 @@ export function composeUnknownReply(suggestions: string[]): AssistantReply
 export function composeGreeting(suggestions: string[]): AssistantReply
 ```
 
-Copy rules (exact wording is the builder's within the voice constraints; the *content* is pinned):
+Copy rules (exact wording is the builder's within the voice constraints; the _content_ is pinned):
 
 - `composeFindReply` text states the honest count and scope ("4 salons in Matina, 2 open right now"), never superlatives. `shops` holds at most 3 results; `exploreHref` is set whenever `total > 0`. `total === 0` → text says no match for exactly what was asked and suggests loosening (the nearest category or dropping a filter) — never "try again later".
 - `composeShopAnswer('hours', …)` uses `describeOpenStatus(getOpenStatus(...))` for the live status plus today's hours from `weeklySchedule`; a shop with no hours data says "Opening hours not provided".
@@ -206,10 +205,12 @@ Copy rules (exact wording is the builder's within the voice constraints; the *co
 ### Task 3: The engine
 
 **Files:**
+
 - Create: `src/features/assistant/engine.ts`
 - Test: `src/features/assistant/engine.test.ts`
 
 **Interfaces:**
+
 - Consumes: Tasks 1–2; `shopsService` (`searchShops`, `getShop`, `getShopServices` — `src/services/shops.service.ts:26-34`); `catalogService.getCategories/getAreas`; `distanceKm` from `@/lib/geo`; `liveInterestCategories` from `@/lib/interests`.
 - Produces (Task 4 consumes):
 
@@ -247,13 +248,13 @@ Engine behavior (tests pin each):
 1. `reply` parses with the context, then by intent kind:
    - `find` with `nearMe` and no position → a reply (no shops) asking to share a location or name an area; `suggestions` include 2–3 area names.
    - `find` → `searchShops` with params from the intent (`keywords.join(' ')` as `q`, `pageSize: 50`); when a position exists, results are ranked by `distanceKm(position, shop.coordinates)` ascending (shops without coordinates last) and each result carries `distanceKm`; top 3 become cards via `composeFindReply`.
-   - **Service-level honesty:** when the intent has both `categorySlug` and `priceMax`, fetch `getShopServices` for up to the first 6 ranked shops and keep only shops with an active service in that category (or its subcategories) priced at or under the cap (`fixed`/`from`/`range` use `amount`; `quote` never matches a price cap); that service becomes `AssistantShopResult.service`. When the intent names a *subcategory*, the matching service also becomes `service` even without a price cap.
+   - **Service-level honesty:** when the intent has both `categorySlug` and `priceMax`, fetch `getShopServices` for up to the first 6 ranked shops and keep only shops with an active service in that category (or its subcategories) priced at or under the cap (`fixed`/`from`/`range` use `amount`; `quote` never matches a price cap); that service becomes `AssistantShopResult.service`. When the intent names a _subcategory_, the matching service also becomes `service` even without a price cap.
    - `shop_question` → `getShop` + `getShopServices`, then `composeShopAnswer`. Unknown slug (`getShop` rejects) → honest not-found reply offering search (Review Focus 3).
    - `greeting`/`unknown` → `composeGreeting`/`composeUnknownReply` with suggestions.
 2. `greeting()` suggestions come from `getInterestCategoryIds()` mapped to category names ("Find a Barber near me" shape), falling back to the first 3 live top-level categories by `sortOrder` for guests.
 3. Any thrown service error → a reply that says something went wrong and to try again; the error is not rethrown to the UI.
 
-- [ ] **Step 1: Write failing tests in `src/features/assistant/engine.test.ts`** — build fake `EngineDeps` returning fixture data (reuse the Task 1 fixture shape; give shops `coordinates` and give one shop a cheap service in the *wrong* category). Pin at minimum: near-me-without-location asks instead of searching (Review Focus 2); distance ranking orders by proximity; **the price-trap shop is excluded for "«category» under ₱N" while a shop with a genuinely matching service is kept, and that service is on the result (Review Focus 4)**; unknown shop slug → not-found reply (Review Focus 3); guest vs interested greeting suggestions differ; a rejecting dep produces the error reply, not a rejection.
+- [ ] **Step 1: Write failing tests in `src/features/assistant/engine.test.ts`** — build fake `EngineDeps` returning fixture data (reuse the Task 1 fixture shape; give shops `coordinates` and give one shop a cheap service in the _wrong_ category). Pin at minimum: near-me-without-location asks instead of searching (Review Focus 2); distance ranking orders by proximity; **the price-trap shop is excluded for "«category» under ₱N" while a shop with a genuinely matching service is kept, and that service is on the result (Review Focus 4)**; unknown shop slug → not-found reply (Review Focus 3); guest vs interested greeting suggestions differ; a rejecting dep produces the error reply, not a rejection.
 
 - [ ] **Step 2: Run `npx vitest run src/features/assistant/engine.test.ts` — expect FAIL**
 
@@ -268,11 +269,13 @@ Engine behavior (tests pin each):
 ### Task 4: Conversation store and hook
 
 **Files:**
+
 - Create: `src/features/assistant/store.ts`
 - Create: `src/features/assistant/use-assistant.ts`
 - Test: `src/features/assistant/store.test.ts`, `src/features/assistant/use-assistant.test.tsx`
 
 **Interfaces:**
+
 - Consumes: Task 3's `createRuleEngine`/`createDefaultDeps`; `useUserLocation` (`src/hooks/use-user-location.ts:37`); `useInterests` (`src/features/interests/use-interests.ts:97`); `useSession` from `@/features/auth/api/queries`; the id helper in `src/lib/ids.ts`.
 - Produces (Task 5 consumes):
 
@@ -304,6 +307,7 @@ export function useAssistant(engine?: AssistantEngine): {
 ```
 
 Behavior:
+
 - The store persists **only `messages`** to `sessionStorage` (zustand `persist` + `partialize`, mirroring `use-user-location.ts`'s shape); `open`/`busy` are per-mount. A `merge` that validates the stored shape falls back to `[]` on anything unreadable (Review Focus 5 — `createJSONStorage` already tolerates a missing `sessionStorage`).
 - `send(text)`: trimmed-empty text is a no-op (Review Focus 1); otherwise append the user message, `busy: true`, await `engine.reply`, append the assistant message, `busy: false`. One engine instance per hook lifetime (`useRef`/module single).
 - Opening with zero messages appends the engine's `greeting()` as the first assistant message.
@@ -324,16 +328,19 @@ Behavior:
 ### Task 5: Bubble, panel, and message UI
 
 **Files:**
+
 - Create: `src/features/assistant/components/AssistantWidget.tsx` (bubble + panel shell)
 - Create: `src/features/assistant/components/AssistantConversation.tsx` (message list, shop cards, input)
 - Modify: `src/components/layouts/PublicLayout.tsx` (mount `<AssistantWidget />` after `<AppCommandMenu …/>`)
 - Test: `src/features/assistant/components/AssistantWidget.test.tsx`
 
 **Interfaces:**
+
 - Consumes: Task 4's `useAssistant`; `ShopCard` (`src/features/discovery/components/ShopCard.tsx:35` — pass `shop`, `category`, `distanceKm`, `headingLevel="h3"`); `bookingHref` (`src/features/shops/links.ts:11`); `useCategoriesQuery` for card category labels; shadcn `Sheet`, `Button`, `Input` from `@/components/ui`; `MessageCircleIcon`/`SendIcon` from lucide.
 - Produces: `AssistantWidget` (no props), self-contained.
 
 Pinned decisions:
+
 - Bubble: fixed, bottom-right; mobile `bottom` offset includes `var(--spacing-tabbar)` + safe-area inset so it clears the `BottomTabBar` (see `PublicLayout.tsx:18` for the expression); desktop `bottom-6 right-6`. `aria-label="Open Dapita Assistant"`. Minimum 44px hit target. Hidden while the panel is open and on the booking page (`useMatch('/shops/:shopSlug/book')` from react-router).
 - Panel: shadcn `Sheet`, `side="right"`, `className="w-full sm:max-w-[380px]"`; header title "Dapita Assistant" with a one-line automated-helper subtitle; Sheet handles focus trap, Escape, and overlay.
 - Messages: user messages right-aligned, assistant left; an assistant reply renders `reply.text`, then a `ShopCard` per `reply.shops` entry — each followed by a "Send booking request" `Button asChild` + `Link to={bookingHref(shop.slug, service?.id)}` **only when `service` is set**, plus an Explore link when `reply.exploreHref` is set, plus suggestion chips (buttons that call `send(label)`).
@@ -356,9 +363,11 @@ Pinned decisions:
 ### Task 6: End-to-end happy path
 
 **Files:**
+
 - Create: `e2e/assistant.spec.ts` (follow the structure of existing specs in `e2e/`)
 
 **Interfaces:**
+
 - Consumes: the seeded mock data (The Good Cut Barbershop etc., `src/services/mock/seed/businesses.ts`), existing e2e helpers/fixtures in `e2e/`.
 
 - [ ] **Step 1: Read one existing spec in `e2e/` for the project's fixtures (base URL, mock-mode setup, sign-in helper if any)**
