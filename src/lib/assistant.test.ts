@@ -330,6 +330,8 @@ describe('composeShopAnswer', () => {
     expect(reply.text).toContain('Fifth')
     expect(reply.text).not.toContain('Sixth')
     expect(reply.text).toMatch(/estimate/i)
+    expect(reply.text).toContain('Estimates are confirmed by the shop when you book.')
+    expect(reply.text).not.toContain('marked as estimates')
   })
 
   test('prices: a quote price reads "price on consultation" and never a number', () => {
@@ -348,6 +350,33 @@ describe('composeShopAnswer', () => {
     expect(text).toContain('Cancel up to 24 hours before.')
     expect(text).toMatch(/no-show.*not provided/i)
     expect(text).toMatch(/deposit.*not provided/i)
+  })
+})
+
+describe('suggestion chips round-trip through parseMessage', () => {
+  const greetingChips = context.categories.map((c) => `Find a ${c.name} near me`)
+  const areaChips = context.areas.map((a) => `Shops in ${a.name}`)
+  const intents: FindIntent[] = [
+    find({ categorySlug: 'barber', areaSlug: 'matina', openNow: true }),
+    find({ categorySlug: 'spa-massage', areaSlug: 'lanang', priceMax: 300, openNow: true }),
+    find({ areaSlug: 'matina', openNow: true }),
+    find({ categorySlug: 'nails', areaSlug: 'lanang' }),
+    find({ areaSlug: 'lanang' }),
+  ]
+  const looseningChips = intents.flatMap((intent) => composeFindReply(intent, [], 0).suggestions)
+
+  test('every chip the code can emit parses to a find with no junk keywords', () => {
+    const chips = [...greetingChips, ...areaChips, 'Show me shops near me', ...looseningChips]
+    expect(looseningChips.length).toBeGreaterThan(0)
+    for (const chip of chips) {
+      const intent = parseMessage(chip, context)
+      expect(intent.kind, chip).toBe('find')
+      if (intent.kind === 'find') expect(intent.keywords, chip).toEqual([])
+    }
+  })
+
+  test('the area chip filters by that area', () => {
+    expect(parseMessage('Shops in Matina', context)).toMatchObject({ kind: 'find', areaSlug: 'matina' })
   })
 })
 

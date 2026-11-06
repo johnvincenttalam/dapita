@@ -68,6 +68,14 @@ describe('AssistantWidget', () => {
     expect(screen.queryByRole('button', { name: 'Open Dapita Assistant' })).not.toBeInTheDocument()
   })
 
+  it('returns focus to the bubble when the panel closes', async () => {
+    const { user } = renderWidget(fakeEngine({ text: 'x', shops: [], suggestions: [] }))
+    await user.click(screen.getByRole('button', { name: 'Open Dapita Assistant' }))
+    await screen.findByRole('dialog', { name: 'Dapita Assistant' })
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Open Dapita Assistant' })).toHaveFocus())
+  })
+
   it('sends a typed message and shows the reply with a shop card, a booking link, and an explore link', async () => {
     const engine = fakeEngine({
       text: 'Found two in Matina.',

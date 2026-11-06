@@ -24,6 +24,7 @@ export function AssistantWidget({ engine }: { engine?: AssistantEngine }) {
     lastKey.current = key
     if (open) setOpen(false)
   }, [key, open, setOpen])
+  const bubbleRef = useRef<HTMLButtonElement>(null)
   const onBookingPage = useMatch('/shops/:shopSlug/book') !== null
 
   if (onBookingPage) return null
@@ -32,6 +33,7 @@ export function AssistantWidget({ engine }: { engine?: AssistantEngine }) {
     <>
       {assistant.open ? null : (
         <Button
+          ref={bubbleRef}
           type="button"
           aria-label="Open Dapita Assistant"
           onClick={() => assistant.setOpen(true)}
@@ -41,7 +43,15 @@ export function AssistantWidget({ engine }: { engine?: AssistantEngine }) {
         </Button>
       )}
       <Sheet open={assistant.open} onOpenChange={assistant.setOpen}>
-        <SheetContent side="right" className="w-full gap-0 sm:max-w-[380px]">
+        <SheetContent
+          side="right"
+          className="w-full gap-0 sm:max-w-[380px]"
+          // The bubble isn't a SheetTrigger (and unmounts while open), so Radix has nowhere to return focus.
+          onCloseAutoFocus={(event) => {
+            event.preventDefault()
+            bubbleRef.current?.focus()
+          }}
+        >
           <SheetHeader className="border-b pr-14">
             <SheetTitle>Dapita Assistant</SheetTitle>
             <SheetDescription>An automated helper that answers from Dapita&apos;s shop listings.</SheetDescription>

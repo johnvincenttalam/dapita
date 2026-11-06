@@ -71,7 +71,7 @@ const fillerWords = new Set(
   (
     'a an the in at on for of to me my i we you is are am be do does did there any some please find show looking look ' +
     'want need get can could would like with near around and or what where which who how that this it its na sa ang ng ' +
-    'mga ba ko yung'
+    'mga ba ko yung shop shops'
   ).split(' '),
 )
 
@@ -94,6 +94,7 @@ const categorySynonyms: ReadonlyArray<[phrase: string, slug: string]> = [
   ['barber shop', 'barber'],
   ['barbershop', 'barber'],
   ['massage', 'spa-massage'],
+  ['spa massage', 'spa-massage'], // how composeFindReply words that category from its slug
   ['manicure', 'nails'],
   ['pedicure', 'nails'],
 ]
@@ -276,7 +277,8 @@ export function composeFindReply(intent: FindIntent, results: AssistantShopResul
     const advice = loosen.length > 0 ? `Try ${loosen.join(' or ')}.` : 'Try a different category or fewer keywords.'
     const suggestions = []
     if (intent.openNow) suggestions.push(`${noun}shops${area}${price}`.trim())
-    if (intent.areaSlug) suggestions.push(`${noun}shops`.trim())
+    // A bare "shops" says nothing to search for, so it is only offered when a category narrows it.
+    if (intent.areaSlug && noun) suggestions.push(`${noun}shops`.trim())
     return { text: `I couldn't find any ${asked}. ${advice}`, shops: [], suggestions }
   }
 
@@ -328,7 +330,7 @@ function describePrices(shop: ShopDetails, services: Service[]) {
   if (listed.length === 0) return `${shop.name} has no services listed yet, so I have no prices to share.`
   const lines = listed.map((service) => `${service.name}: ${describePrice(service.price)}`)
   const estimates = listed.some((service) => service.price.type === 'from' || service.price.type === 'range')
-  return `Prices at ${shop.name}: ${lines.join('; ')}.${estimates ? ' Prices marked as estimates are confirmed by the shop.' : ''}`
+  return `Prices at ${shop.name}: ${lines.join('; ')}.${estimates ? ' Estimates are confirmed by the shop when you book.' : ''}`
 }
 
 function describePolicies(shop: ShopDetails) {
