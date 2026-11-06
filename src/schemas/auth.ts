@@ -65,6 +65,7 @@ export const customerSignUpSchema = z.object({
   email: emailField,
   phone: optionalPhMobileField,
   password: passwordField,
+  interests: z.array(z.string()).max(12, 'Choose fewer categories').default([]),
   acceptTerms: acceptLegal,
 })
 

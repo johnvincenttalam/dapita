@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 import { FormError } from '@/components/forms/FormError'
 import { FormField } from '@/components/forms/FormField'
@@ -10,6 +10,7 @@ import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { LegalConsentLabel } from '@/features/auth/components/LegalConsentLabel'
 import { useSignUp } from '@/features/auth/use-sign-up'
+import { InterestsField } from '@/features/interests/components/InterestsField'
 import {
   businessSignUpSchema,
   customerSignUpSchema,
@@ -22,25 +23,26 @@ import { signUpConsents } from '@/services/auth.service'
 
 const PASSWORD_HINT = 'At least 8 characters, with a letter and a number.'
 
-/** Customer sign-up: name, email, optional mobile and password (plan §8, item 6). */
+/** Customer sign-up: name, email, optional mobile, password and what they are here for (plan §8, item 6). */
 export function CustomerSignUpForm({ next }: { next: string }) {
   const form = useForm<CustomerSignUpInput, unknown, CustomerSignUpValues>({
     resolver: zodResolver(customerSignUpSchema),
     mode: 'onTouched',
-    defaultValues: { name: '', email: '', phone: '', password: '', acceptTerms: false },
+    defaultValues: { name: '', email: '', phone: '', password: '', interests: [], acceptTerms: false },
   })
   const submit = useSignUp(next, {
     onEmailTaken: (message) => form.setError('email', { message }, { shouldFocus: true }),
     onError: (message) => form.setError('root', { message }),
   })
 
-  const onSubmit = form.handleSubmit(({ name, email, phone, password }) =>
+  const onSubmit = form.handleSubmit(({ name, email, phone, password, interests }) =>
     submit({
       accountType: 'customer',
       name,
       email,
       phone: phone || undefined,
       password,
+      interests: interests.length > 0 ? interests : undefined,
       consents: signUpConsents('customer'),
     }),
   )
@@ -90,6 +92,17 @@ export function CustomerSignUpForm({ next }: { next: string }) {
             required
             render={({ field, controlProps }) => (
               <PasswordInput autoComplete="new-password" {...field} {...controlProps} />
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="interests"
+            render={({ field }) => (
+              <InterestsField
+                value={field.value ?? []}
+                onChange={field.onChange}
+                disabled={form.formState.isSubmitting}
+              />
             )}
           />
           <FormField

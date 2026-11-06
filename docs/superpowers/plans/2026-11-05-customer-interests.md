@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Superseded in part** by `2026-11-05-customer-interests-at-sign-up.md`: the home card and the guest browser store were removed the same day; the question now lives in the create-account form.
+
 **Goal:** A home-page card asks "What are you here for?"; the answer (live top-level category ids) is kept in the browser for guests and on the account for signed-in customers, and the home rows put those shops first.
 
 **Architecture:** One pure module (`src/lib/interests.ts`) holds the stable partition, id normalisation and the copy, and is shared with the server through `#shared/domain`. Interests are a small resource, `GET`/`PUT /api/me/interests`, stored as a nullable JSON column on `users`, with a mock twin on `MockAccountState`. A single hook, `useInterests()`, decides between the browser store and the account, serialises saves, and performs the one-time guest-to-account handoff; the card, the rows and the profile panel all read it.

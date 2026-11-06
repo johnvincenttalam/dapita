@@ -1,12 +1,11 @@
 import db from '@adonisjs/lucid/services/db'
 import ApiError from '#exceptions/api_error'
-import Category from '#models/category'
 import Consent from '#models/consent'
 import DeletionRequest from '#models/deletion_request'
 import User from '#models/user'
 import { newId } from '#helpers/ids'
 import { validateWith } from '#helpers/validate'
-import { toCategoryData } from '#services/catalog'
+import { listCategoryData } from '#services/catalog'
 import {
   dropRetiredInterests,
   interestsMessages,
@@ -83,24 +82,20 @@ export async function requestAccountDeletion(user: User) {
   return toDeletionRequestData(request)
 }
 
-async function allCategories() {
-  const categories = await Category.all()
-  return categories.map(toCategoryData)
-}
-
 /** What the customer is here for, without any category that has since been retired. */
 export async function getMyInterests(user: User): Promise<CustomerInterests> {
   if (!user.interests) return { categoryIds: [] }
-  return dropRetiredInterests(user.interests, await allCategories())
+  return dropRetiredInterests(user.interests, await listCategoryData())
 }
 
-/** Replaces the answer; an empty list records that they dismissed the question. */
+/** Replaces the answer; an empty list means they cleared every pick from their profile. */
 export async function updateMyInterests(user: User, input: unknown): Promise<CustomerInterests> {
   const valid = validateWith(interestsSchema, input)
-  const categoryIds = normaliseInterestIds(valid.categoryIds, await allCategories())
+  const categoryIds = normaliseInterestIds(valid.categoryIds, await listCategoryData())
   if (!categoryIds) throw new ApiError(interestsMessages.notOnList, 422)
   const now = new Date().toISOString()
   user.merge({ interests: { categoryIds, answeredAt: now }, updatedAt: now })
   await user.save()
-  return getMyInterests(user)
+  // Just normalised to live ids, so there is nothing retired to drop.
+  return { categoryIds, answeredAt: now }
 }

@@ -12,7 +12,6 @@ import { useCategoriesQuery, useFeaturedShopsQuery } from '@/features/discovery/
 import { CategoryGrid, CategoryGridSkeleton } from '@/features/discovery/components/CategoryGrid'
 import { HomeHero } from '@/features/discovery/components/HomeHero'
 import { ShopCard, ShopCardSkeleton } from '@/features/discovery/components/ShopCard'
-import { InterestsCard } from '@/features/interests/components/InterestsCard'
 import { useInterests } from '@/features/interests/use-interests'
 import { LocationControl } from '@/features/recommendations/components/LocationControl'
 import { LocationPrompt } from '@/features/recommendations/components/LocationPrompt'
@@ -42,8 +41,6 @@ export default function HomePage() {
       <SiteSearchForm className="md:hidden" inputClassName="h-11 shadow-xs" />
 
       <HomeHero />
-
-      <InterestsCard />
 
       {position ? (
         <div className="space-y-3">

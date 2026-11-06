@@ -3,6 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import transmit from '@adonisjs/transmit/services/main'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Business from '#models/business'
+import User from '#models/user'
 import { customerEmail, ownerEmail, userByEmail } from '#tests/helpers'
 import type { SessionUser } from '#shared/domain'
 
@@ -72,11 +73,11 @@ test.group('Auth', (group) => {
     assert.isNotNull(business.phone)
 
     const again = await client.post('/api/auth/sign-up').json({
-      accountType: 'customer',
+      accountType: 'customer' as const,
       name: 'Someone',
       email: 'lea@example.com',
       password: 'nails2026',
-      consents: [{ purpose: 'terms', version: 'draft-2026-10' }],
+      consents: [{ purpose: 'terms' as const, version: 'draft-2026-10' }],
     })
     again.assertStatus(409)
     again.assertBodyContains({ code: 'email_taken' })
@@ -86,6 +87,47 @@ test.group('Auth', (group) => {
     const response = await client.get('/api/not-a-real-endpoint')
     response.assertStatus(501)
     response.assertBodyContains({ code: 'not_implemented' })
+  })
+
+  const customerSignUp = (overrides: Record<string, unknown> = {}) => ({
+    accountType: 'customer' as const,
+    name: 'Mia Reyes',
+    email: 'mia@example.com',
+    password: 'barber2026',
+    consents: [{ purpose: 'terms' as const, version: 'draft-2026-10' }],
+    ...overrides,
+  })
+
+  test('signs up a customer with what they are here for', async ({ client, assert }) => {
+    const response = await client
+      .post('/api/auth/sign-up')
+      .json(customerSignUp({ interests: ['cat_salon', 'cat_barber', 'cat_salon'] }))
+    response.assertStatus(200)
+    const user = await User.findByOrFail('email', 'mia@example.com')
+    const interests = await client.get('/api/me/interests').loginAs(user)
+    interests.assertStatus(200)
+    assert.deepEqual(interests.body().categoryIds, ['cat_barber', 'cat_salon'])
+    assert.isString(interests.body().answeredAt)
+  })
+
+  test('a customer who picks nothing starts unanswered', async ({ client, assert }) => {
+    const response = await client.post('/api/auth/sign-up').json(customerSignUp())
+    response.assertStatus(200)
+    const user = await User.findByOrFail('email', 'mia@example.com')
+    const interests = await client.get('/api/me/interests').loginAs(user)
+    assert.deepEqual(interests.body(), { categoryIds: [] })
+  })
+
+  test('refuses a pick that is not a live category and creates nothing', async ({
+    client,
+    assert,
+  }) => {
+    const response = await client
+      .post('/api/auth/sign-up')
+      .json(customerSignUp({ interests: ['sub_styling'] }))
+    response.assertStatus(422)
+    response.assertBodyContains({ message: 'Choose from the categories on the list.' })
+    assert.isNull(await User.findBy('email', 'mia@example.com'))
   })
 })
 

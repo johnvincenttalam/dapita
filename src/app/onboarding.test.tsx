@@ -1,7 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import { ApiError } from '@/lib/api-client'
+import { catalogService } from '@/services/catalog.service'
 import { MOCK_SESSION_KEY, mockUsers } from '@/services/mock/users'
+import { profileService } from '@/services/profile.service'
 import { renderRoute } from '@/test/render'
 
 const BOOK_PATH = '/shops/the-good-cut-barbershop/book?service=svc_mens_haircut'
@@ -74,12 +77,43 @@ describe('customer sign-up (plan step 5 exit: guest → sign-up → back to the 
     expect(await screen.findByText(/an account with this email already exists/i)).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: /email/i })).toHaveAttribute('aria-invalid', 'true')
   })
+
+  it('saves what a new customer is here for with the account', async () => {
+    const { user } = renderRoute('/auth/sign-up')
+    const field = await screen.findByRole('group', { name: 'What are you here for?' })
+    expect(field).toHaveTextContent('Optional. Pick what you book most and we’ll show those shops first.')
+    await user.type(screen.getByRole('textbox', { name: /your name/i }), 'Mia Reyes')
+    await user.type(screen.getByRole('textbox', { name: /email/i }), 'mia@example.com')
+    await user.type(screen.getByLabelText(/^password/i), 'mirror42')
+    await user.click(within(field).getByRole('button', { name: 'Salon', pressed: false }))
+    await user.click(within(field).getByRole('button', { name: 'Barber', pressed: false }))
+    // A chip tap does not submit: no validation message yet.
+    expect(screen.queryByText('Accept the terms to create an account')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('checkbox', { name: /i agree to the terms of use/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Check your email' })).toBeInTheDocument()
+    expect((await profileService.getMyInterests()).categoryIds).toEqual(['cat_barber', 'cat_salon'])
+  })
+
+  it('signs up without the field when categories cannot load', async () => {
+    vi.spyOn(catalogService, 'getCategories').mockRejectedValue(new ApiError('Server down', 500))
+    const { user } = renderRoute('/auth/sign-up')
+    await user.type(await screen.findByRole('textbox', { name: /your name/i }), 'Mia Reyes')
+    await waitFor(() => expect(screen.queryByRole('group', { name: 'What are you here for?' })).not.toBeInTheDocument())
+    await user.type(screen.getByRole('textbox', { name: /email/i }), 'mia@example.com')
+    await user.type(screen.getByLabelText(/^password/i), 'mirror42')
+    await user.click(screen.getByRole('checkbox', { name: /i agree to the terms of use/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Check your email' })).toBeInTheDocument()
+    expect(await profileService.getMyInterests()).toEqual({ categoryIds: [] })
+  })
 })
 
 describe('business sign-up and verification (MER-01, doc §7.4)', () => {
   it('verifies the email and continues to listing set-up', async () => {
     const { user, router } = renderRoute('/business/sign-up')
     expect(await screen.findByRole('heading', { level: 1, name: 'List your business' })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'What are you here for?' })).not.toBeInTheDocument()
 
     await user.type(screen.getByRole('textbox', { name: /your name/i }), 'Lea Cruz')
     await user.type(screen.getByRole('textbox', { name: /business name/i }), 'Lea’s Nail Bar')

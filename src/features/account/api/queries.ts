@@ -10,7 +10,8 @@ export const accountKeys = {
   all: ['account'] as const,
   profile: () => [...accountKeys.all, 'profile'] as const,
   consents: () => [...accountKeys.all, 'consents'] as const,
-  interests: () => [...accountKeys.all, 'interests'] as const,
+  /** One answer per user; `null` is a signed-out viewer, whose query never runs. */
+  interests: (userId: ID | null) => [...accountKeys.all, 'interests', userId] as const,
 }
 
 export const myProfileQueryOptions = queryOptions({
@@ -26,21 +27,26 @@ export function useMyConsentsQuery() {
   return useQuery({ queryKey: accountKeys.consents(), queryFn: () => profileService.getMyConsents() })
 }
 
-/** The categories the signed-in customer is here for. Only this app changes them, so never stale. */
-export function useMyInterestsQuery(enabled: boolean) {
+/**
+ * The categories the signed-in customer is here for, cached per user so another account's answer
+ * never shows. Only this app changes a user's answer, so it stays fresh for that user.
+ */
+export function useMyInterestsQuery(userId: ID | null) {
   return useQuery({
-    queryKey: accountKeys.interests(),
+    queryKey: accountKeys.interests(userId),
     queryFn: () => profileService.getMyInterests(),
     staleTime: Infinity,
-    enabled,
+    enabled: userId !== null,
   })
 }
 
+/** Saves the signed-in user's categories; `userId` says whose cached answer the reply updates. */
 export function useUpdateInterestsMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (categoryIds: ID[]) => profileService.updateMyInterests(categoryIds),
-    onSuccess: (interests) => queryClient.setQueryData<CustomerInterests>(accountKeys.interests(), interests),
+    mutationFn: ({ categoryIds }: { userId: ID; categoryIds: ID[] }) => profileService.updateMyInterests(categoryIds),
+    onSuccess: (interests, { userId }) =>
+      queryClient.setQueryData<CustomerInterests>(accountKeys.interests(userId), interests),
     // useInterests says when the latest pick fails; stale and background failures stay quiet.
     meta: { showErrorToast: false },
   })
